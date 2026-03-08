@@ -1,36 +1,55 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:audio_service/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
 
 import '../models/download_item.dart';
+import '../models/queue_state.dart';
 import 'audio_handler.dart';
 
-/// [MyAudioHandler]를 래핑하여 재생 기능을 제공하는 서비스.
+/// 재생 큐·상태를 소유하는 단일 진실 원천 서비스.
 ///
-/// 파일 존재 여부 검증 후 재생하며, 스트림을 통해 재생 상태 노출.
-/// [PlayerProvider]에서 사용.
+/// [MyAudioHandler]를 래핑하며, 파일 검증·큐 관리·[DownloadItem]↔[MediaItem]
+/// 매핑을 이 레이어에서만 수행. [PlayerProvider]는 스트림만 구독.
 class AudioPlayerService {
   final MyAudioHandler _handler;
 
-  AudioPlayerService(this._handler);
+  /// 큐의 유일한 소유자.
+  List<DownloadItem> _queue = [];
 
-  /// [AudioPlayer] 상태 스트림.
-  Stream<PlayerState> get playerStateStream =>
-      _handler.player.playerStateStream;
+  final StreamController<QueueState> _queueStateController =
+      StreamController<QueueState>.broadcast();
+
+  StreamSubscription<int?>? _indexSub;
+  StreamSubscription<Duration?>? _durationSub;
+
+  /// 캐싱된 재생 여부 스트림. getter 호출마다 새 스트림 생성 방지.
+  late final Stream<bool> _playingStream =
+      _handler.player.playerStateStream.map(
+        (state) =>
+            state.playing &&
+            state.processingState != ProcessingState.completed,
+      );
+
+  AudioPlayerService(this._handler) {
+    _listenToIndex();
+    _listenToDuration();
+  }
+
+  // ─── Streams ───────────────────────────────────────────────
+
+  /// 큐·인덱스·현재 트랙을 번들로 발행하는 스트림.
+  Stream<QueueState> get queueStateStream => _queueStateController.stream;
+
+  /// 재생 여부 스트림.
+  Stream<bool> get playingStream => _playingStream;
 
   /// 현재 재생 위치 스트림.
   Stream<Duration> get positionStream => _handler.player.positionStream;
 
   /// 곡 전체 길이 스트림.
   Stream<Duration?> get durationStream => _handler.player.durationStream;
-
-  /// 현재 재생 인덱스 스트림.
-  Stream<int?> get currentIndexStream => _handler.player.currentIndexStream;
-
-  /// 시퀀스 상태 스트림.
-  Stream<SequenceState?> get sequenceStateStream =>
-      _handler.player.sequenceStateStream;
 
   /// 루프 모드 스트림.
   Stream<LoopMode> get loopModeStream => _handler.player.loopModeStream;
@@ -39,14 +58,38 @@ class AudioPlayerService {
   Stream<bool> get shuffleModeEnabledStream =>
       _handler.player.shuffleModeEnabledStream;
 
-  /// 현재 재생 여부.
-  bool get playing => _handler.player.playing;
+  // ─── Commands ──────────────────────────────────────────────
 
-  /// 현재 재생 위치.
-  Duration get position => _handler.player.position;
+  /// [items] 목록을 큐로 설정하고 [startIndex]부터 재생.
+  ///
+  /// 파일 미존재 항목은 제외. 유효 항목이 없으면 무시.
+  /// [_listenToIndex]가 setAudioSource 이후 currentIndexStream을 수신하여
+  /// [QueueState]를 발행하므로 명시적 emit 불필요.
+  Future<void> playQueue(
+    List<DownloadItem> items, {
+    int startIndex = 0,
+  }) async {
+    final validItems =
+        items.where((item) => File(item.filePath).existsSync()).toList();
+    if (validItems.isEmpty) return;
 
-  /// 곡 전체 길이.
-  Duration? get duration => _handler.player.duration;
+    var adjustedIndex = 0;
+    if (startIndex > 0 && startIndex < items.length) {
+      final target = items[startIndex];
+      adjustedIndex = validItems.indexOf(target);
+      if (adjustedIndex < 0) adjustedIndex = 0;
+    }
+
+    // _listenToIndex가 _queue를 참조하므로 setAudioSource 호출 전에 설정.
+    _queue = validItems;
+
+    final mediaItems = validItems.map(_toMediaItem).toList();
+    await _handler.setAudioSource(mediaItems, initialIndex: adjustedIndex);
+    await _handler.play();
+  }
+
+  /// 단일 곡 재생.
+  Future<void> playSingle(DownloadItem item) => playQueue([item]);
 
   /// 재생 시작.
   Future<void> play() => _handler.play();
@@ -54,8 +97,12 @@ class AudioPlayerService {
   /// 일시정지.
   Future<void> pause() => _handler.pause();
 
-  /// 정지 및 리소스 해제.
-  Future<void> stop() => _handler.stop();
+  /// 정지 및 큐 초기화.
+  Future<void> stop() async {
+    await _handler.stop();
+    _queue = [];
+    _emitQueueState(-1);
+  }
 
   /// [position]으로 탐색.
   Future<void> seek(Duration position) => _handler.seek(position);
@@ -66,48 +113,66 @@ class AudioPlayerService {
   /// 이전 곡으로 이동.
   Future<void> seekToPrevious() => _handler.skipToPrevious();
 
-  /// 큐 내 [index] 위치의 곡으로 이동.
+  /// 큐 내 [index] 위치의 곡으로 이동 후 재생.
   Future<void> seekToIndex(int index) async {
+    if (index < 0 || index >= _queue.length) return;
     await _handler.skipToQueueItem(index);
     await _handler.play();
   }
 
-  /// [items] 목록을 큐로 설정하고 [initialIndex]부터 재생.
+  /// 큐에 곡 추가.
   ///
-  /// 파일 미존재 항목은 제외. 유효 항목이 없으면 빈 리스트 반환.
-  Future<List<DownloadItem>> setQueue(
-    List<DownloadItem> items, {
-    int initialIndex = 0,
-  }) async {
-    final validItems =
-        items.where((item) => File(item.filePath).existsSync()).toList();
-    if (validItems.isEmpty) return [];
-
-    var adjustedIndex = 0;
-    if (initialIndex > 0 && initialIndex < items.length) {
-      final targetItem = items[initialIndex];
-      adjustedIndex = validItems.indexOf(targetItem);
-      if (adjustedIndex < 0) adjustedIndex = 0;
-    }
-
-    final mediaItems = validItems.map(_toMediaItem).toList();
-    await _handler.setAudioSource(mediaItems, initialIndex: adjustedIndex);
-    await _handler.play();
-    return validItems;
-  }
-
-  /// 큐에 단일 곡 추가.
+  /// addQueueItem은 currentIndex를 변경하지 않으므로 명시적 emit 필요.
   Future<void> addToQueue(DownloadItem item) async {
     if (!File(item.filePath).existsSync()) return;
-    await _handler.addQueueItem(_toMediaItem(item));
+    final prevQueue = _queue;
+    _queue = [..._queue, item];
+    try {
+      await _handler.addQueueItem(_toMediaItem(item));
+    } catch (_) {
+      _queue = prevQueue;
+      rethrow;
+    }
+    _emitCurrentQueueState();
   }
 
   /// 큐에서 [index] 위치의 곡 제거.
-  Future<void> removeFromQueue(int index) => _handler.removeQueueItemAt(index);
+  ///
+  /// _queue를 핸들러보다 먼저 갱신해야 await 중 [_listenToIndex]가
+  /// 인덱스 이동 이벤트를 수신할 때 올바른 큐를 참조.
+  Future<void> removeFromQueue(int index) async {
+    if (index < 0 || index >= _queue.length) return;
+    final prevQueue = _queue;
+    _queue = [..._queue]..removeAt(index);
+    try {
+      await _handler.removeQueueItemAt(index);
+    } catch (_) {
+      _queue = prevQueue;
+      rethrow;
+    }
+    _emitCurrentQueueState();
+  }
 
   /// 큐 내 아이템 순서 변경.
-  Future<void> moveQueueItem(int oldIndex, int newIndex) =>
-      _handler.moveQueueItem(oldIndex, newIndex);
+  ///
+  /// _queue를 핸들러보다 먼저 갱신해야 await 중 [_listenToIndex]가
+  /// 인덱스 이동 이벤트를 수신할 때 올바른 큐를 참조.
+  Future<void> moveQueueItem(int oldIndex, int newIndex) async {
+    if (oldIndex < 0 || oldIndex >= _queue.length) return;
+    if (newIndex < 0 || newIndex >= _queue.length) return;
+    final prevQueue = _queue;
+    final newQueue = [..._queue];
+    final item = newQueue.removeAt(oldIndex);
+    newQueue.insert(newIndex, item);
+    _queue = newQueue;
+    try {
+      await _handler.moveQueueItem(oldIndex, newIndex);
+    } catch (_) {
+      _queue = prevQueue;
+      rethrow;
+    }
+    _emitCurrentQueueState();
+  }
 
   /// 셔플 모드 설정.
   Future<void> setShuffleMode(bool enabled) =>
@@ -115,6 +180,48 @@ class AudioPlayerService {
 
   /// 루프 모드 설정.
   Future<void> setLoopMode(LoopMode mode) => _handler.player.setLoopMode(mode);
+
+  // ─── Internal ──────────────────────────────────────────────
+
+  /// just_audio의 currentIndex 변경을 감지하여 [QueueState] 발행.
+  void _listenToIndex() {
+    _indexSub = _handler.player.currentIndexStream.listen((index) {
+      if (index != null && index >= 0 && index < _queue.length) {
+        _emitQueueState(index);
+      }
+    });
+  }
+
+  /// duration 수신 시 현재 트랙에 lazy backfill 수행.
+  void _listenToDuration() {
+    _durationSub = _handler.player.durationStream.listen((dur) {
+      if (dur == null) return;
+      final currentIndex = _handler.player.currentIndex;
+      if (currentIndex == null ||
+          currentIndex < 0 ||
+          currentIndex >= _queue.length) {
+        return;
+      }
+      final track = _queue[currentIndex];
+      if (track.duration == null && track.isInBox) {
+        track.durationInMs = dur.inMilliseconds;
+        track.save();
+      }
+    });
+  }
+
+  void _emitQueueState(int index) {
+    _queueStateController
+        .add(QueueState(queue: List.unmodifiable(_queue), currentIndex: index));
+  }
+
+  /// 현재 just_audio 인덱스를 기반으로 [QueueState] 발행.
+  void _emitCurrentQueueState() {
+    final index = _handler.player.currentIndex ?? -1;
+    final safeIndex =
+        (index >= 0 && index < _queue.length) ? index : -1;
+    _emitQueueState(safeIndex);
+  }
 
   /// [DownloadItem]을 [MediaItem]으로 변환.
   MediaItem _toMediaItem(DownloadItem item) {
@@ -132,6 +239,9 @@ class AudioPlayerService {
 
   /// 리소스 해제.
   void dispose() {
+    _indexSub?.cancel();
+    _durationSub?.cancel();
+    _queueStateController.close();
     _handler.player.dispose();
   }
 }

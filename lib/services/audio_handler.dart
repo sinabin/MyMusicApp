@@ -10,7 +10,7 @@ import 'package:just_audio/just_audio.dart';
 class MyAudioHandler extends BaseAudioHandler
     with QueueHandler, SeekHandler {
   final AudioPlayer _player = AudioPlayer();
-  final ConcatenatingAudioSource _playlist =
+  ConcatenatingAudioSource _playlist =
       ConcatenatingAudioSource(children: []);
 
   /// [AudioPlayer] 인스턴스 반환.
@@ -91,6 +91,9 @@ class MyAudioHandler extends BaseAudioHandler
   }
 
   /// 오디오 소스 목록을 설정하고 큐 업데이트.
+  ///
+  /// 기존 [ConcatenatingAudioSource]를 재사용하면 clear/addAll 과정에서
+  /// 플레이어가 이전 인덱스를 복원하는 경쟁 상태가 발생하므로 매번 새로 생성.
   Future<void> setAudioSource(
     List<MediaItem> items, {
     int initialIndex = 0,
@@ -99,8 +102,7 @@ class MyAudioHandler extends BaseAudioHandler
         .map((item) => AudioSource.file(item.id, tag: item))
         .toList();
 
-    await _playlist.clear();
-    await _playlist.addAll(audioSources);
+    _playlist = ConcatenatingAudioSource(children: audioSources);
     queue.add(items);
 
     await _player.setAudioSource(_playlist, initialIndex: initialIndex);

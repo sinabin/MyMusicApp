@@ -142,10 +142,16 @@ class MiniPlayer extends StatelessWidget {
                         icon: Icons.playlist_add,
                         size: 22,
                         color: AppColors.textSecondary,
-                        onPressed: () => AddToPlaylistSheet.show(
-                          context,
-                          videoId: track.videoId,
-                        ),
+                        onPressed: () {
+                          final navContext =
+                              appNavigatorKey.currentState?.overlay?.context;
+                          if (navContext != null) {
+                            AddToPlaylistSheet.show(
+                              navContext,
+                              videoId: track.videoId,
+                            );
+                          }
+                        },
                       ),
                       // 재생/일시정지
                       _controlButton(
