@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'youtube_service.dart';
 
 /// 오디오 스트림 다운로드를 수행하며 취소 기능을 제공하는 서비스.
@@ -29,8 +30,11 @@ class DownloadService {
     _isCancelled = false;
 
     try {
+      debugPrint('[DownloadService] Getting best audio stream for $videoId');
       final streamInfo = await _youtubeService.getBestAudioStream(videoId);
       final totalSize = streamInfo.size.totalBytes;
+      debugPrint('[DownloadService] Stream: ${streamInfo.codec}, size: $totalSize bytes');
+
       final stream = _youtubeService.getAudioStream(streamInfo);
 
       final file = File(outputPath);
@@ -57,8 +61,10 @@ class DownloadService {
 
       await sink.flush();
       await sink.close();
+      debugPrint('[DownloadService] Download complete: $downloadedBytes bytes');
       return file;
     } catch (e) {
+      debugPrint('[DownloadService] Error: $e');
       rethrow;
     }
   }

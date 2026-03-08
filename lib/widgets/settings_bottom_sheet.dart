@@ -4,7 +4,6 @@ import 'package:file_picker/file_picker.dart';
 import '../providers/settings_provider.dart';
 import '../screens/login_webview_screen.dart';
 import '../theme/app_colors.dart';
-import 'quality_selector.dart';
 
 /// 앱 설정(오디오 품질·저장 경로·YouTube 로그인)을 표시하는 바텀시트 위젯.
 ///
@@ -70,15 +69,6 @@ class SettingsBottomSheet extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 20),
-
-                  // Quality selector
-                  QualitySelector(
-                    selectedBitrate: settings.settings.audioBitrate,
-                    onChanged: (bitrate) => settings.setBitrate(bitrate),
-                  ),
-                  const SizedBox(height: 24),
-                  const Divider(color: AppColors.divider),
-                  const SizedBox(height: 16),
 
                   // Save location
                   Row(

@@ -8,13 +8,24 @@ import '../utils/file_name_sanitizer.dart';
 /// [DownloadProvider]·[SettingsProvider]에서 사용.
 class FileService {
   /// 기본 저장 디렉토리 경로 반환. 존재하지 않으면 자동 생성.
+  ///
+  /// Android: /storage/emulated/0/Download/MyMusicApp (파일 탐색기에서 접근 가능)
+  /// 외부 저장소 접근 실패 시 앱 내부 디렉토리로 fallback.
   Future<String> getDefaultSavePath() async {
-    final dir = await getApplicationDocumentsDirectory();
-    final musicDir = Directory('${dir.path}/MyMusicApp');
-    if (!await musicDir.exists()) {
-      await musicDir.create(recursive: true);
+    try {
+      final downloadDir = Directory('/storage/emulated/0/Download/MyMusicApp');
+      if (!await downloadDir.exists()) {
+        await downloadDir.create(recursive: true);
+      }
+      return downloadDir.path;
+    } catch (_) {
+      final dir = await getApplicationDocumentsDirectory();
+      final musicDir = Directory('${dir.path}/MyMusicApp');
+      if (!await musicDir.exists()) {
+        await musicDir.create(recursive: true);
+      }
+      return musicDir.path;
     }
-    return musicDir.path;
   }
 
   /// 임시 디렉토리 경로 반환.

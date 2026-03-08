@@ -27,7 +27,6 @@ class SettingsProvider extends ChangeNotifier {
 
   /// 저장소에서 설정값을 불러와 초기화.
   Future<void> init() async {
-    final bitrate = await _localStorage.getAudioBitrate();
     var savePath = await _localStorage.getSavePath();
     savePath ??= await _fileService.getDefaultSavePath();
     final isLoggedIn = await _authService.isLoggedIn();
@@ -35,17 +34,9 @@ class SettingsProvider extends ChangeNotifier {
 
     _settings = AppSettings(
       savePath: savePath,
-      audioBitrate: bitrate,
       isLoggedIn: isLoggedIn,
       userEmail: email,
     );
-    notifyListeners();
-  }
-
-  /// 오디오 [bitrate] 변경 및 영속 저장.
-  Future<void> setBitrate(int bitrate) async {
-    _settings = _settings.copyWith(audioBitrate: bitrate);
-    await _localStorage.setAudioBitrate(bitrate);
     notifyListeners();
   }
 

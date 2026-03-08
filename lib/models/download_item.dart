@@ -2,7 +2,7 @@ import 'package:hive/hive.dart';
 
 part 'download_item.g.dart';
 
-/// 다운로드 완료된 MP3 파일의 기록 모델.
+/// 다운로드 완료된 오디오 파일의 기록 모델.
 ///
 /// Hive에 영속 저장되며, [DownloadHistoryDb]를 통해 CRUD 수행.
 /// [DownloadHistoryTile]에서 목록 항목으로 표시.

@@ -117,7 +117,7 @@ class _DownloadButtonState extends State<DownloadButton>
                 ),
                 const SizedBox(width: 10),
                 Text(
-                  'Download MP3',
+                  'Download Audio',
                   style: TextStyle(
                     color: widget.enabled ? Colors.white : AppColors.textTertiary,
                     fontSize: 17,
@@ -240,7 +240,7 @@ class _DownloadButtonState extends State<DownloadButton>
             ),
             SizedBox(width: 10),
             Text(
-              'Converting to MP3...',
+              'Saving audio...',
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 17,

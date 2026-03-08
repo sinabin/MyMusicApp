@@ -9,7 +9,7 @@ enum DownloadPhase {
   /// 오디오 스트림 다운로드 중.
   downloading,
 
-  /// FFmpeg를 이용한 MP3 변환 중.
+  /// 오디오 파일 저장 중.
   converting,
 
   /// 다운로드 및 변환 완료.

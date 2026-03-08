@@ -63,7 +63,6 @@ class _HomeScreenState extends State<HomeScreen> {
     final item = await downloadProvider.startDownload(
       videoInfo: videoInfo,
       savePath: settings.savePath,
-      bitrate: settings.audioBitrate,
     );
 
     if (item != null) {
@@ -137,7 +136,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ).animate().fadeIn(duration: 600.ms).slideY(begin: -0.2, end: 0),
                   const SizedBox(height: 6),
                   Text(
-                    'Paste a YouTube link to extract MP3',
+                    'Paste a YouTube link to download audio',
                     style: AppTextStyles.subtitle,
                   ).animate().fadeIn(duration: 600.ms, delay: 100.ms),
                   const SizedBox(height: 24),

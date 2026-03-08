@@ -1,34 +1,25 @@
 import 'dart:io';
-import 'package:ffmpeg_kit_flutter_new/ffmpeg_kit.dart';
-import 'package:ffmpeg_kit_flutter_new/return_code.dart';
 
-/// FFmpegKit을 이용한 오디오 포맷 변환 서비스.
+/// 다운로드된 오디오 파일을 최종 저장 경로로 이동하는 서비스.
 ///
-/// [DownloadProvider]에서 다운로드 완료 후 MP3 변환 단계에서 사용.
+/// 기존 FFmpeg MP3 변환을 대체. YouTube 오디오 스트림(m4a)을
+/// 변환 없이 그대로 저장하며, [DownloadProvider]에서 사용.
 class AudioConverterService {
-  /// [inputPath] 파일을 [bitrate] kbps MP3로 변환하여 [outputPath]에 저장.
+  /// [inputPath]의 임시 파일을 [outputPath]로 이동.
   ///
-  /// 변환 성공 시 원본 파일을 삭제하고 결과 [File] 반환. 실패 시 예외 발생.
-  Future<File?> convertToMp3({
+  /// 이동 성공 시 결과 [File] 반환. 실패 시 예외 발생.
+  Future<File?> moveToOutput({
     required String inputPath,
     required String outputPath,
-    int bitrate = 320,
-    void Function(double progress)? onProgress,
   }) async {
-    final command = '-i "$inputPath" -vn -ar 44100 -ac 2 -b:a ${bitrate}k "$outputPath"';
-
-    final session = await FFmpegKit.execute(command);
-    final returnCode = await session.getReturnCode();
-
-    if (ReturnCode.isSuccess(returnCode)) {
-      // Clean up input file
-      try {
-        await File(inputPath).delete();
-      } catch (_) {}
-      return File(outputPath);
-    } else {
-      final logs = await session.getAllLogsAsString();
-      throw Exception('FFmpeg conversion failed: $logs');
+    final inputFile = File(inputPath);
+    try {
+      // 같은 파일시스템이면 rename(빠름), 아니면 copy 후 삭제
+      return await inputFile.rename(outputPath);
+    } on FileSystemException {
+      final copied = await inputFile.copy(outputPath);
+      await inputFile.delete();
+      return copied;
     }
   }
 }

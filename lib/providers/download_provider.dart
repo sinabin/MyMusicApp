@@ -7,7 +7,7 @@ import '../services/download_service.dart';
 import '../services/file_service.dart';
 import '../utils/format_utils.dart';
 
-/// 다운로드 워크플로우(조회→다운로드→변환→완료) 상태를 관리하는 Provider.
+/// 다운로드 워크플로우(조회→다운로드→저장→완료) 상태를 관리하는 Provider.
 ///
 /// [DownloadService]·[AudioConverterService]·[FileService]를 조합하여
 /// 전체 과정을 제어하고, [DownloadStatus]를 통해 UI에 진행 상태를 전달.
@@ -29,11 +29,10 @@ class DownloadProvider extends ChangeNotifier {
   /// 현재 다운로드 상태.
   DownloadStatus get status => _status;
 
-  /// [videoInfo]의 오디오를 다운로드·변환하여 [DownloadItem] 반환. 취소·실패 시 null.
+  /// [videoInfo]의 오디오를 다운로드하여 [DownloadItem] 반환. 취소·실패 시 null.
   Future<DownloadItem?> startDownload({
     required VideoInfo videoInfo,
     required String savePath,
-    required int bitrate,
   }) async {
     try {
       // Phase 1: Fetching
@@ -76,28 +75,31 @@ class DownloadProvider extends ChangeNotifier {
         return null;
       }
 
-      // Phase 3: Converting
+      // Phase 3: Saving
       _status = _status.copyWith(
         phase: DownloadPhase.converting,
         progress: 0.0,
-        statusText: 'Converting to MP3 (${bitrate}kbps)...',
+        statusText: 'Saving audio file...',
       );
       notifyListeners();
 
+      final effectiveSavePath = savePath.isNotEmpty
+          ? savePath
+          : await _fileService.getDefaultSavePath();
+
       final outputPath = await _fileService.getUniqueFilePath(
-        savePath,
+        effectiveSavePath,
         videoInfo.title,
-        '.mp3',
+        '.m4a',
       );
 
-      final mp3File = await _converterService.convertToMp3(
+      final savedFile = await _converterService.moveToOutput(
         inputPath: tempFile,
         outputPath: outputPath,
-        bitrate: bitrate,
       );
 
-      if (mp3File == null) {
-        throw Exception('Conversion failed');
+      if (savedFile == null) {
+        throw Exception('File save failed');
       }
 
       // Phase 4: Completed
@@ -127,7 +129,9 @@ class DownloadProvider extends ChangeNotifier {
         videoId: videoInfo.videoId,
         thumbnailUrl: videoInfo.thumbnailUrl,
       );
-    } catch (e) {
+    } catch (e, st) {
+      debugPrint('[DownloadProvider] Error: $e');
+      debugPrint('[DownloadProvider] StackTrace: $st');
       _status = DownloadStatus(
         phase: DownloadPhase.error,
         errorMessage: e.toString(),

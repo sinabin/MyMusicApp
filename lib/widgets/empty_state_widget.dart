@@ -29,7 +29,7 @@ class EmptyStateWidget extends StatelessWidget {
             ),
             const SizedBox(height: 6),
             const Text(
-              'Your downloaded MP3 files will appear here',
+              'Your downloaded audio files will appear here',
               style: TextStyle(
                 color: AppColors.textTertiary,
                 fontSize: 13,
