@@ -1,7 +1,9 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:shimmer/shimmer.dart';
 import '../models/download_item.dart';
 import '../models/video_info.dart';
 import '../providers/download_provider.dart';
@@ -35,12 +37,13 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final _searchController = TextEditingController();
   final _focusNode = FocusNode();
-  final _scrollController = ScrollController();
+  final _searchScrollController = ScrollController();
+  final _historyScrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
-    _scrollController.addListener(_onScroll);
+    _searchScrollController.addListener(_onScroll);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<HistoryProvider>().loadHistory();
     });
@@ -50,15 +53,16 @@ class _HomeScreenState extends State<HomeScreen> {
   void dispose() {
     _searchController.dispose();
     _focusNode.dispose();
-    _scrollController.dispose();
+    _searchScrollController.dispose();
+    _historyScrollController.dispose();
     super.dispose();
   }
 
   void _onScroll() {
     final searchProvider = context.read<SearchProvider>();
     if (searchProvider.results.isNotEmpty &&
-        _scrollController.position.pixels >=
-            _scrollController.position.maxScrollExtent - 200) {
+        _searchScrollController.position.pixels >=
+            _searchScrollController.position.maxScrollExtent - 200) {
       searchProvider.loadMore();
     }
   }
@@ -334,8 +338,8 @@ class _HomeScreenState extends State<HomeScreen> {
         final currentVideoId = downloadProv.currentVideoId;
 
         return ListView.builder(
-          controller: _scrollController,
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          controller: _searchScrollController,
+          padding: const EdgeInsets.symmetric(horizontal: 24),
           itemCount:
               provider.results.length + (provider.isLoadingMore ? 1 : 0),
           itemBuilder: (context, index) {
@@ -378,7 +382,7 @@ class _HomeScreenState extends State<HomeScreen> {
         final recent = history.recentItems;
 
         return CustomScrollView(
-          controller: _scrollController,
+          controller: _historyScrollController,
           slivers: [
             // 섹션 헤더
             SliverPadding(
@@ -397,7 +401,38 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         if (history.recentCount > 0)
                           TextButton(
-                            onPressed: () => history.clearRecent(),
+                            onPressed: () async {
+                              final confirmed = await showDialog<bool>(
+                                context: context,
+                                builder: (ctx) => AlertDialog(
+                                  backgroundColor: AppColors.surface,
+                                  title: const Text(
+                                    'Clear all recent downloads?',
+                                    style: TextStyle(
+                                        color: AppColors.textPrimary),
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () =>
+                                          Navigator.pop(ctx, false),
+                                      child: const Text('Cancel'),
+                                    ),
+                                    TextButton(
+                                      onPressed: () =>
+                                          Navigator.pop(ctx, true),
+                                      child: const Text(
+                                        'Clear',
+                                        style: TextStyle(
+                                            color: AppColors.error),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                              if (confirmed == true) {
+                                history.clearRecent();
+                              }
+                            },
                             child: const Text(
                               'Clear',
                               style: TextStyle(
@@ -503,18 +538,23 @@ class _DownloadConfirmSheet extends StatelessWidget {
             children: [
               ClipRRect(
                 borderRadius: BorderRadius.circular(12),
-                child: Image.network(
-                  videoInfo.thumbnailUrl,
+                child: SizedBox(
                   width: 120,
                   height: 68,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) => Container(
-                    width: 120,
-                    height: 68,
-                    color: AppColors.surfaceVariant,
-                    child: const Icon(
-                      Icons.music_note,
-                      color: AppColors.textTertiary,
+                  child: CachedNetworkImage(
+                    imageUrl: videoInfo.thumbnailUrl,
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) => Shimmer.fromColors(
+                      baseColor: AppColors.surfaceVariant,
+                      highlightColor: AppColors.surfaceLight,
+                      child: Container(color: AppColors.surfaceVariant),
+                    ),
+                    errorWidget: (context, url, error) => Container(
+                      color: AppColors.surfaceVariant,
+                      child: const Icon(
+                        Icons.music_note,
+                        color: AppColors.textTertiary,
+                      ),
                     ),
                   ),
                 ),

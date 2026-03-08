@@ -1,8 +1,10 @@
 import 'dart:io';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
+import 'package:shimmer/shimmer.dart';
 
 import '../models/download_item.dart';
 import '../models/playlist_item.dart';
@@ -32,21 +34,7 @@ class PlaylistDetailScreen extends StatefulWidget {
 }
 
 class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
-  List<DownloadItem> _tracks = [];
   bool _isEditing = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadTracks();
-  }
-
-  void _loadTracks() {
-    final provider = context.read<PlaylistProvider>();
-    setState(() {
-      _tracks = provider.getTracksForPlaylist(widget.playlist);
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -54,11 +42,11 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
       backgroundColor: AppColors.scaffoldBackground,
       body: Consumer<PlaylistProvider>(
         builder: (context, provider, _) {
-          _tracks = provider.getTracksForPlaylist(widget.playlist);
+          final tracks = provider.getTracksForPlaylist(widget.playlist);
           final urls =
-              _tracks.take(4).map((t) => t.thumbnailUrl).toList();
+              tracks.take(4).map((t) => t.thumbnailUrl).toList();
           final meta =
-              '${FormatUtils.trackCount(_tracks.length)} · ${FormatUtils.totalDuration(_tracks)}';
+              '${FormatUtils.trackCount(tracks.length)} · ${FormatUtils.totalDuration(tracks)}';
 
           return CustomScrollView(
             slivers: [
@@ -70,6 +58,8 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                 flexibleSpace: FlexibleSpaceBar(
                   title: Text(
                     widget.playlist.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       color: AppColors.textPrimary,
                       fontSize: 16,
@@ -172,12 +162,12 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: ElevatedButton.icon(
-                            onPressed: _tracks.isEmpty
+                            onPressed: tracks.isEmpty
                                 ? null
                                 : () {
                                     context
                                         .read<PlayerProvider>()
-                                        .playAll(_tracks);
+                                        .playAll(tracks);
                                   },
                             icon: const Icon(Icons.play_arrow, size: 20),
                             label: const Text('Play All'),
@@ -198,12 +188,12 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                       const SizedBox(width: 12),
                       Expanded(
                         child: OutlinedButton.icon(
-                          onPressed: _tracks.isEmpty
+                          onPressed: tracks.isEmpty
                               ? null
                               : () async {
                                   final player =
                                       context.read<PlayerProvider>();
-                                  await player.playAll(_tracks);
+                                  await player.playAll(tracks);
                                   await player.toggleShuffle();
                                 },
                           icon: const Icon(Icons.shuffle, size: 20),
@@ -227,7 +217,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
               ),
 
               // Edit mode toggle
-              if (_tracks.isNotEmpty)
+              if (tracks.isNotEmpty)
                 SliverToBoxAdapter(
                   child: Padding(
                     padding:
@@ -235,7 +225,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                     child: Row(
                       children: [
                         Text(
-                          '${_tracks.length} tracks',
+                          '${tracks.length} tracks',
                           style: const TextStyle(
                             color: AppColors.textTertiary,
                             fontSize: 13,
@@ -256,8 +246,6 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                                 : AppColors.textSecondary,
                             padding:
                                 const EdgeInsets.symmetric(horizontal: 8),
-                            minimumSize: Size.zero,
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           ),
                         ),
                       ],
@@ -266,7 +254,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                 ),
 
               // Track list
-              if (_tracks.isEmpty)
+              if (tracks.isEmpty)
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.all(32),
@@ -303,7 +291,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                 SliverPadding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   sliver: SliverReorderableList(
-                    itemCount: _tracks.length,
+                    itemCount: tracks.length,
                     onReorder: (oldIndex, newIndex) {
                       provider.reorderTracks(
                         widget.playlist,
@@ -312,7 +300,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                       );
                     },
                     itemBuilder: (context, index) {
-                      final item = _tracks[index];
+                      final item = tracks[index];
                       return ReorderableDelayedDragStartListener(
                         key: ValueKey(
                             'reorder_${widget.playlist.id}_${item.videoId}'),
@@ -333,7 +321,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                                         context
                                             .read<PlayerProvider>()
                                             .playAll(
-                                              _tracks,
+                                              tracks,
                                               startIndex: index,
                                             );
                                       },
@@ -383,7 +371,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                   sliver: SliverList(
                     delegate: SliverChildBuilderDelegate(
                       (context, index) {
-                        final item = _tracks[index];
+                        final item = tracks[index];
                         return Dismissible(
                           key: ValueKey(
                               '${widget.playlist.id}_${item.videoId}'),
@@ -401,6 +389,35 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                               color: AppColors.error,
                             ),
                           ),
+                          confirmDismiss: (_) async {
+                            return await showDialog<bool>(
+                              context: context,
+                              builder: (ctx) => AlertDialog(
+                                backgroundColor: AppColors.surface,
+                                title: const Text(
+                                  'Remove from playlist?',
+                                  style: TextStyle(
+                                      color: AppColors.textPrimary),
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () =>
+                                        Navigator.pop(ctx, false),
+                                    child: const Text('Cancel'),
+                                  ),
+                                  TextButton(
+                                    onPressed: () =>
+                                        Navigator.pop(ctx, true),
+                                    child: const Text(
+                                      'Remove',
+                                      style: TextStyle(
+                                          color: AppColors.error),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ) ?? false;
+                          },
                           onDismissed: (_) {
                             provider.removeTrackFromPlaylist(
                               widget.playlist,
@@ -420,7 +437,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                                     context
                                         .read<PlayerProvider>()
                                         .playAll(
-                                          _tracks,
+                                          tracks,
                                           startIndex: index,
                                         );
                                   },
@@ -454,13 +471,13 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                           ),
                         );
                       },
-                      childCount: _tracks.length,
+                      childCount: tracks.length,
                     ),
                   ),
                 ),
 
               // Add Songs button
-              if (_tracks.isNotEmpty)
+              if (tracks.isNotEmpty)
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
@@ -658,8 +675,10 @@ class _AddSongsSheetState extends State<_AddSongsSheet> {
                 videoId: 'local_${file.path.hashCode.toRadixString(36)}',
                 thumbnailUrl: thumbPath,
               );
-              await provider.registerDownloadItem(newItem);
-              if (!existingIds.contains(newItem.videoId)) {
+              final existingVideoId =
+                  await provider.registerDownloadItem(newItem);
+              final videoId = existingVideoId ?? newItem.videoId;
+              if (!existingIds.contains(videoId)) {
                 results.add(newItem);
               }
             }
@@ -777,8 +796,6 @@ class _AddSongsSheetState extends State<_AddSongsSheet> {
                     style: TextButton.styleFrom(
                       foregroundColor: AppColors.primary,
                       padding: const EdgeInsets.symmetric(horizontal: 8),
-                      minimumSize: Size.zero,
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     ),
                     child: Text(_allSelected ? 'Deselect All' : 'Select All'),
                   ),
@@ -963,10 +980,15 @@ class _SelectableTrackTile extends StatelessWidget {
                 width: 44,
                 height: 44,
                 child: item.thumbnailUrl != null
-                    ? Image.network(
-                        item.thumbnailUrl!,
+                    ? CachedNetworkImage(
+                        imageUrl: item.thumbnailUrl!,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, _, _) => _placeholder(),
+                        placeholder: (context, url) => Shimmer.fromColors(
+                          baseColor: AppColors.surfaceVariant,
+                          highlightColor: AppColors.surfaceLight,
+                          child: Container(color: AppColors.surfaceVariant),
+                        ),
+                        errorWidget: (context, url, error) => _placeholder(),
                       )
                     : _placeholder(),
               ),
