@@ -97,14 +97,18 @@ class FileService {
       if (File(localPath).existsSync()) return localPath;
 
       final client = HttpClient();
-      final request = await client.getUrl(Uri.parse(url));
-      final response = await request.close();
-      if (response.statusCode == 200) {
-        final bytes = await consolidateHttpClientResponseBytes(response);
-        await File(localPath).writeAsBytes(bytes);
-        return localPath;
+      try {
+        final request = await client.getUrl(Uri.parse(url));
+        final response = await request.close();
+        if (response.statusCode == 200) {
+          final bytes = await consolidateHttpClientResponseBytes(response);
+          await File(localPath).writeAsBytes(bytes);
+          return localPath;
+        }
+        return null;
+      } finally {
+        client.close();
       }
-      return null;
     } catch (e) {
       debugPrint('[FileService] Thumbnail save failed: $e');
       return null;

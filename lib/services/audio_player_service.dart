@@ -240,11 +240,11 @@ class AudioPlayerService {
     );
   }
 
-  /// 리소스 해제.
-  void dispose() {
-    _indexSub?.cancel();
-    _durationSub?.cancel();
-    _queueStateController.close();
-    _handler.player.dispose();
+  /// 리소스 해제. [MyAudioHandler]의 네이티브 리소스도 함께 정리.
+  Future<void> dispose() async {
+    await _indexSub?.cancel();
+    await _durationSub?.cancel();
+    await _queueStateController.close();
+    await _handler.dispose();
   }
 }

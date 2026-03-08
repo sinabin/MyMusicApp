@@ -12,6 +12,7 @@ class MyAudioHandler extends BaseAudioHandler
   final AudioPlayer _player = AudioPlayer();
   ConcatenatingAudioSource _playlist =
       ConcatenatingAudioSource(children: []);
+  StreamSubscription<int?>? _indexSub;
 
   /// [AudioPlayer] 인스턴스 반환.
   AudioPlayer get player => _player;
@@ -26,13 +27,19 @@ class MyAudioHandler extends BaseAudioHandler
   Future<void> _init() async {
     _player.playbackEventStream.map(_transformEvent).pipe(playbackState);
 
-    _player.currentIndexStream.listen((index) {
+    _indexSub = _player.currentIndexStream.listen((index) {
       if (index != null &&
           queue.value.isNotEmpty &&
           index < queue.value.length) {
         mediaItem.add(queue.value[index]);
       }
     });
+  }
+
+  /// 네이티브 오디오 리소스 및 스트림 구독 해제.
+  Future<void> dispose() async {
+    await _indexSub?.cancel();
+    await _player.dispose();
   }
 
   PlaybackState _transformEvent(PlaybackEvent event) {
