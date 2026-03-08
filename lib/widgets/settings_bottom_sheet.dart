@@ -34,7 +34,8 @@ class SettingsBottomSheet extends StatelessWidget {
       ),
       child: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
+          padding: EdgeInsets.fromLTRB(
+              24, 12, 24, 32 + MediaQuery.of(context).viewPadding.bottom),
           child: Consumer<SettingsProvider>(
             builder: (context, settings, _) {
               return Column(

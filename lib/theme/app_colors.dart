@@ -31,16 +31,20 @@ class AppColors {
   // Text
   static const Color textPrimary = Color(0xFFFFFFFF);
   static const Color textSecondary = Color(0xFFA0A0B8);
-  static const Color textTertiary = Color(0xFF6B6B80);
-  static const Color textOnPrimary = Color(0xFFFFFFFF);
+  static const Color textTertiary = Color(0xFF8E8EA6);
+  static const Color textDisabled = Color(0xFF55556A);
 
   // Borders & dividers
   static const Color border = Color(0xFF2A2A40);
   static const Color divider = Color(0xFF1F1F35);
 
+  // Gradient endpoints
+  static const Color primaryGradientEnd = Color(0xFF4A1FB8);
+  static const Color headingGradientStart = Color(0xFFB388FF);
+
   // Gradients
   static const LinearGradient primaryGradient = LinearGradient(
-    colors: [primary, Color(0xFF4A1FB8)],
+    colors: [primary, primaryGradientEnd],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
@@ -52,6 +56,6 @@ class AppColors {
   );
 
   static const LinearGradient headingGradient = LinearGradient(
-    colors: [Color(0xFFB388FF), primary, secondary],
+    colors: [headingGradientStart, primary, secondary],
   );
 }

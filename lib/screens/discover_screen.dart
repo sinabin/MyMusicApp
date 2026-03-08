@@ -84,12 +84,6 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                 ),
               ],
             ),
-            backgroundColor: AppColors.surface,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-            margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
           ),
         );
       }
@@ -208,7 +202,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                             ),
                           ).animate().fadeIn(
                             duration: 300.ms,
-                            delay: (index * 50).ms,
+                            delay: (index * 50).clamp(0, 500).ms,
                           ),
                         );
                       },
