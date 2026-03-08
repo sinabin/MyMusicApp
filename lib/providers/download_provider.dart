@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import '../models/download_item.dart';
 import '../models/download_state.dart';
@@ -17,6 +18,7 @@ class DownloadProvider extends ChangeNotifier {
   final FileService _fileService;
 
   DownloadStatus _status = const DownloadStatus();
+  Timer? _resetTimer;
 
   DownloadProvider({
     required DownloadService downloadService,
@@ -34,6 +36,9 @@ class DownloadProvider extends ChangeNotifier {
     required VideoInfo videoInfo,
     required String savePath,
   }) async {
+    _resetTimer?.cancel();
+    String? tempFile;
+
     try {
       // Phase 1: Fetching
       _status = const DownloadStatus(
@@ -44,7 +49,7 @@ class DownloadProvider extends ChangeNotifier {
 
       // Phase 2: Downloading
       final tempPath = await _fileService.getTempPath();
-      final tempFile = '$tempPath/${videoInfo.videoId}_temp';
+      tempFile = '$tempPath/${videoInfo.videoId}_temp';
 
       _status = _status.copyWith(
         phase: DownloadPhase.downloading,
@@ -69,69 +74,20 @@ class DownloadProvider extends ChangeNotifier {
       );
 
       if (downloadedFile == null) {
-        // Cancelled
         _status = const DownloadStatus();
         notifyListeners();
         return null;
       }
 
       // Phase 3: Saving
-      _status = _status.copyWith(
-        phase: DownloadPhase.converting,
-        progress: 0.0,
-        statusText: 'Saving audio file...',
-      );
-      notifyListeners();
-
-      final effectiveSavePath = savePath.isNotEmpty
-          ? savePath
-          : await _fileService.getDefaultSavePath();
-
-      final outputPath = await _fileService.getUniqueFilePath(
-        effectiveSavePath,
-        videoInfo.title,
-        '.m4a',
-      );
-
-      final savedFile = await _converterService.moveToOutput(
-        inputPath: tempFile,
-        outputPath: outputPath,
-      );
-
-      if (savedFile == null) {
-        throw Exception('File save failed');
-      }
+      final outputPath = await _saveToOutput(videoInfo, tempFile, savePath);
 
       // Phase 4: Completed
-      final fileSize = await _fileService.getFileSize(outputPath);
-      final fileName = outputPath.split('/').last;
-
-      _status = DownloadStatus(
-        phase: DownloadPhase.completed,
-        progress: 1.0,
-        statusText: 'Download Complete!',
-      );
-      notifyListeners();
-
-      // Reset after 3 seconds
-      Future.delayed(const Duration(seconds: 3), () {
-        if (_status.phase == DownloadPhase.completed) {
-          _status = const DownloadStatus();
-          notifyListeners();
-        }
-      });
-
-      return DownloadItem(
-        fileName: fileName,
-        filePath: outputPath,
-        fileSize: fileSize,
-        downloadDate: DateTime.now(),
-        videoId: videoInfo.videoId,
-        thumbnailUrl: videoInfo.thumbnailUrl,
-      );
+      return await _buildResult(videoInfo, outputPath);
     } catch (e, st) {
-      debugPrint('[DownloadProvider] Error: $e');
+      debugPrint('[DownloadProvider] Error (videoId=${videoInfo.videoId}): $e');
       debugPrint('[DownloadProvider] StackTrace: $st');
+      await _cleanupTempFile(tempFile);
       _status = DownloadStatus(
         phase: DownloadPhase.error,
         errorMessage: e.toString(),
@@ -142,13 +98,97 @@ class DownloadProvider extends ChangeNotifier {
     }
   }
 
+  /// 임시 파일을 최종 저장 경로로 이동.
+  Future<String> _saveToOutput(
+    VideoInfo videoInfo,
+    String tempFile,
+    String savePath,
+  ) async {
+    _status = _status.copyWith(
+      phase: DownloadPhase.converting,
+      progress: 0.0,
+      statusText: 'Saving audio file...',
+    );
+    notifyListeners();
+
+    final effectiveSavePath = savePath.isNotEmpty
+        ? savePath
+        : await _fileService.getDefaultSavePath();
+
+    final outputPath = await _fileService.getUniqueFilePath(
+      effectiveSavePath,
+      videoInfo.title,
+      '.m4a',
+    );
+
+    final savedFile = await _converterService.moveToOutput(
+      inputPath: tempFile,
+      outputPath: outputPath,
+    );
+
+    if (savedFile == null) {
+      throw Exception(
+        'File save failed: videoId=${videoInfo.videoId}, path=$outputPath',
+      );
+    }
+
+    return outputPath;
+  }
+
+  /// 다운로드 완료 상태 설정 및 [DownloadItem] 생성.
+  Future<DownloadItem> _buildResult(
+    VideoInfo videoInfo,
+    String outputPath,
+  ) async {
+    final fileSize = await _fileService.getFileSize(outputPath);
+    final fileName = outputPath.split('/').last;
+
+    _status = const DownloadStatus(
+      phase: DownloadPhase.completed,
+      progress: 1.0,
+      statusText: 'Download Complete!',
+    );
+    notifyListeners();
+    _scheduleReset();
+
+    return DownloadItem(
+      fileName: fileName,
+      filePath: outputPath,
+      fileSize: fileSize,
+      downloadDate: DateTime.now(),
+      videoId: videoInfo.videoId,
+      thumbnailUrl: videoInfo.thumbnailUrl,
+    );
+  }
+
+  /// 완료 상태를 3초 후 초기화하는 타이머 등록.
+  void _scheduleReset() {
+    _resetTimer?.cancel();
+    _resetTimer = Timer(const Duration(seconds: 3), () {
+      if (_status.phase == DownloadPhase.completed) {
+        _status = const DownloadStatus();
+        notifyListeners();
+      }
+    });
+  }
+
+  /// 임시 파일 정리. 실패 시 무시.
+  Future<void> _cleanupTempFile(String? path) async {
+    if (path == null) return;
+    try {
+      await _fileService.deleteFile(path);
+    } catch (_) {}
+  }
+
   /// 진행 중인 다운로드 취소.
   void cancel() {
+    _resetTimer?.cancel();
     _downloadService.cancel();
   }
 
   /// 다운로드 상태 초기화.
   void reset() {
+    _resetTimer?.cancel();
     _downloadService.reset();
     _status = const DownloadStatus();
     notifyListeners();

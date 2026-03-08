@@ -28,6 +28,8 @@ class DownloadService {
     required void Function(double progress, int downloaded, int total) onProgress,
   }) async {
     _isCancelled = false;
+    final file = File(outputPath);
+    IOSink? openSink;
 
     try {
       debugPrint('[DownloadService] Getting best audio stream for $videoId');
@@ -37,13 +39,14 @@ class DownloadService {
 
       final stream = _youtubeService.getAudioStream(streamInfo);
 
-      final file = File(outputPath);
       final sink = file.openWrite();
+      openSink = sink;
       var downloadedBytes = 0;
 
       await for (final chunk in stream) {
         if (_isCancelled) {
           await sink.close();
+          openSink = null;
           if (await file.exists()) {
             await file.delete();
           }
@@ -61,10 +64,19 @@ class DownloadService {
 
       await sink.flush();
       await sink.close();
+      openSink = null;
       debugPrint('[DownloadService] Download complete: $downloadedBytes bytes');
       return file;
     } catch (e) {
-      debugPrint('[DownloadService] Error: $e');
+      debugPrint('[DownloadService] Error downloading videoId=$videoId: $e');
+      try {
+        await openSink?.close();
+      } catch (_) {}
+      try {
+        if (await file.exists()) {
+          await file.delete();
+        }
+      } catch (_) {}
       rethrow;
     }
   }

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import '../data/download_history_db.dart';
 import '../models/download_item.dart';
@@ -6,9 +7,11 @@ import '../models/download_item.dart';
 ///
 /// [DownloadHistoryDb]를 통해 기록을 조회·추가·삭제하며,
 /// [HomeScreen]의 기록 목록에 데이터를 제공.
+/// 비동기 작업의 순차 실행을 보장하여 동시 접근 시 데이터 불일치 방지.
 class HistoryProvider extends ChangeNotifier {
   final DownloadHistoryDb _db;
   List<DownloadItem> _items = [];
+  Future<void> _lock = Future.value();
 
   HistoryProvider({required DownloadHistoryDb db}) : _db = db;
 
@@ -24,24 +27,35 @@ class HistoryProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// 비동기 작업의 순차 실행을 보장하는 내부 동기화 래퍼.
+  Future<void> _synchronized(Future<void> Function() fn) {
+    return _lock = _lock.then((_) => fn());
+  }
+
   /// [item]을 기록에 추가하고 목록 갱신.
-  Future<void> addItem(DownloadItem item) async {
-    await _db.add(item);
-    _items = _db.getAll();
-    notifyListeners();
+  Future<void> addItem(DownloadItem item) {
+    return _synchronized(() async {
+      await _db.add(item);
+      _items = _db.getAll();
+      notifyListeners();
+    });
   }
 
   /// [index] 위치의 기록 삭제 및 목록 갱신.
-  Future<void> removeItem(int index) async {
-    await _db.remove(index);
-    _items = _db.getAll();
-    notifyListeners();
+  Future<void> removeItem(int index) {
+    return _synchronized(() async {
+      await _db.remove(index);
+      _items = _db.getAll();
+      notifyListeners();
+    });
   }
 
   /// 모든 기록 일괄 삭제.
-  Future<void> clearHistory() async {
-    await _db.clear();
-    _items = [];
-    notifyListeners();
+  Future<void> clearHistory() {
+    return _synchronized(() async {
+      await _db.clear();
+      _items = [];
+      notifyListeners();
+    });
   }
 }

@@ -7,10 +7,9 @@ class UrlValidator {
 
   /// 지원하는 YouTube URL 패턴 목록.
   static final _patterns = [
-    RegExp(r'(?:https?://)?(?:www\.)?youtube\.com/watch\?v=([a-zA-Z0-9_-]{11})'),
+    RegExp(r'(?:https?://)?(?:www\.|m\.)?youtube\.com/watch\?v=([a-zA-Z0-9_-]{11})'),
     RegExp(r'(?:https?://)?youtu\.be/([a-zA-Z0-9_-]{11})'),
     RegExp(r'(?:https?://)?(?:www\.)?youtube\.com/shorts/([a-zA-Z0-9_-]{11})'),
-    RegExp(r'(?:https?://)?(?:m\.)?youtube\.com/watch\?v=([a-zA-Z0-9_-]{11})'),
     RegExp(r'(?:https?://)?music\.youtube\.com/watch\?v=([a-zA-Z0-9_-]{11})'),
   ];
 

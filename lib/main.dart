@@ -44,6 +44,7 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
+        Provider<AuthService>.value(value: authService),
         ChangeNotifierProvider(
           create: (_) => SettingsProvider(
             localStorage: localStorage,

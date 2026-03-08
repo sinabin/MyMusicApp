@@ -45,7 +45,7 @@ class YouTubeService {
     }
 
     if (audioStreams.isEmpty) {
-      throw Exception('No audio streams available');
+      throw Exception('No audio streams available for videoId=$videoId');
     }
     return audioStreams.first; // Highest bitrate (sortByBitrate는 내림차순)
   }

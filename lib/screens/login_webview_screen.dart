@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import '../services/auth_service.dart';
 import '../theme/app_colors.dart';
@@ -15,8 +16,12 @@ class LoginWebviewScreen extends StatefulWidget {
 }
 
 class _LoginWebviewScreenState extends State<LoginWebviewScreen> {
+  static const _loginUrl =
+      'https://accounts.google.com/ServiceLogin?service=youtube&continue=https://www.youtube.com/';
+  static const _youtubeHost = 'youtube.com';
+  static const _googleAccountsHost = 'accounts.google.com';
+
   late final WebViewController _controller;
-  final _authService = AuthService();
   bool _isLoading = true;
 
   @override
@@ -32,67 +37,92 @@ class _LoginWebviewScreenState extends State<LoginWebviewScreen> {
           onPageFinished: (url) async {
             setState(() => _isLoading = false);
 
-            // Check if we've landed on YouTube after login
-            if (url.contains('youtube.com') && !url.contains('accounts.google.com')) {
+            if (url.contains(_youtubeHost) &&
+                !url.contains(_googleAccountsHost)) {
               await _extractCookiesAndFinish();
             }
           },
         ),
       )
-      ..loadRequest(Uri.parse(
-        'https://accounts.google.com/ServiceLogin?service=youtube&continue=https://www.youtube.com/',
-      ));
+      ..loadRequest(Uri.parse(_loginUrl));
   }
 
+  @override
+  void dispose() {
+    _controller.setNavigationDelegate(NavigationDelegate());
+    super.dispose();
+  }
+
+  /// WebView에서 쿠키를 추출하여 [AuthService]에 저장 후 화면 종료.
   Future<void> _extractCookiesAndFinish() async {
     try {
-      // Get cookies via JavaScript
-      final cookieString = await _controller.runJavaScriptReturningResult(
-        'document.cookie',
-      ) as String;
+      final authService = context.read<AuthService>();
 
-      // Parse cookies
-      final cookies = <String, String>{};
-      final cleanCookieString = cookieString.replaceAll('"', '');
-      for (final cookie in cleanCookieString.split(';')) {
-        final parts = cookie.trim().split('=');
-        if (parts.length >= 2) {
-          cookies[parts[0].trim()] = parts.sublist(1).join('=').trim();
-        }
-      }
+      final rawResult = await _controller.runJavaScriptReturningResult(
+        'document.cookie',
+      );
+
+      final cookieString = rawResult.toString();
+      if (cookieString.isEmpty) return;
+
+      final cookies = _parseCookies(cookieString);
 
       if (cookies.isNotEmpty) {
-        await _authService.saveCookies(cookies);
+        await authService.saveCookies(cookies);
 
-        // Try to get user email
-        String? email;
-        try {
-          final emailResult = await _controller.runJavaScriptReturningResult(
-            '''
-            (function() {
-              var el = document.querySelector('[data-email]');
-              if (el) return el.getAttribute('data-email');
-              return '';
-            })()
-            ''',
-          );
-          final emailStr = emailResult.toString().replaceAll('"', '');
-          if (emailStr.isNotEmpty && emailStr.contains('@')) {
-            email = emailStr;
-          }
-        } catch (_) {}
+        final email = await _tryExtractEmail();
 
         if (mounted) {
           Navigator.pop(context, {'success': true, 'email': email});
         }
       }
     } catch (e) {
+      debugPrint('[LoginWebviewScreen] Cookie extraction failed: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Login error: $e')),
         );
       }
     }
+  }
+
+  /// 쿠키 문자열을 파싱하여 Map으로 변환.
+  Map<String, String> _parseCookies(String raw) {
+    final cookies = <String, String>{};
+    try {
+      final cleaned = raw.replaceAll('"', '');
+      for (final cookie in cleaned.split(';')) {
+        final parts = cookie.trim().split('=');
+        if (parts.length >= 2) {
+          cookies[parts[0].trim()] = parts.sublist(1).join('=').trim();
+        }
+      }
+    } catch (e) {
+      debugPrint('[LoginWebviewScreen] Cookie parsing failed: $e');
+    }
+    return cookies;
+  }
+
+  /// WebView에서 사용자 이메일 추출 시도. 실패 시 null.
+  Future<String?> _tryExtractEmail() async {
+    try {
+      final emailResult = await _controller.runJavaScriptReturningResult(
+        '''
+        (function() {
+          var el = document.querySelector('[data-email]');
+          if (el) return el.getAttribute('data-email');
+          return '';
+        })()
+        ''',
+      );
+      final emailStr = emailResult.toString().replaceAll('"', '');
+      if (emailStr.isNotEmpty && emailStr.contains('@')) {
+        return emailStr;
+      }
+    } catch (e) {
+      debugPrint('[LoginWebviewScreen] Email extraction failed: $e');
+    }
+    return null;
   }
 
   @override

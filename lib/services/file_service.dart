@@ -7,13 +7,16 @@ import '../utils/file_name_sanitizer.dart';
 /// 저장 경로 생성, 파일명 정제, 고유 경로 생성 등을 제공.
 /// [DownloadProvider]·[SettingsProvider]에서 사용.
 class FileService {
+  /// Android 공용 다운로드 디렉토리 하위 앱 폴더 경로.
+  static const _androidDownloadPath = '/storage/emulated/0/Download/MyMusicApp';
+
   /// 기본 저장 디렉토리 경로 반환. 존재하지 않으면 자동 생성.
   ///
-  /// Android: /storage/emulated/0/Download/MyMusicApp (파일 탐색기에서 접근 가능)
+  /// Android: [_androidDownloadPath] (파일 탐색기에서 접근 가능)
   /// 외부 저장소 접근 실패 시 앱 내부 디렉토리로 fallback.
   Future<String> getDefaultSavePath() async {
     try {
-      final downloadDir = Directory('/storage/emulated/0/Download/MyMusicApp');
+      final downloadDir = Directory(_androidDownloadPath);
       if (!await downloadDir.exists()) {
         await downloadDir.create(recursive: true);
       }
