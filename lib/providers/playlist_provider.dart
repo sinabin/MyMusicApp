@@ -144,4 +144,22 @@ class PlaylistProvider extends ChangeNotifier {
         .map((id) => downloadMap[id]!)
         .toList();
   }
+
+  /// 플레이리스트에 아직 포함되지 않은 다운로드 곡 목록 반환.
+  List<DownloadItem> getAvailableTracks(PlaylistItem playlist) {
+    final existingIds = playlist.trackVideoIds.toSet();
+    return _downloadDb
+        .getAll()
+        .where((item) => !existingIds.contains(item.videoId))
+        .toList();
+  }
+
+  /// DB에 등록된 모든 다운로드 항목의 filePath 집합 반환.
+  Set<String> get allTrackedPaths =>
+      _downloadDb.getAll().map((e) => e.filePath).toSet();
+
+  /// [item]을 다운로드 DB에 등록.
+  Future<void> registerDownloadItem(DownloadItem item) async {
+    await _downloadDb.add(item);
+  }
 }

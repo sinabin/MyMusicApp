@@ -87,6 +87,10 @@ class DownloadProvider extends ChangeNotifier {
       // Phase 3: Saving
       final outputPath = await _saveToOutput(videoInfo, tempFile, savePath);
 
+      // Phase 3.5: 썸네일 로컬 저장 (실패해도 다운로드 결과에 영향 없음)
+      final fileName = outputPath.split('/').last;
+      await _fileService.saveThumbnail(videoInfo.thumbnailUrl, fileName);
+
       // Phase 4: Completed
       return await _buildResult(videoInfo, outputPath);
     } catch (e, st) {

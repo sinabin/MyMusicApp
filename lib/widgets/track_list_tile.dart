@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
@@ -36,10 +38,12 @@ class TrackListTile extends StatelessWidget {
         : item.fileName;
     final artist = item.artistName ?? item.channelName ?? '';
 
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         decoration: BoxDecoration(
           color: isCurrentTrack
@@ -55,14 +59,7 @@ class TrackListTile extends StatelessWidget {
               child: SizedBox(
                 width: 44,
                 height: 44,
-                child: item.thumbnailUrl != null
-                    ? CachedNetworkImage(
-                        imageUrl: item.thumbnailUrl!,
-                        fit: BoxFit.cover,
-                        placeholder: (context, url) => _placeholderIcon(),
-                        errorWidget: (context, url, error) => _placeholderIcon(),
-                      )
-                    : _placeholderIcon(),
+                child: _buildThumbnail(),
               ),
             ),
             const SizedBox(width: 12),
@@ -169,6 +166,26 @@ class TrackListTile extends StatelessWidget {
           ],
         ),
       ),
+      ),
+    );
+  }
+
+  /// 로컬 파일 경로면 [Image.file], URL이면 [CachedNetworkImage] 반환.
+  Widget _buildThumbnail() {
+    final url = item.thumbnailUrl;
+    if (url == null) return _placeholderIcon();
+    if (url.startsWith('/')) {
+      return Image.file(
+        File(url),
+        fit: BoxFit.cover,
+        errorBuilder: (_, _, _) => _placeholderIcon(),
+      );
+    }
+    return CachedNetworkImage(
+      imageUrl: url,
+      fit: BoxFit.cover,
+      placeholder: (_, _) => _placeholderIcon(),
+      errorWidget: (_, _, _) => _placeholderIcon(),
     );
   }
 

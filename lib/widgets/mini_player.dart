@@ -11,7 +11,7 @@ import 'add_to_playlist_sheet.dart';
 
 /// 하단 고정 미니 플레이어 위젯.
 ///
-/// 진행 바·썸네일·곡명·아티스트와 즐겨찾기·플레이리스트 추가·재생/일시정지·닫기 버튼 표시.
+/// 진행 바·썸네일·곡명·아티스트와 즐겨찾기·플레이리스트 추가·재생/일시정지 버튼 표시.
 /// 탭 시 [FullPlayerScreen]으로 이동.
 /// [App]의 builder에서 글로벌로 표시되어 모든 화면에서 접근 가능.
 class MiniPlayer extends StatelessWidget {
@@ -165,13 +165,6 @@ class MiniPlayer extends StatelessWidget {
                               ? player.pause()
                               : player.resume();
                         },
-                      ),
-                      // 닫기 (정지)
-                      _controlButton(
-                        icon: Icons.close,
-                        size: 18,
-                        color: AppColors.textTertiary,
-                        onPressed: () => player.stop(),
                       ),
                     ],
                   ),
