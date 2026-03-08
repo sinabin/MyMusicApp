@@ -58,8 +58,8 @@ void main() async {
   await playbackHistoryDb.init();
   await playbackHistoryDb.cleanup();
 
-  final youtubeService = YouTubeService();
   final authService = AuthService();
+  final youtubeService = YouTubeService(authService: authService);
   final fileService = FileService();
   final localStorage = LocalStorage();
   final downloadService = DownloadService(youtubeService);
@@ -103,6 +103,7 @@ void main() async {
             localStorage: localStorage,
             authService: authService,
             fileService: fileService,
+            youtubeService: youtubeService,
           )..init(),
         ),
         ChangeNotifierProvider(

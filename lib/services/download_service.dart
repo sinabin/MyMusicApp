@@ -37,7 +37,7 @@ class DownloadService {
       final totalSize = streamInfo.size.totalBytes;
       debugPrint('[DownloadService] Stream: ${streamInfo.codec}, size: $totalSize bytes');
 
-      final stream = _youtubeService.getAudioStream(streamInfo);
+      final stream = await _youtubeService.getAudioStream(streamInfo);
 
       final sink = file.openWrite();
       openSink = sink;
