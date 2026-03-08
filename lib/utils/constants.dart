@@ -16,4 +16,16 @@ class AppConstants {
 
   /// Hive dismiss 기록 Box 이름.
   static const String hiveDismissedBox = 'dismissed_recommendations';
+
+  /// SharedPreferences 탭 재생 모드 키.
+  static const String settingsKeyPlayAllOnTap = 'play_all_on_tap';
+
+  /// SharedPreferences 다운로드 기록 숨김 기준 타임스탬프 키.
+  static const String settingsKeyHistoryClearedAt = 'history_cleared_at';
+
+  /// Hive 플레이리스트 Box 이름.
+  static const String hivePlaylistBox = 'playlists';
+
+  /// Hive 재생 기록 Box 이름.
+  static const String hivePlaybackBox = 'playback_history';
 }

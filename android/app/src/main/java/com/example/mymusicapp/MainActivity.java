@@ -1,6 +1,6 @@
 package com.example.mymusicapp;
 
-import io.flutter.embedding.android.FlutterActivity;
+import com.ryanheise.audioservice.AudioServiceFragmentActivity;
 
-public class MainActivity extends FlutterActivity {
+public class MainActivity extends AudioServiceFragmentActivity {
 }

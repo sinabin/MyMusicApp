@@ -61,6 +61,11 @@ class RecommendationProvider extends ChangeNotifier {
     _cachedAt = null;
   }
 
+  /// 캐시 타임스탬프만 무효화. 현재 표시 데이터는 유지하되 다음 로드 시 갱신.
+  void markCacheStale() {
+    _cachedAt = null;
+  }
+
   /// 현재 리스트에서 특정 videoId 즉시 제거 (낙관적 UI 갱신).
   void removeFromCurrent(String videoId) {
     _cached?.removeWhere((r) => r.videoId == videoId);

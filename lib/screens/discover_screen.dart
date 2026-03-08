@@ -67,10 +67,30 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
     if (item != null) {
       historyProvider.addItem(item);
       recProvider.removeFromCurrent(rec.videoId);
-      recProvider.invalidateCache();
+      recProvider.markCacheStale();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Saved: ${item.fileName}')),
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.check_circle, color: AppColors.success, size: 20),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    '${rec.title} 다운로드 완료',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: AppColors.surface,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          ),
         );
       }
     }

@@ -1,3 +1,5 @@
+import 'package:audio_service/audio_service.dart';
+import 'package:audio_session/audio_session.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -6,12 +8,19 @@ import 'app.dart';
 import 'data/dismissed_recommendation_db.dart';
 import 'data/download_history_db.dart';
 import 'data/local_storage.dart';
+import 'data/playback_history_db.dart';
+import 'data/playlist_db.dart';
 import 'providers/download_provider.dart';
 import 'providers/history_provider.dart';
+import 'providers/playback_history_provider.dart';
+import 'providers/player_provider.dart';
+import 'providers/playlist_provider.dart';
 import 'providers/recommendation_provider.dart';
 import 'providers/settings_provider.dart';
 import 'providers/video_info_provider.dart';
 import 'services/audio_converter_service.dart';
+import 'services/audio_handler.dart';
+import 'services/audio_player_service.dart';
 import 'services/auth_service.dart';
 import 'services/download_service.dart';
 import 'services/file_service.dart';
@@ -41,6 +50,13 @@ void main() async {
   await dismissedDb.init();
   await dismissedDb.cleanup();
 
+  final playlistDb = PlaylistDb();
+  await playlistDb.init();
+
+  final playbackHistoryDb = PlaybackHistoryDb();
+  await playbackHistoryDb.init();
+  await playbackHistoryDb.cleanup();
+
   final youtubeService = YouTubeService();
   final authService = AuthService();
   final fileService = FileService();
@@ -52,6 +68,28 @@ void main() async {
     youtubeService: youtubeService,
     downloadHistoryDb: downloadHistoryDb,
     dismissedDb: dismissedDb,
+  );
+
+  // Initialize AudioService
+  final audioHandler = await AudioService.init(
+    builder: () => MyAudioHandler(),
+    config: const AudioServiceConfig(
+      androidNotificationChannelId: 'com.example.mymusicapp.audio',
+      androidNotificationChannelName: 'Music playback',
+      androidNotificationOngoing: true,
+      androidStopForegroundOnPause: true,
+    ),
+  );
+
+  // Configure audio session
+  final session = await AudioSession.instance;
+  await session.configure(const AudioSessionConfiguration.music());
+
+  final audioPlayerService = AudioPlayerService(audioHandler);
+
+  final playbackHistoryProvider = PlaybackHistoryProvider(
+    db: playbackHistoryDb,
+    downloadDb: downloadHistoryDb,
   );
 
   runApp(
@@ -77,12 +115,29 @@ void main() async {
           ),
         ),
         ChangeNotifierProvider(
-          create: (_) => HistoryProvider(db: downloadHistoryDb),
+          create: (_) => HistoryProvider(
+            db: downloadHistoryDb,
+            localStorage: localStorage,
+          ),
         ),
         ChangeNotifierProvider(
           create: (_) => RecommendationProvider(
             service: recommendationService,
             dismissedDb: dismissedDb,
+          ),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => PlayerProvider(
+            audioPlayerService: audioPlayerService,
+            onTrackPlayed: (videoId) =>
+                playbackHistoryProvider.recordPlay(videoId),
+          ),
+        ),
+        ChangeNotifierProvider.value(value: playbackHistoryProvider),
+        ChangeNotifierProvider(
+          create: (_) => PlaylistProvider(
+            db: playlistDb,
+            downloadDb: downloadHistoryDb,
           ),
         ),
       ],

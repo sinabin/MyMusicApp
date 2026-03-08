@@ -48,6 +48,18 @@ class DownloadItem extends HiveObject {
   @HiveField(9)
   final String? artistName;
 
+  /// 재생 시간(밀리초). 기존 데이터는 null, 최초 재생 시 backfill.
+  @HiveField(10)
+  int? durationInMs;
+
+  /// 즐겨찾기 여부. 기존 데이터는 false.
+  @HiveField(11)
+  bool isFavorite;
+
+  /// 재생 시간 [Duration] 반환.
+  Duration? get duration =>
+      durationInMs != null ? Duration(milliseconds: durationInMs!) : null;
+
   DownloadItem({
     required this.fileName,
     required this.filePath,
@@ -59,5 +71,7 @@ class DownloadItem extends HiveObject {
     this.channelId,
     this.keywords,
     this.artistName,
+    this.durationInMs,
+    this.isFavorite = false,
   });
 }

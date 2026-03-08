@@ -31,11 +31,13 @@ class SettingsProvider extends ChangeNotifier {
     savePath ??= await _fileService.getDefaultSavePath();
     final isLoggedIn = await _authService.isLoggedIn();
     final email = await _authService.loadEmail();
+    final playAllOnTap = await _localStorage.getPlayAllOnTap();
 
     _settings = AppSettings(
       savePath: savePath,
       isLoggedIn: isLoggedIn,
       userEmail: email,
+      playAllOnTap: playAllOnTap,
     );
     notifyListeners();
   }
@@ -53,6 +55,13 @@ class SettingsProvider extends ChangeNotifier {
     if (email != null) {
       await _authService.saveEmail(email);
     }
+    notifyListeners();
+  }
+
+  /// 탭 재생 모드 [value] 변경 및 영속 저장.
+  Future<void> setPlayAllOnTap(bool value) async {
+    _settings = _settings.copyWith(playAllOnTap: value);
+    await _localStorage.setPlayAllOnTap(value);
     notifyListeners();
   }
 

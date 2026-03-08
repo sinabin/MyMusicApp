@@ -25,4 +25,28 @@ class LocalStorage {
     final p = await prefs;
     await p.setString(AppConstants.settingsKeySavePath, path);
   }
+
+  /// 탭 재생 모드 반환. 미설정 시 true (전체 재생).
+  Future<bool> getPlayAllOnTap() async {
+    final p = await prefs;
+    return p.getBool(AppConstants.settingsKeyPlayAllOnTap) ?? true;
+  }
+
+  /// 탭 재생 모드 [value] 저장.
+  Future<void> setPlayAllOnTap(bool value) async {
+    final p = await prefs;
+    await p.setBool(AppConstants.settingsKeyPlayAllOnTap, value);
+  }
+
+  /// 다운로드 기록 숨김 기준 타임스탬프 반환. 미설정 시 null.
+  Future<int?> getHistoryClearedAt() async {
+    final p = await prefs;
+    return p.getInt(AppConstants.settingsKeyHistoryClearedAt);
+  }
+
+  /// 다운로드 기록 숨김 기준 타임스탬프 저장 (밀리초).
+  Future<void> setHistoryClearedAt(int millis) async {
+    final p = await prefs;
+    await p.setInt(AppConstants.settingsKeyHistoryClearedAt, millis);
+  }
 }

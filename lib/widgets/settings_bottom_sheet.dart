@@ -117,6 +117,47 @@ class SettingsBottomSheet extends StatelessWidget {
                   const Divider(color: AppColors.divider),
                   const SizedBox(height: 16),
 
+                  // Tap play mode
+                  Row(
+                    children: [
+                      const Icon(Icons.play_circle_outline,
+                          color: AppColors.textSecondary, size: 20),
+                      const SizedBox(width: 10),
+                      const Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Play All on Tap',
+                              style: TextStyle(
+                                color: AppColors.textPrimary,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            SizedBox(height: 2),
+                            Text(
+                              'Play all tracks starting from tapped song',
+                              style: TextStyle(
+                                color: AppColors.textTertiary,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Switch(
+                        value: settings.settings.playAllOnTap,
+                        onChanged: (value) =>
+                            settings.setPlayAllOnTap(value),
+                        activeTrackColor: AppColors.primary,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  const Divider(color: AppColors.divider),
+                  const SizedBox(height: 16),
+
                   // YouTube Login
                   _buildLoginSection(context, settings),
                 ],

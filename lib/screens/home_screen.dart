@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import '../models/download_item.dart';
 import '../models/download_state.dart';
 import '../providers/download_provider.dart';
 import '../providers/history_provider.dart';
+import '../providers/player_provider.dart';
 import '../providers/recommendation_provider.dart';
 import '../providers/settings_provider.dart';
 import '../providers/video_info_provider.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
+import '../widgets/add_to_playlist_sheet.dart';
 import '../widgets/download_button.dart';
 import '../widgets/download_history_tile.dart';
 import '../widgets/empty_state_widget.dart';
@@ -51,6 +54,16 @@ class _HomeScreenState extends State<HomeScreen> {
   void _onUrlCleared() {
     _currentVideoId = null;
     context.read<VideoInfoProvider>().clear();
+  }
+
+  void _playFromHistory(List<DownloadItem> items, int index) {
+    final player = context.read<PlayerProvider>();
+    final playAll = context.read<SettingsProvider>().settings.playAllOnTap;
+    if (playAll) {
+      player.playAll(items, startIndex: index);
+    } else {
+      player.playTrack(items[index]);
+    }
   }
 
   Future<void> _startDownload() async {
@@ -233,12 +246,12 @@ class _HomeScreenState extends State<HomeScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            'Recent Downloads (${history.count})',
+                            'Recent Downloads (${history.recentCount})',
                             style: AppTextStyles.sectionHeader,
                           ),
-                          if (history.count > 0)
+                          if (history.recentCount > 0)
                             TextButton(
-                              onPressed: () => history.clearHistory(),
+                              onPressed: () => history.clearRecent(),
                               child: const Text(
                                 'Clear',
                                 style: TextStyle(color: AppColors.textTertiary, fontSize: 13),
@@ -256,7 +269,8 @@ class _HomeScreenState extends State<HomeScreen> {
             // Download history list
             Consumer<HistoryProvider>(
               builder: (context, history, _) {
-                if (history.count == 0) {
+                final recent = history.recentItems;
+                if (recent.isEmpty) {
                   return const SliverToBoxAdapter(child: EmptyStateWidget());
                 }
                 return SliverPadding(
@@ -264,16 +278,32 @@ class _HomeScreenState extends State<HomeScreen> {
                   sliver: SliverList(
                     delegate: SliverChildBuilderDelegate(
                       (context, index) {
-                        final item = history.items[index];
+                        final item = recent[index];
                         return Padding(
                           padding: const EdgeInsets.only(bottom: 8),
                           child: DownloadHistoryTile(
                             item: item,
                             onDelete: () => history.removeItem(index),
+                            onTap: () => _playFromHistory(
+                              recent, index,
+                            ),
+                            onAddToQueue: () {
+                              context.read<PlayerProvider>().addToQueue(item);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Added to queue'),
+                                ),
+                              );
+                            },
+                            isFavorite: item.isFavorite,
+                            onToggleFavorite: () =>
+                                context.read<HistoryProvider>().toggleFavorite(item),
+                            onAddToPlaylist: () =>
+                                AddToPlaylistSheet.show(context, videoId: item.videoId),
                           ).animate().fadeIn(duration: 300.ms, delay: (index * 50).ms),
                         );
                       },
-                      childCount: history.count,
+                      childCount: recent.length,
                     ),
                   ),
                 );

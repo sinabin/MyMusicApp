@@ -14,6 +14,9 @@ dependencies:
 
   # YouTube & Audio
   youtube_explode_dart: ^3.0.5
+  just_audio: ^0.9.40
+  audio_service: ^0.18.15
+  audio_session: ^0.1.21
 
   # Auth & WebView
   webview_flutter: ^4.10.0

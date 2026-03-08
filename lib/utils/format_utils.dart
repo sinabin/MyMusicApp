@@ -1,4 +1,5 @@
 import 'package:intl/intl.dart';
+import '../models/download_item.dart';
 
 /// 파일 크기·시간·날짜를 사용자 친화적 문자열로 변환하는 유틸리티.
 class FormatUtils {
@@ -38,5 +39,31 @@ class FormatUtils {
       return 'Yesterday ${DateFormat.Hm().format(dt)}';
     }
     return DateFormat('MM/dd HH:mm').format(dt);
+  }
+
+  /// 곡 수 포맷 ("1 song" / "N songs").
+  static String trackCount(int count) =>
+      count == 1 ? '1 song' : '$count songs';
+
+  /// 곡 목록의 총 재생 시간 포맷.
+  static String totalDuration(List<DownloadItem> items) {
+    final totalMs = items.fold<int>(
+      0,
+      (sum, item) => sum + (item.durationInMs ?? 0),
+    );
+    return duration(Duration(milliseconds: totalMs));
+  }
+
+  /// [DateTime]을 시간 구간 레이블로 변환 ("Today", "Yesterday", "This Week", "Earlier").
+  static String timeGroupLabel(DateTime dt) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final dateOnly = DateTime(dt.year, dt.month, dt.day);
+    final diff = today.difference(dateOnly).inDays;
+
+    if (diff == 0) return 'Today';
+    if (diff == 1) return 'Yesterday';
+    if (diff < 7) return 'This Week';
+    return 'Earlier';
   }
 }

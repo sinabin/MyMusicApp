@@ -11,10 +11,14 @@ class AppSettings {
   /// 로그인된 Google 계정 이메일.
   final String? userEmail;
 
+  /// 곡 탭 시 전체 재생 여부. true면 해당 곡부터 전체 재생, false면 단일 곡 재생.
+  final bool playAllOnTap;
+
   const AppSettings({
     this.savePath = '',
     this.isLoggedIn = false,
     this.userEmail,
+    this.playAllOnTap = true,
   });
 
   /// 지정된 필드만 변경한 새 [AppSettings] 인스턴스 반환.
@@ -22,11 +26,13 @@ class AppSettings {
     String? savePath,
     bool? isLoggedIn,
     String? userEmail,
+    bool? playAllOnTap,
   }) {
     return AppSettings(
       savePath: savePath ?? this.savePath,
       isLoggedIn: isLoggedIn ?? this.isLoggedIn,
       userEmail: userEmail ?? this.userEmail,
+      playAllOnTap: playAllOnTap ?? this.playAllOnTap,
     );
   }
 }
