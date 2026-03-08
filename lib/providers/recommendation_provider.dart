@@ -33,8 +33,9 @@ class RecommendationProvider extends ChangeNotifier {
   /// 추천 목록.
   List<Recommendation> get items => _cached ?? [];
 
-  /// 추천 목록 조회. 캐시 유효 시 캐시 반환.
+  /// 추천 목록 조회. 캐시 유효 시 캐시 반환. 중복 호출 시 무시.
   Future<void> loadRecommendations({bool force = false}) async {
+    if (_isLoading) return;
     if (!force && _isCacheValid()) {
       return;
     }

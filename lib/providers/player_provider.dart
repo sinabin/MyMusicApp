@@ -75,6 +75,7 @@ class PlayerProvider extends ChangeNotifier {
 
   /// 풀 플레이어 화면 열림/닫힘 상태 설정.
   void setFullPlayerOpen(bool value) {
+    if (_isFullPlayerOpen == value) return;
     _isFullPlayerOpen = value;
     notifyListeners();
   }
@@ -137,57 +138,75 @@ class PlayerProvider extends ChangeNotifier {
 
   void _listenToStreams() {
     _subscriptions.add(
-      _service.queueStateStream.listen((state) {
-        _queueState = state;
-        final track = state.currentTrack;
-        if (track != null) {
-          final videoId = track.videoId;
-          if (videoId != _lastPlayedVideoId) {
-            _lastPlayedVideoId = videoId;
-            _onTrackPlayed?.call(videoId);
+      _service.queueStateStream.listen(
+        (state) {
+          _queueState = state;
+          final track = state.currentTrack;
+          if (track != null) {
+            final videoId = track.videoId;
+            if (videoId != _lastPlayedVideoId) {
+              _lastPlayedVideoId = videoId;
+              _onTrackPlayed?.call(videoId);
+            }
+          } else {
+            // 큐가 비면(stop 등) seek bar 잔존 방지.
+            _position = Duration.zero;
+            _duration = Duration.zero;
           }
-        } else {
-          // 큐가 비면(stop 등) seek bar 잔존 방지.
-          _position = Duration.zero;
-          _duration = Duration.zero;
-        }
-        notifyListeners();
-      }),
+          notifyListeners();
+        },
+        onError: (e) => debugPrint('[PlayerProvider] queueState error: $e'),
+      ),
     );
 
     _subscriptions.add(
-      _service.playingStream.listen((playing) {
-        _isPlaying = playing;
-        notifyListeners();
-      }),
+      _service.playingStream.listen(
+        (playing) {
+          _isPlaying = playing;
+          notifyListeners();
+        },
+        onError: (e) => debugPrint('[PlayerProvider] playing error: $e'),
+      ),
     );
 
     _subscriptions.add(
-      _service.positionStream.listen((pos) {
-        _position = pos;
-        notifyListeners();
-      }),
+      _service.positionStream.listen(
+        (pos) {
+          _position = pos;
+          notifyListeners();
+        },
+        onError: (e) => debugPrint('[PlayerProvider] position error: $e'),
+      ),
     );
 
     _subscriptions.add(
-      _service.durationStream.listen((dur) {
-        _duration = dur ?? Duration.zero;
-        notifyListeners();
-      }),
+      _service.durationStream.listen(
+        (dur) {
+          _duration = dur ?? Duration.zero;
+          notifyListeners();
+        },
+        onError: (e) => debugPrint('[PlayerProvider] duration error: $e'),
+      ),
     );
 
     _subscriptions.add(
-      _service.loopModeStream.listen((mode) {
-        _loopMode = mode;
-        notifyListeners();
-      }),
+      _service.loopModeStream.listen(
+        (mode) {
+          _loopMode = mode;
+          notifyListeners();
+        },
+        onError: (e) => debugPrint('[PlayerProvider] loopMode error: $e'),
+      ),
     );
 
     _subscriptions.add(
-      _service.shuffleModeEnabledStream.listen((enabled) {
-        _isShuffleEnabled = enabled;
-        notifyListeners();
-      }),
+      _service.shuffleModeEnabledStream.listen(
+        (enabled) {
+          _isShuffleEnabled = enabled;
+          notifyListeners();
+        },
+        onError: (e) => debugPrint('[PlayerProvider] shuffle error: $e'),
+      ),
     );
   }
 

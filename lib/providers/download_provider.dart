@@ -208,4 +208,10 @@ class DownloadProvider extends ChangeNotifier {
     _currentVideoId = null;
     notifyListeners();
   }
+
+  @override
+  void dispose() {
+    _resetTimer?.cancel();
+    super.dispose();
+  }
 }
