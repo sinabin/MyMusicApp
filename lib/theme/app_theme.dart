@@ -9,6 +9,18 @@ import 'app_colors.dart';
 class AppTheme {
   AppTheme._();
 
+  /// 소형 요소 (썸네일 뱃지, 프로그레스 바 등).
+  static const double radiusSm = 8;
+
+  /// 중형 요소 (타일, 카드 내 이미지 등).
+  static const double radiusMd = 12;
+
+  /// 대형 요소 (카드, 입력 필드 등).
+  static const double radiusLg = 16;
+
+  /// 최대 둥근 요소 (바텀시트 상단 등).
+  static const double radiusXl = 24;
+
   /// Material3 기반 다크 테마 반환.
   static ThemeData get darkTheme => ThemeData(
     useMaterial3: true,
@@ -33,7 +45,7 @@ class AppTheme {
       color: AppColors.surface,
       elevation: 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(radiusLg),
         side: const BorderSide(color: AppColors.border, width: 1),
       ),
     ),
@@ -41,19 +53,19 @@ class AppTheme {
       filled: true,
       fillColor: AppColors.surfaceVariant,
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(radiusLg),
         borderSide: const BorderSide(color: AppColors.border),
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(radiusLg),
         borderSide: const BorderSide(color: AppColors.border),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(radiusLg),
         borderSide: const BorderSide(color: AppColors.primary, width: 2),
       ),
       errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(radiusLg),
         borderSide: const BorderSide(color: AppColors.error),
       ),
       hintStyle: const TextStyle(color: AppColors.textSecondary),
@@ -63,7 +75,7 @@ class AppTheme {
       backgroundColor: AppColors.surfaceLight,
       contentTextStyle: const TextStyle(color: AppColors.textPrimary),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(radiusMd),
         side: const BorderSide(color: AppColors.primary, width: 0.5),
       ),
       behavior: SnackBarBehavior.floating,
@@ -71,7 +83,7 @@ class AppTheme {
     bottomSheetTheme: const BottomSheetThemeData(
       backgroundColor: AppColors.surface,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(radiusXl)),
       ),
     ),
     dividerTheme: const DividerThemeData(

@@ -6,6 +6,42 @@ import '../../models/recommendation_candidate.dart';
 /// [CandidateFetcher]가 수집한 후보를 받아 파이프라인을 적용:
 /// 중복 카운트 → 중복 제거 → 필터링 → 점수 산정 → 정렬 → 상위 20건.
 class CandidateRanker {
+  // ─── 점수 가중치 상수 ──────────────────────────────────────
+
+  /// 소스별 기본 점수: related(가장 관련성 높음) > channel > search.
+  static const _scoreRelated = 3.0;
+  static const _scoreChannel = 2.0;
+  static const _scoreSearch = 1.0;
+
+  /// 일반적 음악 길이(1~7분)에 부여하는 가산점.
+  static const _scoreDurationIdeal = 2.0;
+
+  /// 중간 길이(7~15분)에 부여하는 가산점.
+  static const _scoreDurationMedium = 0.5;
+
+  /// 복수 전략 중복 시 건당 가산점.
+  static const _scoreDuplicateBonus = 2.5;
+
+  // ─── 필터링 임계값 ─────────────────────────────────────────
+
+  /// 최소 재생 시간(초). 이하는 비음악으로 판정.
+  static const _minDurationSec = 30;
+
+  /// 최대 재생 시간(분). 이상은 비음악으로 판정.
+  static const _maxDurationMin = 20;
+
+  /// 비음악 콘텐츠를 식별하는 키워드 패턴.
+  static final _nonMusicPattern = RegExp(
+    r'interview|reaction|podcast|review|unboxing|vlog|'
+    r'tutorial|lecture|강의|리액션|리뷰|팟캐스트',
+    caseSensitive: false,
+  );
+
+  /// 최종 추천 목록 최대 건수.
+  static const _maxResults = 20;
+
+  // ─── 인스턴스 필드 ─────────────────────────────────────────
+
   final Set<String> _downloadedVideoIds;
   final Set<String> _dismissedVideoIds;
 
@@ -27,7 +63,7 @@ class CandidateRanker {
     _filterOut(candidates);
     _score(candidates);
     candidates.sort((a, b) => b.score.compareTo(a.score));
-    return candidates.take(20).map(_toRecommendation).toList();
+    return candidates.take(_maxResults).map(_toRecommendation).toList();
   }
 
   /// 동일 videoId가 복수 전략에서 등장한 횟수 기록.
@@ -60,16 +96,11 @@ class CandidateRanker {
   /// 비음악 콘텐츠 필터.
   bool _likelyMusic(RecommendationCandidate c) {
     if (c.duration != null) {
-      if (c.duration!.inSeconds < 30) return false;
-      if (c.duration!.inMinutes > 20) return false;
+      if (c.duration!.inSeconds < _minDurationSec) return false;
+      if (c.duration!.inMinutes > _maxDurationMin) return false;
     }
 
-    final negatives = RegExp(
-      r'interview|reaction|podcast|review|unboxing|vlog|'
-      r'tutorial|lecture|강의|리액션|리뷰|팟캐스트',
-      caseSensitive: false,
-    );
-    if (negatives.hasMatch(c.title)) return false;
+    if (_nonMusicPattern.hasMatch(c.title)) return false;
 
     return true;
   }
@@ -82,26 +113,26 @@ class CandidateRanker {
       // 소스 기본 점수
       switch (c.source) {
         case RecommendationSource.related:
-          score += 3.0;
+          score += _scoreRelated;
         case RecommendationSource.channel:
-          score += 2.0;
+          score += _scoreChannel;
         case RecommendationSource.search:
-          score += 1.0;
+          score += _scoreSearch;
       }
 
       // 재생 시간 보정
       if (c.duration != null) {
         final mins = c.duration!.inSeconds / 60;
         if (mins >= 1 && mins <= 7) {
-          score += 2.0;
+          score += _scoreDurationIdeal;
         } else if (mins > 7 && mins <= 15) {
-          score += 0.5;
+          score += _scoreDurationMedium;
         }
       }
 
       // 복수 전략 중복 가산
       if (c.duplicateCount >= 2) {
-        score += (c.duplicateCount - 1) * 2.5;
+        score += (c.duplicateCount - 1) * _scoreDuplicateBonus;
       }
 
       c.score = score;
