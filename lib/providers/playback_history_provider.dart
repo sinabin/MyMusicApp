@@ -54,8 +54,8 @@ class PlaybackHistoryProvider extends ChangeNotifier {
         .toList();
   }
 
-  /// 최근 재생 곡 수 반환.
-  int get recentCount => _db.getRecentVideoIds(100).length;
+  /// 최근 재생 곡 수 반환 (다운로드 존재하는 곡만 집계).
+  int get recentCount => getRecentTracks(100).length;
 
   /// 시간 구간별로 그룹화된 최근 재생 곡 반환.
   Map<String, List<DownloadItem>> getGroupedRecentTracks({int limit = 50}) {
