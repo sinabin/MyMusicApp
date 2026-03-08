@@ -2,15 +2,13 @@ import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:share_plus/share_plus.dart' show Share, XFile;
-
 import '../models/download_item.dart';
 import '../theme/app_colors.dart';
 import '../utils/format_utils.dart';
 
 /// 다운로드 기록 목록의 개별 항목을 표시하는 타일 위젯.
 ///
-/// 파일명·크기·날짜 정보와 재생·공유·큐 추가·스와이프 삭제 기능을 제공.
+/// 파일명·크기·날짜 정보와 재생·큐 추가·스와이프 삭제 기능을 제공.
 /// [DownloadItem] 데이터를 받아 렌더링.
 class DownloadHistoryTile extends StatelessWidget {
   final DownloadItem item;
@@ -149,8 +147,6 @@ class DownloadHistoryTile extends StatelessWidget {
                       onAddToPlaylist?.call();
                     case 'favorite':
                       onToggleFavorite?.call();
-                    case 'share':
-                      Share.shareXFiles([XFile(item.filePath)]);
                   }
                 },
                 itemBuilder: (context) => [
@@ -161,7 +157,7 @@ class DownloadHistoryTile extends StatelessWidget {
                         Icon(Icons.queue_music, size: 20,
                             color: AppColors.textSecondary),
                         SizedBox(width: 12),
-                        Text('Add to Queue',
+                        Text('바로 다음에 재생',
                             style: TextStyle(color: AppColors.textPrimary)),
                       ],
                     ),
@@ -174,7 +170,7 @@ class DownloadHistoryTile extends StatelessWidget {
                           Icon(Icons.playlist_add, size: 20,
                               color: AppColors.textSecondary),
                           SizedBox(width: 12),
-                          Text('Add to Playlist',
+                          Text('플레이리스트에 추가',
                               style: TextStyle(color: AppColors.textPrimary)),
                         ],
                       ),
@@ -193,25 +189,13 @@ class DownloadHistoryTile extends StatelessWidget {
                           ),
                           const SizedBox(width: 12),
                           Text(
-                            isFavorite ? 'Unfavorite' : 'Favorite',
+                            isFavorite ? '좋아요 해제' : '좋아요',
                             style: const TextStyle(
                                 color: AppColors.textPrimary),
                           ),
                         ],
                       ),
                     ),
-                  const PopupMenuItem(
-                    value: 'share',
-                    child: Row(
-                      children: [
-                        Icon(Icons.share, size: 20,
-                            color: AppColors.textSecondary),
-                        SizedBox(width: 12),
-                        Text('Share',
-                            style: TextStyle(color: AppColors.textPrimary)),
-                      ],
-                    ),
-                  ),
                 ],
               ),
             ],

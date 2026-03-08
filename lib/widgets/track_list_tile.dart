@@ -112,7 +112,7 @@ class TrackListTile extends StatelessWidget {
                   HapticFeedback.lightImpact();
                   onToggleFavorite?.call();
                 },
-                tooltip: 'Favorite',
+                tooltip: '좋아요',
                 constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
                 padding: EdgeInsets.zero,
               ),
@@ -147,7 +147,7 @@ class TrackListTile extends StatelessWidget {
                           Icon(Icons.queue_music, size: 20,
                               color: AppColors.textSecondary),
                           SizedBox(width: 12),
-                          Text('Add to Queue',
+                          Text('바로 다음에 재생',
                               style: TextStyle(color: AppColors.textPrimary)),
                         ],
                       ),
@@ -160,7 +160,7 @@ class TrackListTile extends StatelessWidget {
                           Icon(Icons.playlist_add, size: 20,
                               color: AppColors.textSecondary),
                           SizedBox(width: 12),
-                          Text('Add to Playlist',
+                          Text('플레이리스트에 추가',
                               style: TextStyle(color: AppColors.textPrimary)),
                         ],
                       ),

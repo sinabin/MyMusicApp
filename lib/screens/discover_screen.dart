@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
+import '../models/download_item.dart';
 import '../models/recommendation.dart';
 import '../models/video_info.dart';
 import '../providers/download_provider.dart';
 import '../providers/history_provider.dart';
+import '../providers/player_provider.dart';
 import '../providers/recommendation_provider.dart';
 import '../providers/settings_provider.dart';
+import '../services/youtube_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import '../widgets/gradient_text.dart';
@@ -32,6 +35,26 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<RecommendationProvider>().loadRecommendations();
     });
+  }
+
+  /// 스트리밍 재생 시작.
+  Future<void> _onStream(Recommendation rec) async {
+    final yt = context.read<YouTubeService>();
+    final streamUrl = await yt.getAudioStreamUrl(rec.videoId);
+
+    if (!mounted) return;
+
+    final streamItem = DownloadItem.streaming(
+      videoId: rec.videoId,
+      title: rec.title,
+      streamUrl: streamUrl.toString(),
+      thumbnailUrl: rec.thumbnailUrl,
+      channelName: rec.channelName,
+      channelId: rec.channelId,
+      durationInMs: rec.duration?.inMilliseconds,
+    );
+
+    context.read<PlayerProvider>().playTrack(streamItem);
   }
 
   Future<void> _onDownload(Recommendation rec) async {
@@ -198,6 +221,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                               context,
                               recommendation: rec,
                               onDownload: () => _onDownload(rec),
+                              onStream: () => _onStream(rec),
                               isDownloading: isThis,
                             ),
                           ).animate().fadeIn(

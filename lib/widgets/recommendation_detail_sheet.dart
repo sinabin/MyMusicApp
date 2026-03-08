@@ -18,6 +18,9 @@ class RecommendationDetailSheet extends StatefulWidget {
   /// 다운로드 버튼 콜백.
   final VoidCallback onDownload;
 
+  /// 스트리밍 재생 콜백. 완료 시 Future가 resolve.
+  final Future<void> Function()? onStream;
+
   /// 다운로드 진행 중 여부.
   final bool isDownloading;
 
@@ -25,6 +28,7 @@ class RecommendationDetailSheet extends StatefulWidget {
     super.key,
     required this.recommendation,
     required this.onDownload,
+    this.onStream,
     this.isDownloading = false,
   });
 
@@ -33,6 +37,7 @@ class RecommendationDetailSheet extends StatefulWidget {
     BuildContext context, {
     required Recommendation recommendation,
     required VoidCallback onDownload,
+    Future<void> Function()? onStream,
     bool isDownloading = false,
   }) {
     showModalBottomSheet(
@@ -42,6 +47,7 @@ class RecommendationDetailSheet extends StatefulWidget {
       builder: (_) => RecommendationDetailSheet(
         recommendation: recommendation,
         onDownload: onDownload,
+        onStream: onStream,
         isDownloading: isDownloading,
       ),
     );
@@ -56,11 +62,22 @@ class _RecommendationDetailSheetState
     extends State<RecommendationDetailSheet> {
   VideoInfo? _videoInfo;
   bool _isLoading = true;
+  bool _isStreaming = false;
 
   @override
   void initState() {
     super.initState();
     _fetchDetails();
+  }
+
+  /// 스트리밍 재생 요청 처리.
+  Future<void> _handleStream() async {
+    setState(() => _isStreaming = true);
+    try {
+      await widget.onStream!();
+    } finally {
+      if (mounted) setState(() => _isStreaming = false);
+    }
   }
 
   /// YouTube API를 통해 추가 메타데이터 조회.
@@ -213,6 +230,45 @@ class _RecommendationDetailSheetState
             ],
 
             const SizedBox(height: 20),
+
+            // 스트리밍 듣기 버튼
+            if (widget.onStream != null)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: _isStreaming ? null : _handleStream,
+                    icon: _isStreaming
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Icon(Icons.play_circle_outline),
+                    label: Text(
+                        _isStreaming ? '불러오는 중...' : '스트리밍 듣기'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.surfaceVariant,
+                      foregroundColor: AppColors.textPrimary,
+                      disabledBackgroundColor:
+                          AppColors.surfaceVariant.withValues(alpha: 0.5),
+                      disabledForegroundColor: AppColors.textTertiary,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      textStyle: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
 
             // 다운로드 버튼
             SizedBox(
