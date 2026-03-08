@@ -4,6 +4,12 @@ import 'theme/app_colors.dart';
 import 'theme/app_theme.dart';
 import 'widgets/mini_player.dart';
 
+/// 앱 전역 [NavigatorState] 접근용 키.
+///
+/// [MiniPlayer]처럼 [MaterialApp.builder] 내부(Navigator 바깥)에서
+/// 라우트를 푸시할 때 사용.
+final GlobalKey<NavigatorState> appNavigatorKey = GlobalKey<NavigatorState>();
+
 /// 앱의 루트 위젯.
 ///
 /// [AppTheme.darkTheme]을 적용하고 [MainShell]을 초기 화면으로 표시.
@@ -18,6 +24,7 @@ class App extends StatelessWidget {
       title: 'MyMusicApp',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.darkTheme,
+      navigatorKey: appNavigatorKey,
       home: const MainShell(),
       builder: (context, child) {
         return ColoredBox(
