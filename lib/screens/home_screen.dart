@@ -435,55 +435,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SizedBox(height: 8),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Recent Downloads (${history.recentCount})',
-                          style: AppTextStyles.sectionHeader,
-                        ),
-                        if (history.recentCount > 0)
-                          TextButton(
-                            onPressed: () async {
-                              final confirmed = await showDialog<bool>(
-                                context: context,
-                                builder: (ctx) => AlertDialog(
-                                  backgroundColor: AppColors.surface,
-                                  title: const Text(
-                                    'Clear all recent downloads?',
-                                    style: TextStyle(
-                                        color: AppColors.textPrimary),
-                                  ),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () =>
-                                          Navigator.pop(ctx, false),
-                                      child: const Text('Cancel'),
-                                    ),
-                                    TextButton(
-                                      onPressed: () =>
-                                          Navigator.pop(ctx, true),
-                                      child: const Text(
-                                        'Clear',
-                                        style: TextStyle(
-                                            color: AppColors.error),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              );
-                              if (confirmed == true) {
-                                history.clearRecent();
-                              }
-                            },
-                            child: const Text(
-                              'Clear',
-                              style: TextStyle(
-                                  color: AppColors.textTertiary,
-                                  fontSize: 13),
-                            ),
-                          ),
-                      ],
+                    Text(
+                      'Recent Downloads (${history.recentCount})',
+                      style: AppTextStyles.sectionHeader,
                     ),
                     const SizedBox(height: 8),
                   ],
