@@ -23,12 +23,21 @@ class PlaybackHistoryProvider extends ChangeNotifier {
   /// 곡 재생을 기록. 동일 곡 연속 기록 방지.
   Future<void> recordPlay(String videoId) async {
     if (videoId == _lastRecordedVideoId) return;
+
+    // 중복 방지: 비동기 호출 전에 즉시 갱신.
+    final prev = _lastRecordedVideoId;
     _lastRecordedVideoId = videoId;
-    await _db.add(PlaybackRecord(
-      videoId: videoId,
-      playedAt: DateTime.now(),
-    ));
-    notifyListeners();
+
+    try {
+      await _db.add(PlaybackRecord(
+        videoId: videoId,
+        playedAt: DateTime.now(),
+      ));
+      notifyListeners();
+    } catch (e) {
+      _lastRecordedVideoId = prev;
+      rethrow;
+    }
   }
 
   /// 최근 재생 곡 목록 반환 (중복 제거, [DownloadItem] resolve).

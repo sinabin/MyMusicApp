@@ -71,7 +71,9 @@ class RecommendationService {
   /// 트렌딩 음악 검색 폴백.
   Future<List<Recommendation>> _trendingFallback() async {
     try {
-      final results = await _yt.searchVideos('trending music 2026');
+      final results = await _yt.searchVideos(
+        'trending music ${DateTime.now().year}',
+      );
       return results.take(10).map((v) => _videoToRecommendation(
         v,
         source: RecommendationSource.search,

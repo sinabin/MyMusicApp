@@ -44,6 +44,7 @@ class SettingsProvider extends ChangeNotifier {
 
   /// 저장 경로 [path] 변경 및 영속 저장.
   Future<void> setSavePath(String path) async {
+    if (_settings.savePath == path) return;
     _settings = _settings.copyWith(savePath: path);
     await _localStorage.setSavePath(path);
     notifyListeners();
@@ -51,6 +52,7 @@ class SettingsProvider extends ChangeNotifier {
 
   /// 로그인 상태 [value] 및 [email] 갱신.
   Future<void> setLoggedIn(bool value, {String? email}) async {
+    if (_settings.isLoggedIn == value && _settings.userEmail == email) return;
     _settings = _settings.copyWith(isLoggedIn: value, userEmail: email);
     if (email != null) {
       await _authService.saveEmail(email);
@@ -60,6 +62,7 @@ class SettingsProvider extends ChangeNotifier {
 
   /// 탭 재생 모드 [value] 변경 및 영속 저장.
   Future<void> setPlayAllOnTap(bool value) async {
+    if (_settings.playAllOnTap == value) return;
     _settings = _settings.copyWith(playAllOnTap: value);
     await _localStorage.setPlayAllOnTap(value);
     notifyListeners();

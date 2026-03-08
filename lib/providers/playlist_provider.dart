@@ -150,12 +150,16 @@ class PlaylistProvider extends ChangeNotifier {
         validIds.add(id);
       }
     }
-    // 고아 videoId 정리.
+    // 고아 videoId 정리. _synchronized로 동시 접근 방어.
     if (validIds.length != playlist.trackVideoIds.length) {
-      playlist.trackVideoIds
-        ..clear()
-        ..addAll(validIds);
-      playlist.save();
+      _synchronized(() async {
+        playlist.trackVideoIds
+          ..clear()
+          ..addAll(validIds);
+        await playlist.save();
+        _playlists = _db.getAll();
+        notifyListeners();
+      });
     }
     return resolved;
   }

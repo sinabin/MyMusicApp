@@ -17,6 +17,9 @@ class SearchProvider extends ChangeNotifier {
   String? _error;
   String _query = '';
 
+  /// 동시성 방어용 검색 세션 카운터. [search] 호출마다 증가.
+  int _searchSession = 0;
+
   SearchProvider({required YouTubeService youtubeService})
       : _youtubeService = youtubeService;
 
@@ -38,11 +41,12 @@ class SearchProvider extends ChangeNotifier {
   /// 추가 결과 존재 여부.
   bool get hasMore => _searchList != null;
 
-  /// [query]로 YouTube 검색 수행.
+  /// [query]로 YouTube 검색 수행. 연속 호출 시 마지막 요청만 반영.
   Future<void> search(String query) async {
     final trimmed = query.trim();
     if (trimmed.isEmpty) return;
 
+    final session = ++_searchSession;
     _query = trimmed;
     _isLoading = true;
     _error = null;
@@ -52,19 +56,23 @@ class SearchProvider extends ChangeNotifier {
 
     try {
       final searchList = await _youtubeService.searchVideos(_query);
+      if (session != _searchSession) return;
       _searchList = searchList;
       _results = searchList.map<VideoInfo>(_toVideoInfo).toList();
     } catch (e) {
+      if (session != _searchSession) return;
       _error = e.toString();
     } finally {
-      _isLoading = false;
-      notifyListeners();
+      if (session == _searchSession) {
+        _isLoading = false;
+        notifyListeners();
+      }
     }
   }
 
   /// 다음 페이지 검색 결과 로드.
   Future<void> loadMore() async {
-    if (_isLoadingMore || _searchList == null) return;
+    if (_isLoadingMore || _isLoading || _searchList == null) return;
 
     _isLoadingMore = true;
     notifyListeners();
@@ -87,6 +95,8 @@ class SearchProvider extends ChangeNotifier {
 
   /// 검색 상태 초기화.
   void clear() {
+    if (_results.isEmpty && !_isLoading && _error == null) return;
+    _searchSession++;
     _results = [];
     _searchList = null;
     _isLoading = false;

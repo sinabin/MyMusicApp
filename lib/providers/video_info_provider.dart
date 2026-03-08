@@ -13,6 +13,9 @@ class VideoInfoProvider extends ChangeNotifier {
   bool _isLoading = false;
   String? _error;
 
+  /// 최신 요청의 videoId. 이전 요청 응답이 최신을 덮어쓰지 않도록 방어.
+  String? _pendingVideoId;
+
   VideoInfoProvider({required YouTubeService youtubeService})
       : _youtubeService = youtubeService;
 
@@ -26,26 +29,36 @@ class VideoInfoProvider extends ChangeNotifier {
   String? get error => _error;
 
   /// [videoId]에 해당하는 영상 정보 비동기 조회.
+  ///
+  /// 연속 호출 시 마지막 요청만 결과에 반영.
   Future<void> fetchInfo(String videoId) async {
+    _pendingVideoId = videoId;
     _isLoading = true;
     _error = null;
     _videoInfo = null;
     notifyListeners();
 
     try {
-      _videoInfo = await _youtubeService.fetchVideoInfo(videoId);
+      final info = await _youtubeService.fetchVideoInfo(videoId);
+      if (_pendingVideoId != videoId) return;
+      _videoInfo = info;
       _error = null;
     } catch (e) {
+      if (_pendingVideoId != videoId) return;
       _error = e.toString();
       _videoInfo = null;
     } finally {
-      _isLoading = false;
-      notifyListeners();
+      if (_pendingVideoId == videoId) {
+        _isLoading = false;
+        notifyListeners();
+      }
     }
   }
 
   /// 조회 상태 및 결과 초기화.
   void clear() {
+    if (_videoInfo == null && _error == null && !_isLoading) return;
+    _pendingVideoId = null;
     _videoInfo = null;
     _error = null;
     _isLoading = false;
