@@ -13,4 +13,7 @@ class AppConstants {
 
   /// SharedPreferences 저장 경로 키.
   static const String settingsKeySavePath = 'save_path';
+
+  /// Hive dismiss 기록 Box 이름.
+  static const String hiveDismissedBox = 'dismissed_recommendations';
 }

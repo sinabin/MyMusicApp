@@ -18,6 +18,7 @@ class DownloadProvider extends ChangeNotifier {
   final FileService _fileService;
 
   DownloadStatus _status = const DownloadStatus();
+  String? _currentVideoId;
   Timer? _resetTimer;
 
   DownloadProvider({
@@ -31,12 +32,16 @@ class DownloadProvider extends ChangeNotifier {
   /// 현재 다운로드 상태.
   DownloadStatus get status => _status;
 
+  /// 현재 다운로드 중인 영상 ID. 대기 상태이면 null.
+  String? get currentVideoId => _currentVideoId;
+
   /// [videoInfo]의 오디오를 다운로드하여 [DownloadItem] 반환. 취소·실패 시 null.
   Future<DownloadItem?> startDownload({
     required VideoInfo videoInfo,
     required String savePath,
   }) async {
     _resetTimer?.cancel();
+    _currentVideoId = videoInfo.videoId;
     String? tempFile;
 
     try {
@@ -158,6 +163,10 @@ class DownloadProvider extends ChangeNotifier {
       downloadDate: DateTime.now(),
       videoId: videoInfo.videoId,
       thumbnailUrl: videoInfo.thumbnailUrl,
+      channelName: videoInfo.channelName,
+      channelId: videoInfo.channelId,
+      keywords: videoInfo.keywords,
+      artistName: videoInfo.artistName,
     );
   }
 
@@ -167,6 +176,7 @@ class DownloadProvider extends ChangeNotifier {
     _resetTimer = Timer(const Duration(seconds: 3), () {
       if (_status.phase == DownloadPhase.completed) {
         _status = const DownloadStatus();
+        _currentVideoId = null;
         notifyListeners();
       }
     });
@@ -191,6 +201,7 @@ class DownloadProvider extends ChangeNotifier {
     _resetTimer?.cancel();
     _downloadService.reset();
     _status = const DownloadStatus();
+    _currentVideoId = null;
     notifyListeners();
   }
 }

@@ -4,6 +4,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../models/download_state.dart';
 import '../providers/download_provider.dart';
 import '../providers/history_provider.dart';
+import '../providers/recommendation_provider.dart';
 import '../providers/settings_provider.dart';
 import '../providers/video_info_provider.dart';
 import '../theme/app_colors.dart';
@@ -67,6 +68,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
     if (item != null) {
       historyProvider.addItem(item);
+      if (mounted) {
+        context.read<RecommendationProvider>().invalidateCache();
+      }
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

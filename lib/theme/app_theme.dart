@@ -73,5 +73,29 @@ class AppTheme {
       color: AppColors.divider,
       thickness: 1,
     ),
+    navigationBarTheme: NavigationBarThemeData(
+      backgroundColor: AppColors.surface,
+      indicatorColor: AppColors.primarySurface,
+      iconTheme: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.selected)) {
+          return const IconThemeData(color: AppColors.primary);
+        }
+        return const IconThemeData(color: AppColors.textTertiary);
+      }),
+      labelTextStyle: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.selected)) {
+          return const TextStyle(
+            color: AppColors.primary,
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+          );
+        }
+        return const TextStyle(
+          color: AppColors.textTertiary,
+          fontSize: 12,
+        );
+      }),
+      surfaceTintColor: Colors.transparent,
+    ),
   );
 }

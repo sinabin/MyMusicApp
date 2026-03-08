@@ -23,13 +23,17 @@ class DownloadItemAdapter extends TypeAdapter<DownloadItem> {
       downloadDate: fields[3] as DateTime,
       videoId: fields[4] as String,
       thumbnailUrl: fields[5] as String?,
+      channelName: fields[6] as String?,
+      channelId: fields[7] as String?,
+      keywords: (fields[8] as List?)?.cast<String>(),
+      artistName: fields[9] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, DownloadItem obj) {
     writer
-      ..writeByte(6)
+      ..writeByte(10)
       ..writeByte(0)
       ..write(obj.fileName)
       ..writeByte(1)
@@ -41,7 +45,15 @@ class DownloadItemAdapter extends TypeAdapter<DownloadItem> {
       ..writeByte(4)
       ..write(obj.videoId)
       ..writeByte(5)
-      ..write(obj.thumbnailUrl);
+      ..write(obj.thumbnailUrl)
+      ..writeByte(6)
+      ..write(obj.channelName)
+      ..writeByte(7)
+      ..write(obj.channelId)
+      ..writeByte(8)
+      ..write(obj.keywords)
+      ..writeByte(9)
+      ..write(obj.artistName);
   }
 
   @override

@@ -21,6 +21,15 @@ class VideoInfo {
   /// 오디오 스트림 바이트 크기. 미확인 시 null.
   final int? audioStreamSize;
 
+  /// 채널 ID.
+  final String? channelId;
+
+  /// 영상 키워드 목록.
+  final List<String>? keywords;
+
+  /// 아티스트 이름 (musicData 기반).
+  final String? artistName;
+
   const VideoInfo({
     required this.videoId,
     required this.title,
@@ -28,6 +37,9 @@ class VideoInfo {
     required this.duration,
     required this.thumbnailUrl,
     this.audioStreamSize,
+    this.channelId,
+    this.keywords,
+    this.artistName,
   });
 
   /// "H:MM:SS" 또는 "M:SS" 형식의 재생 시간 문자열 반환.

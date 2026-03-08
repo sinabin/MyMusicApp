@@ -25,7 +25,37 @@ class YouTubeService {
       channelName: video.author,
       duration: video.duration ?? Duration.zero,
       thumbnailUrl: thumbnailUrl,
+      channelId: video.channelId.value,
+      keywords: video.keywords.toList(),
+      artistName:
+          video.musicData.isNotEmpty ? video.musicData.first.artist : null,
     );
+  }
+
+  /// [videoId]의 전체 메타데이터 반환 (keywords, musicData 포함).
+  Future<Video> getVideo(String videoId) async {
+    return await _client.videos.get(videoId);
+  }
+
+  /// [video]의 관련 영상 목록 반환.
+  Future<RelatedVideosList?> getRelatedVideos(Video video) async {
+    return await _client.videos.getRelatedVideos(video);
+  }
+
+  /// [channelId]의 업로드 영상 목록 반환 (페이지네이션).
+  Future<ChannelUploadsList> getChannelUploads(
+    String channelId, {
+    VideoSorting videoSorting = VideoSorting.newest,
+  }) async {
+    return await _client.channels.getUploadsFromPage(
+      channelId,
+      videoSorting: videoSorting,
+    );
+  }
+
+  /// [query]로 YouTube 검색 수행.
+  Future<VideoSearchList> searchVideos(String query) async {
+    return await _client.search.search(query);
   }
 
   /// [videoId]의 가용 오디오 스트림 중 최고 비트레이트 스트림 반환.

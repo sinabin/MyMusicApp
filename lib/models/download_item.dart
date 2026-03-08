@@ -32,6 +32,22 @@ class DownloadItem extends HiveObject {
   @HiveField(5)
   final String? thumbnailUrl;
 
+  /// 채널(업로더) 이름.
+  @HiveField(6)
+  final String? channelName;
+
+  /// 채널 ID.
+  @HiveField(7)
+  final String? channelId;
+
+  /// 영상 키워드 목록.
+  @HiveField(8)
+  final List<String>? keywords;
+
+  /// 아티스트 이름 (musicData 기반).
+  @HiveField(9)
+  final String? artistName;
+
   DownloadItem({
     required this.fileName,
     required this.filePath,
@@ -39,5 +55,9 @@ class DownloadItem extends HiveObject {
     required this.downloadDate,
     required this.videoId,
     this.thumbnailUrl,
+    this.channelName,
+    this.channelId,
+    this.keywords,
+    this.artistName,
   });
 }
