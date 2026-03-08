@@ -1,31 +1,30 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../models/download_item.dart';
-import '../models/download_state.dart';
+import '../models/video_info.dart';
 import '../providers/download_provider.dart';
 import '../providers/history_provider.dart';
 import '../providers/player_provider.dart';
 import '../providers/recommendation_provider.dart';
+import '../providers/search_provider.dart';
 import '../providers/settings_provider.dart';
-import '../providers/video_info_provider.dart';
+import '../services/youtube_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import '../widgets/add_to_playlist_sheet.dart';
-import '../widgets/download_button.dart';
 import '../widgets/download_history_tile.dart';
 import '../widgets/empty_state_widget.dart';
-import '../widgets/gradient_text.dart';
-import '../widgets/progress_indicator_bar.dart';
+import '../widgets/search_result_tile.dart';
 import '../widgets/settings_bottom_sheet.dart';
-import '../widgets/url_input_field.dart';
-import '../widgets/video_preview_card.dart';
 
 /// 앱의 메인 화면.
 ///
-/// URL 입력, 영상 미리보기, 다운로드 버튼, 다운로드 기록 목록을 포함.
-/// [VideoInfoProvider]·[DownloadProvider]·[HistoryProvider]·[SettingsProvider]를
-/// 구독하여 전체 다운로드 워크플로우를 조율.
+/// 검색바·검색 결과·다운로드 기록을 통합 표시.
+/// 검색 미입력 시 최근 다운로드 목록, 검색 시 YouTube 결과를 표시.
+/// [SearchProvider]·[DownloadProvider]·[HistoryProvider]를
+/// 구독하여 검색·다운로드·재생 워크플로우를 조율.
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -34,26 +33,47 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  String? _currentVideoId;
+  final _searchController = TextEditingController();
+  final _focusNode = FocusNode();
+  final _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(_onScroll);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<HistoryProvider>().loadHistory();
     });
   }
 
-  void _onUrlValid(String videoId) {
-    if (_currentVideoId != videoId) {
-      _currentVideoId = videoId;
-      context.read<VideoInfoProvider>().fetchInfo(videoId);
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _focusNode.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    final searchProvider = context.read<SearchProvider>();
+    if (searchProvider.results.isNotEmpty &&
+        _scrollController.position.pixels >=
+            _scrollController.position.maxScrollExtent - 200) {
+      searchProvider.loadMore();
     }
   }
 
-  void _onUrlCleared() {
-    _currentVideoId = null;
-    context.read<VideoInfoProvider>().clear();
+  void _onSearch() {
+    final query = _searchController.text.trim();
+    if (query.isNotEmpty) {
+      _focusNode.unfocus();
+      context.read<SearchProvider>().search(query);
+    }
+  }
+
+  void _onClearSearch() {
+    _searchController.clear();
+    context.read<SearchProvider>().clear();
   }
 
   void _playFromHistory(List<DownloadItem> items, int index) {
@@ -66,49 +86,95 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  Future<void> _startDownload() async {
-    final videoInfo = context.read<VideoInfoProvider>().videoInfo;
-    if (videoInfo == null) return;
+  void _onResultTap(VideoInfo info) {
+    _showDownloadSheet(info);
+  }
 
-    final settings = context.read<SettingsProvider>().settings;
+  Future<void> _onDownloadTap(VideoInfo info) async {
     final downloadProvider = context.read<DownloadProvider>();
-    final historyProvider = context.read<HistoryProvider>();
+    if (downloadProvider.status.isActive) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('A download is already in progress')),
+      );
+      return;
+    }
+    await _performDownload(info);
+  }
 
-    final item = await downloadProvider.startDownload(
-      videoInfo: videoInfo,
-      savePath: settings.savePath,
+  Future<void> _performDownload(VideoInfo searchResult) async {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Preparing download...'),
+        duration: Duration(seconds: 1),
+      ),
     );
 
-    if (item != null) {
-      historyProvider.addItem(item);
-      if (mounted) {
+    try {
+      final youtubeService = context.read<YouTubeService>();
+      final videoInfo =
+          await youtubeService.fetchVideoInfo(searchResult.videoId);
+
+      if (!mounted) return;
+
+      final settings = context.read<SettingsProvider>().settings;
+      final downloadProvider = context.read<DownloadProvider>();
+      final historyProvider = context.read<HistoryProvider>();
+
+      final item = await downloadProvider.startDownload(
+        videoInfo: videoInfo,
+        savePath: settings.savePath,
+      );
+
+      if (item != null && mounted) {
+        historyProvider.addItem(item);
         context.read<RecommendationProvider>().invalidateCache();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Saved: ${item.fileName}')),
+        );
       }
+    } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Saved: ${item.fileName}'),
-            action: SnackBarAction(
-              label: 'OK',
-              onPressed: () {},
-            ),
-          ),
+          SnackBar(content: Text('Download failed: $e')),
         );
       }
     }
+  }
+
+  void _showDownloadSheet(VideoInfo info) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) => _DownloadConfirmSheet(
+        videoInfo: info,
+        onDownload: () {
+          Navigator.of(context).pop();
+          _onDownloadTap(info);
+        },
+      ),
+    );
+  }
+
+  /// 검색이 활성 상태인지 판별.
+  bool _isSearchActive(SearchProvider provider) {
+    return provider.query.isNotEmpty ||
+        provider.results.isNotEmpty ||
+        provider.isLoading;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: CustomScrollView(
-          slivers: [
+        child: Column(
+          children: [
             // App bar
-            SliverAppBar(
-              floating: true,
-              backgroundColor: AppColors.scaffoldBackground,
-              title: Row(
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 8, 0),
+              child: Row(
                 children: [
                   Container(
                     width: 32,
@@ -117,7 +183,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       gradient: AppColors.primaryGradient,
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Icon(Icons.music_note, color: Colors.white, size: 20),
+                    child: const Icon(Icons.music_note,
+                        color: Colors.white, size: 20),
                   ),
                   const SizedBox(width: 10),
                   const Text(
@@ -128,192 +195,430 @@ class _HomeScreenState extends State<HomeScreen> {
                       fontWeight: FontWeight.w700,
                     ),
                   ),
+                  const Spacer(),
+                  IconButton(
+                    icon: const Icon(Icons.settings_outlined,
+                        color: AppColors.textSecondary),
+                    onPressed: () => SettingsBottomSheet.show(context),
+                  ),
                 ],
               ),
-              actions: [
-                IconButton(
-                  icon: const Icon(Icons.settings_outlined, color: AppColors.textSecondary),
-                  onPressed: () => SettingsBottomSheet.show(context),
-                ),
-              ],
             ),
 
-            // Content
+            // 검색바
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+              child: _buildSearchBar(),
+            ),
+
+            // 메인 콘텐츠: 검색 결과 또는 최근 다운로드
+            Expanded(
+              child: Consumer<SearchProvider>(
+                builder: (context, searchProvider, _) {
+                  if (_isSearchActive(searchProvider)) {
+                    return _buildSearchContent(searchProvider);
+                  }
+                  return _buildRecentDownloads();
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSearchBar() {
+    return Container(
+      height: 52,
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Row(
+        children: [
+          const SizedBox(width: 14),
+          const Icon(Icons.search, color: AppColors.textTertiary, size: 22),
+          const SizedBox(width: 10),
+          Expanded(
+            child: TextField(
+              controller: _searchController,
+              focusNode: _focusNode,
+              style: AppTextStyles.inputText,
+              decoration: const InputDecoration(
+                hintText: 'Search music...',
+                hintStyle: TextStyle(color: AppColors.textTertiary),
+                border: InputBorder.none,
+                isDense: true,
+                contentPadding: EdgeInsets.zero,
+              ),
+              textInputAction: TextInputAction.search,
+              onSubmitted: (_) => _onSearch(),
+            ),
+          ),
+          ListenableBuilder(
+            listenable: _searchController,
+            builder: (context, _) {
+              if (_searchController.text.isNotEmpty) {
+                return IconButton(
+                  icon: const Icon(
+                    Icons.close,
+                    color: AppColors.textTertiary,
+                    size: 20,
+                  ),
+                  onPressed: _onClearSearch,
+                );
+              }
+              return const SizedBox.shrink();
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 검색 활성 시: 로딩·에러·빈 결과·결과 목록.
+  Widget _buildSearchContent(SearchProvider provider) {
+    if (provider.isLoading && provider.results.isEmpty) {
+      return const Center(
+        child: CircularProgressIndicator(color: AppColors.primary),
+      );
+    }
+    if (provider.error != null) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.error_outline,
+                  size: 48, color: AppColors.error),
+              const SizedBox(height: 12),
+              Text('Search failed', style: AppTextStyles.sectionHeader),
+              const SizedBox(height: 8),
+              Text(
+                provider.error!,
+                style: AppTextStyles.caption,
+                textAlign: TextAlign.center,
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 16),
+              TextButton(onPressed: _onSearch, child: const Text('Retry')),
+            ],
+          ),
+        ),
+      );
+    }
+    if (provider.results.isEmpty && provider.query.isNotEmpty) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.search_off,
+                size: 48, color: AppColors.textTertiary),
+            const SizedBox(height: 12),
+            Text('No results found', style: AppTextStyles.subtitle),
+          ],
+        ),
+      );
+    }
+    return _buildSearchResultsList(provider);
+  }
+
+  Widget _buildSearchResultsList(SearchProvider provider) {
+    return Consumer<DownloadProvider>(
+      builder: (context, downloadProv, _) {
+        final isActive = downloadProv.status.isActive;
+        final currentVideoId = downloadProv.currentVideoId;
+
+        return ListView.builder(
+          controller: _scrollController,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          itemCount:
+              provider.results.length + (provider.isLoadingMore ? 1 : 0),
+          itemBuilder: (context, index) {
+            if (index == provider.results.length) {
+              return const Padding(
+                padding: EdgeInsets.all(16),
+                child: Center(
+                  child: CircularProgressIndicator(
+                    color: AppColors.primary,
+                    strokeWidth: 2,
+                  ),
+                ),
+              );
+            }
+            final result = provider.results[index];
+            final isThisDownloading =
+                isActive && currentVideoId == result.videoId;
+
+            return SearchResultTile(
+              videoInfo: result,
+              onTap: () => _onResultTap(result),
+              onDownload: () => _onDownloadTap(result),
+              isDownloading: isThisDownloading,
+              downloadDisabled: isActive && !isThisDownloading,
+            ).animate().fadeIn(
+                  duration: 200.ms,
+                  delay: Duration(
+                      milliseconds: (index * 30).clamp(0, 300)),
+                );
+          },
+        );
+      },
+    );
+  }
+
+  /// 검색 미입력 시: 최근 다운로드 목록.
+  Widget _buildRecentDownloads() {
+    return Consumer<HistoryProvider>(
+      builder: (context, history, _) {
+        final recent = history.recentItems;
+
+        return CustomScrollView(
+          controller: _scrollController,
+          slivers: [
+            // 섹션 헤더
             SliverPadding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
-              sliver: SliverList(
-                delegate: SliverChildListDelegate([
-                  const SizedBox(height: 16),
-
-                  // Hero heading
-                  GradientText(
-                    text: 'Download Audio',
-                    style: AppTextStyles.heroTitle,
-                    gradient: AppColors.headingGradient,
-                  ).animate().fadeIn(duration: 600.ms).slideY(begin: -0.2, end: 0),
-                  const SizedBox(height: 6),
-                  Text(
-                    'Paste a YouTube link to download audio',
-                    style: AppTextStyles.subtitle,
-                  ).animate().fadeIn(duration: 600.ms, delay: 100.ms),
-                  const SizedBox(height: 24),
-
-                  // URL input
-                  UrlInputField(
-                    onUrlChanged: (_) {},
-                    onUrlValid: _onUrlValid,
-                    onUrlCleared: _onUrlCleared,
-                  ).animate().fadeIn(duration: 400.ms, delay: 200.ms),
-                  const SizedBox(height: 16),
-
-                  // Video preview
-                  Consumer<VideoInfoProvider>(
-                    builder: (context, provider, _) {
-                      if (provider.isLoading) {
-                        return const VideoPreviewShimmer();
-                      }
-                      if (provider.videoInfo != null) {
-                        return VideoPreviewCard(videoInfo: provider.videoInfo!)
-                            .animate()
-                            .fadeIn(duration: 400.ms)
-                            .slideY(begin: 0.1, end: 0);
-                      }
-                      if (provider.error != null) {
-                        return Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: AppColors.error.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(Icons.error_outline, color: AppColors.error, size: 20),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  'Failed to load video info',
-                                  style: TextStyle(color: AppColors.error, fontSize: 13),
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      }
-                      return const SizedBox.shrink();
-                    },
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Download button + progress
-                  Consumer2<DownloadProvider, VideoInfoProvider>(
-                    builder: (context, downloadProv, videoProv, _) {
-                      return Column(
-                        children: [
-                          DownloadButton(
-                            status: downloadProv.status,
-                            enabled: videoProv.videoInfo != null &&
-                                !downloadProv.status.isActive,
-                            onPressed: _startDownload,
-                            onCancel: () => downloadProv.cancel(),
-                            onRetry: () {
-                              downloadProv.reset();
-                              _startDownload();
-                            },
-                          ),
-                          if (downloadProv.status.isActive &&
-                              downloadProv.status.phase != DownloadPhase.fetching) ...[
-                            const SizedBox(height: 12),
-                            ProgressIndicatorBar(
-                              status: downloadProv.status,
-                              onCancel: () => downloadProv.cancel(),
+              sliver: SliverToBoxAdapter(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Recent Downloads (${history.recentCount})',
+                          style: AppTextStyles.sectionHeader,
+                        ),
+                        if (history.recentCount > 0)
+                          TextButton(
+                            onPressed: () => history.clearRecent(),
+                            child: const Text(
+                              'Clear',
+                              style: TextStyle(
+                                  color: AppColors.textTertiary,
+                                  fontSize: 13),
                             ),
-                          ],
-                        ],
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 32),
-
-                  // Divider
-                  const Divider(color: AppColors.divider),
-                  const SizedBox(height: 16),
-
-                  // Download history header
-                  Consumer<HistoryProvider>(
-                    builder: (context, history, _) {
-                      return Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Recent Downloads (${history.recentCount})',
-                            style: AppTextStyles.sectionHeader,
                           ),
-                          if (history.recentCount > 0)
-                            TextButton(
-                              onPressed: () => history.clearRecent(),
-                              child: const Text(
-                                'Clear',
-                                style: TextStyle(color: AppColors.textTertiary, fontSize: 13),
-                              ),
-                            ),
-                        ],
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 8),
-                ]),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                  ],
+                ),
               ),
             ),
 
-            // Download history list
-            Consumer<HistoryProvider>(
-              builder: (context, history, _) {
-                final recent = history.recentItems;
-                if (recent.isEmpty) {
-                  return const SliverToBoxAdapter(child: EmptyStateWidget());
-                }
-                return SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  sliver: SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                        final item = recent[index];
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 8),
-                          child: DownloadHistoryTile(
-                            item: item,
-                            onDelete: () => history.removeItem(index),
-                            onTap: () => _playFromHistory(
-                              recent, index,
-                            ),
-                            onAddToQueue: () {
-                              context.read<PlayerProvider>().addToQueue(item);
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Added to queue'),
-                                ),
-                              );
-                            },
-                            isFavorite: item.isFavorite,
-                            onToggleFavorite: () =>
-                                context.read<HistoryProvider>().toggleFavorite(item),
-                            onAddToPlaylist: () =>
-                                AddToPlaylistSheet.show(context, videoId: item.videoId),
-                          ).animate().fadeIn(duration: 300.ms, delay: (index * 50).ms),
-                        );
-                      },
-                      childCount: recent.length,
-                    ),
+            // 목록
+            if (recent.isEmpty)
+              const SliverToBoxAdapter(child: EmptyStateWidget()),
+            if (recent.isNotEmpty)
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                sliver: SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      final item = recent[index];
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: DownloadHistoryTile(
+                          item: item,
+                          onDelete: () => history.removeItem(index),
+                          onTap: () => _playFromHistory(recent, index),
+                          onAddToQueue: () {
+                            context
+                                .read<PlayerProvider>()
+                                .addToQueue(item);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Added to queue'),
+                              ),
+                            );
+                          },
+                          isFavorite: item.isFavorite,
+                          onToggleFavorite: () => context
+                              .read<HistoryProvider>()
+                              .toggleFavorite(item),
+                          onAddToPlaylist: () => AddToPlaylistSheet.show(
+                              context,
+                              videoId: item.videoId),
+                        ).animate().fadeIn(
+                            duration: 300.ms, delay: (index * 50).ms),
+                      );
+                    },
+                    childCount: recent.length,
                   ),
-                );
-              },
-            ),
+                ),
+              ),
 
-            // Bottom padding
             const SliverToBoxAdapter(child: SizedBox(height: 32)),
           ],
-        ),
+        );
+      },
+    );
+  }
+}
+
+/// 다운로드 확인 바텀 시트.
+///
+/// 검색 결과의 미리보기 정보와 다운로드 버튼을 표시.
+class _DownloadConfirmSheet extends StatelessWidget {
+  final VideoInfo videoInfo;
+  final VoidCallback onDownload;
+
+  const _DownloadConfirmSheet({
+    required this.videoInfo,
+    required this.onDownload,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(
+        20,
+        12,
+        20,
+        20 + MediaQuery.of(context).padding.bottom,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // 핸들 바
+          Container(
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: AppColors.textTertiary,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(height: 20),
+
+          // 영상 정보
+          Row(
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.network(
+                  videoInfo.thumbnailUrl,
+                  width: 120,
+                  height: 68,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => Container(
+                    width: 120,
+                    height: 68,
+                    color: AppColors.surfaceVariant,
+                    child: const Icon(
+                      Icons.music_note,
+                      color: AppColors.textTertiary,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      videoInfo.title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      videoInfo.channelName,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 12,
+                      ),
+                    ),
+                    if (videoInfo.duration != Duration.zero) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        videoInfo.formattedDuration,
+                        style: const TextStyle(
+                          color: AppColors.textTertiary,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+
+          // 다운로드 버튼
+          Consumer<DownloadProvider>(
+            builder: (context, provider, _) {
+              final isActive = provider.status.isActive;
+              return SizedBox(
+                width: double.infinity,
+                height: 52,
+                child: Material(
+                  borderRadius: BorderRadius.circular(26),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(26),
+                    onTap: isActive
+                        ? null
+                        : () {
+                            HapticFeedback.mediumImpact();
+                            onDownload();
+                          },
+                    child: Ink(
+                      decoration: BoxDecoration(
+                        gradient:
+                            isActive ? null : AppColors.primaryGradient,
+                        color: isActive ? AppColors.surfaceVariant : null,
+                        borderRadius: BorderRadius.circular(26),
+                      ),
+                      child: Center(
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.download_rounded,
+                              color: isActive
+                                  ? AppColors.textTertiary
+                                  : Colors.white,
+                              size: 22,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              isActive
+                                  ? 'Download in progress...'
+                                  : 'Download Audio',
+                              style: TextStyle(
+                                color: isActive
+                                    ? AppColors.textTertiary
+                                    : Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
       ),
     );
   }
