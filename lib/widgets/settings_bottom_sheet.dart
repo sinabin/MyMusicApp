@@ -56,7 +56,7 @@ class SettingsBottomSheet extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       const Text(
-                        'Settings',
+                        '설정',
                         style: TextStyle(
                           color: AppColors.textPrimary,
                           fontSize: 20,
@@ -81,7 +81,7 @@ class SettingsBottomSheet extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const Text(
-                              'Save Location',
+                              '저장 위치',
                               style: TextStyle(
                                 color: AppColors.textPrimary,
                                 fontSize: 14,
@@ -91,7 +91,7 @@ class SettingsBottomSheet extends StatelessWidget {
                             const SizedBox(height: 2),
                             Text(
                               settings.settings.savePath.isEmpty
-                                  ? 'Not set'
+                                  ? '설정되지 않음'
                                   : settings.settings.savePath,
                               style: const TextStyle(
                                 color: AppColors.textTertiary,
@@ -110,7 +110,7 @@ class SettingsBottomSheet extends StatelessWidget {
                             settings.setSavePath(path);
                           }
                         },
-                        child: const Text('Change'),
+                        child: const Text('변경'),
                       ),
                     ],
                   ),
@@ -129,7 +129,7 @@ class SettingsBottomSheet extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Play All on Tap',
+                              '탭하여 전체 재생',
                               style: TextStyle(
                                 color: AppColors.textPrimary,
                                 fontSize: 14,
@@ -138,7 +138,7 @@ class SettingsBottomSheet extends StatelessWidget {
                             ),
                             SizedBox(height: 2),
                             Text(
-                              'Play all tracks starting from tapped song',
+                              '선택한 곡부터 목록 전체를 이어서 재생',
                               style: TextStyle(
                                 color: AppColors.textTertiary,
                                 fontSize: 12,
@@ -189,7 +189,7 @@ class SettingsBottomSheet extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    'YouTube Login',
+                    'YouTube 로그인',
                     style: TextStyle(
                       color: AppColors.textPrimary,
                       fontSize: 14,
@@ -199,8 +199,8 @@ class SettingsBottomSheet extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(
                     isLoggedIn
-                        ? settings.settings.userEmail ?? 'Logged in'
-                        : 'Required for age-restricted content',
+                        ? settings.settings.userEmail ?? '로그인됨'
+                        : '연령 제한 콘텐츠 재생 시 필요',
                     style: const TextStyle(
                       color: AppColors.textTertiary,
                       fontSize: 12,
@@ -218,7 +218,7 @@ class SettingsBottomSheet extends StatelessWidget {
               ? OutlinedButton.icon(
                   onPressed: () => settings.logout(),
                   icon: const Icon(Icons.logout, size: 18),
-                  label: const Text('Logout'),
+                  label: const Text('로그아웃'),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppColors.error,
                     side: const BorderSide(color: AppColors.error),
@@ -242,7 +242,7 @@ class SettingsBottomSheet extends StatelessWidget {
                     }
                   },
                   icon: const Icon(Icons.login, size: 18),
-                  label: const Text('YouTube Login'),
+                  label: const Text('YouTube 로그인'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,
