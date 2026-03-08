@@ -15,6 +15,10 @@ import 'services/download_service.dart';
 import 'services/file_service.dart';
 import 'services/youtube_service.dart';
 
+/// 앱 진입점.
+///
+/// 서비스 및 데이터베이스를 초기화하고 [MultiProvider]로 의존성을 주입한 뒤
+/// [App] 위젯을 실행.
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 

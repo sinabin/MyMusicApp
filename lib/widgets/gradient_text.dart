@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 
+/// 그라데이션이 적용된 텍스트를 렌더링하는 위젯.
+///
+/// [ShaderMask]를 사용하여 [gradient]를 텍스트에 적용.
+/// [HomeScreen]의 히어로 타이틀에 사용.
 class GradientText extends StatelessWidget {
   final String text;
   final TextStyle style;

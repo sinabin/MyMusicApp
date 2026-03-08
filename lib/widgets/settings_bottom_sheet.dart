@@ -6,9 +6,14 @@ import '../screens/login_webview_screen.dart';
 import '../theme/app_colors.dart';
 import 'quality_selector.dart';
 
+/// 앱 설정(오디오 품질·저장 경로·YouTube 로그인)을 표시하는 바텀시트 위젯.
+///
+/// [SettingsProvider]를 구독하여 설정 변경 사항을 실시간 반영.
+/// [SettingsBottomSheet.show]를 호출하여 표시.
 class SettingsBottomSheet extends StatelessWidget {
   const SettingsBottomSheet({super.key});
 
+  /// 설정 바텀시트를 모달로 표시.
   static void show(BuildContext context) {
     showModalBottomSheet(
       context: context,

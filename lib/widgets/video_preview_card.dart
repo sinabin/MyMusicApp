@@ -4,6 +4,9 @@ import 'package:shimmer/shimmer.dart';
 import '../models/video_info.dart';
 import '../theme/app_colors.dart';
 
+/// 조회된 YouTube 영상의 썸네일·제목·채널·재생 시간을 미리보기로 표시하는 카드 위젯.
+///
+/// [VideoInfo] 데이터를 받아 렌더링하며, [HomeScreen]에서 URL 입력 후 표시.
 class VideoPreviewCard extends StatelessWidget {
   final VideoInfo videoInfo;
 
@@ -110,6 +113,7 @@ class VideoPreviewCard extends StatelessWidget {
   }
 }
 
+/// [VideoPreviewCard] 로딩 중 표시되는 스켈레톤 Shimmer 위젯.
 class VideoPreviewShimmer extends StatelessWidget {
   const VideoPreviewShimmer({super.key});
 

@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 
+/// 앱 전역에서 사용하는 색상 팔레트 정의.
+///
+/// 배경, 액센트, 시맨틱, 텍스트, 테두리, 그라데이션 색상을 포함.
+/// [AppTheme]에서 테마 구성 시 참조.
 class AppColors {
   AppColors._();
 

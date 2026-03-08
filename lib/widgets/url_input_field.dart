@@ -3,6 +3,10 @@ import 'package:flutter/services.dart';
 import '../theme/app_colors.dart';
 import '../utils/url_validator.dart';
 
+/// YouTube URL 입력 필드 위젯.
+///
+/// 붙여넣기·지우기 버튼과 실시간 유효성 검증 피드백을 제공.
+/// [UrlValidator]로 URL을 검증하고, 유효한 영상 ID를 [onUrlValid] 콜백으로 전달.
 class UrlInputField extends StatefulWidget {
   final ValueChanged<String> onUrlChanged;
   final ValueChanged<String>? onUrlValid;

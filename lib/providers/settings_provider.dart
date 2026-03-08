@@ -4,6 +4,10 @@ import '../models/app_settings.dart';
 import '../services/auth_service.dart';
 import '../services/file_service.dart';
 
+/// 앱 설정 상태를 관리하는 Provider.
+///
+/// [LocalStorage]·[AuthService]·[FileService]를 조합하여
+/// [AppSettings]를 초기화·변경하고 UI에 변경 사항을 알림.
 class SettingsProvider extends ChangeNotifier {
   final LocalStorage _localStorage;
   final AuthService _authService;
@@ -18,8 +22,10 @@ class SettingsProvider extends ChangeNotifier {
         _authService = authService,
         _fileService = fileService;
 
+  /// 현재 설정값 반환.
   AppSettings get settings => _settings;
 
+  /// 저장소에서 설정값을 불러와 초기화.
   Future<void> init() async {
     final bitrate = await _localStorage.getAudioBitrate();
     var savePath = await _localStorage.getSavePath();
@@ -36,18 +42,21 @@ class SettingsProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// 오디오 [bitrate] 변경 및 영속 저장.
   Future<void> setBitrate(int bitrate) async {
     _settings = _settings.copyWith(audioBitrate: bitrate);
     await _localStorage.setAudioBitrate(bitrate);
     notifyListeners();
   }
 
+  /// 저장 경로 [path] 변경 및 영속 저장.
   Future<void> setSavePath(String path) async {
     _settings = _settings.copyWith(savePath: path);
     await _localStorage.setSavePath(path);
     notifyListeners();
   }
 
+  /// 로그인 상태 [value] 및 [email] 갱신.
   Future<void> setLoggedIn(bool value, {String? email}) async {
     _settings = _settings.copyWith(isLoggedIn: value, userEmail: email);
     if (email != null) {
@@ -56,6 +65,7 @@ class SettingsProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// 인증 정보 삭제 및 로그아웃 처리.
   Future<void> logout() async {
     await _authService.logout();
     _settings = _settings.copyWith(isLoggedIn: false, userEmail: null);

@@ -17,6 +17,11 @@ import '../widgets/settings_bottom_sheet.dart';
 import '../widgets/url_input_field.dart';
 import '../widgets/video_preview_card.dart';
 
+/// 앱의 메인 화면.
+///
+/// URL 입력, 영상 미리보기, 다운로드 버튼, 다운로드 기록 목록을 포함.
+/// [VideoInfoProvider]·[DownloadProvider]·[HistoryProvider]·[SettingsProvider]를
+/// 구독하여 전체 다운로드 워크플로우를 조율.
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 

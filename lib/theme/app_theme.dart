@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 import 'app_colors.dart';
 
+/// Material 테마 구성 제공.
+///
+/// [AppColors]를 기반으로 다크 테마를 구성하며, 카드·입력 필드·스낵바 등
+/// 공통 위젯 테마를 포함.
 class AppTheme {
   AppTheme._();
 
+  /// Material3 기반 다크 테마 반환.
   static ThemeData get darkTheme => ThemeData(
     useMaterial3: true,
     brightness: Brightness.dark,

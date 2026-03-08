@@ -4,6 +4,10 @@ import '../models/download_item.dart';
 import '../theme/app_colors.dart';
 import '../utils/format_utils.dart';
 
+/// 다운로드 기록 목록의 개별 항목을 표시하는 타일 위젯.
+///
+/// 파일명·크기·날짜 정보와 공유·스와이프 삭제 기능을 제공.
+/// [DownloadItem] 데이터를 받아 렌더링.
 class DownloadHistoryTile extends StatelessWidget {
   final DownloadItem item;
   final VoidCallback? onDelete;

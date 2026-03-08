@@ -1,8 +1,10 @@
 import 'package:intl/intl.dart';
 
+/// 파일 크기·시간·날짜를 사용자 친화적 문자열로 변환하는 유틸리티.
 class FormatUtils {
   FormatUtils._();
 
+  /// [bytes]를 B/KB/MB/GB 단위 문자열로 변환.
   static String fileSize(int bytes) {
     if (bytes < 1024) return '$bytes B';
     if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
@@ -12,6 +14,7 @@ class FormatUtils {
     return '${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(1)} GB';
   }
 
+  /// [Duration]을 "H:MM:SS" 또는 "M:SS" 형식 문자열로 변환.
   static String duration(Duration d) {
     final hours = d.inHours;
     final minutes = d.inMinutes.remainder(60);
@@ -22,6 +25,7 @@ class FormatUtils {
     return '${minutes}:${seconds.toString().padLeft(2, '0')}';
   }
 
+  /// [DateTime]을 상대적 날짜 문자열로 변환. 오늘이면 "Today HH:mm", 어제면 "Yesterday HH:mm" 반환.
   static String date(DateTime dt) {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);

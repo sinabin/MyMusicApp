@@ -7,6 +7,10 @@ import '../services/download_service.dart';
 import '../services/file_service.dart';
 import '../utils/format_utils.dart';
 
+/// 다운로드 워크플로우(조회→다운로드→변환→완료) 상태를 관리하는 Provider.
+///
+/// [DownloadService]·[AudioConverterService]·[FileService]를 조합하여
+/// 전체 과정을 제어하고, [DownloadStatus]를 통해 UI에 진행 상태를 전달.
 class DownloadProvider extends ChangeNotifier {
   final DownloadService _downloadService;
   final AudioConverterService _converterService;
@@ -22,8 +26,10 @@ class DownloadProvider extends ChangeNotifier {
         _converterService = converterService,
         _fileService = fileService;
 
+  /// 현재 다운로드 상태.
   DownloadStatus get status => _status;
 
+  /// [videoInfo]의 오디오를 다운로드·변환하여 [DownloadItem] 반환. 취소·실패 시 null.
   Future<DownloadItem?> startDownload({
     required VideoInfo videoInfo,
     required String savePath,
@@ -132,10 +138,12 @@ class DownloadProvider extends ChangeNotifier {
     }
   }
 
+  /// 진행 중인 다운로드 취소.
   void cancel() {
     _downloadService.cancel();
   }
 
+  /// 다운로드 상태 초기화.
   void reset() {
     _downloadService.reset();
     _status = const DownloadStatus();

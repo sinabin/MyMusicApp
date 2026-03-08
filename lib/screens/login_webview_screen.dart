@@ -3,6 +3,10 @@ import 'package:webview_flutter/webview_flutter.dart';
 import '../services/auth_service.dart';
 import '../theme/app_colors.dart';
 
+/// Google 계정을 통한 YouTube 로그인을 WebView로 처리하는 화면.
+///
+/// 로그인 성공 시 쿠키를 [AuthService]에 저장하고,
+/// 결과를 `Navigator.pop`으로 이전 화면에 전달.
 class LoginWebviewScreen extends StatefulWidget {
   const LoginWebviewScreen({super.key});
 

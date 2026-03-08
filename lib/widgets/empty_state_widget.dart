@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 
+/// 다운로드 기록이 없을 때 표시하는 빈 상태 안내 위젯.
 class EmptyStateWidget extends StatelessWidget {
   const EmptyStateWidget({super.key});
 

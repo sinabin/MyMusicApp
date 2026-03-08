@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../utils/constants.dart';
 
+/// 오디오 비트레이트를 선택하는 ChoiceChip 그룹 위젯.
+///
+/// [AppConstants.supportedBitrates] 목록을 표시하며,
+/// 선택 변경 시 [onChanged] 콜백으로 비트레이트 값 전달.
 class QualitySelector extends StatelessWidget {
   final int selectedBitrate;
   final ValueChanged<int> onChanged;

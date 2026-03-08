@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'app_colors.dart';
 
+/// 앱 전역에서 사용하는 텍스트 스타일 정의.
+///
+/// Google Fonts의 Inter 서체를 기반으로 하며, [AppColors]의 색상을 적용.
 class AppTextStyles {
   AppTextStyles._();
 

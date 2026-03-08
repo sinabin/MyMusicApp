@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import '../models/download_state.dart';
 import '../theme/app_colors.dart';
 
+/// 다운로드 진행률 바와 상태 텍스트·취소 버튼을 표시하는 위젯.
+///
+/// [DownloadStatus]의 진행률과 단계에 따라 UI를 갱신.
 class ProgressIndicatorBar extends StatelessWidget {
   final DownloadStatus status;
   final VoidCallback? onCancel;
@@ -72,9 +75,15 @@ class ProgressIndicatorBar extends StatelessWidget {
   }
 }
 
+/// [widthFactor]를 애니메이션으로 전환하는 [FractionallySizedBox] 래퍼.
 class AnimatedFractionallySizedBox extends ImplicitlyAnimatedWidget {
+  /// 0.0~1.0 범위의 너비 비율.
   final double widthFactor;
+
+  /// 자식 위젯의 정렬 위치.
   final AlignmentGeometry alignment;
+
+  /// 내부에 표시할 위젯.
   final Widget? child;
 
   const AnimatedFractionallySizedBox({

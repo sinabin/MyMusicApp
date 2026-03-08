@@ -3,6 +3,10 @@ import 'package:flutter/services.dart';
 import '../models/download_state.dart';
 import '../theme/app_colors.dart';
 
+/// [DownloadPhase]에 따라 외형이 변화하는 다운로드 버튼 위젯.
+///
+/// 대기·조회·다운로드·변환·완료·에러 각 단계별로 다른 UI를 표시.
+/// [DownloadProvider]의 [DownloadStatus]를 받아 상태를 반영.
 class DownloadButton extends StatefulWidget {
   final DownloadStatus status;
   final bool enabled;
@@ -318,9 +322,17 @@ class _DownloadButtonState extends State<DownloadButton>
   }
 }
 
+/// [widthFactor]를 애니메이션으로 전환하는 [FractionallySizedBox] 래퍼.
+///
+/// 다운로드 진행률 표시 바에서 너비 비율 변화를 부드럽게 처리.
 class AnimatedFractionallySizedBox extends ImplicitlyAnimatedWidget {
+  /// 0.0~1.0 범위의 너비 비율.
   final double widthFactor;
+
+  /// 자식 위젯의 정렬 위치.
   final AlignmentGeometry alignment;
+
+  /// 내부에 표시할 위젯.
   final Widget? child;
 
   const AnimatedFractionallySizedBox({

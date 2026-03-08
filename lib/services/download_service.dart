@@ -1,20 +1,26 @@
 import 'dart:io';
 import 'youtube_service.dart';
 
+/// 오디오 스트림 다운로드를 수행하며 취소 기능을 제공하는 서비스.
+///
+/// [YouTubeService]를 주입받아 스트림을 가져오고, [DownloadProvider]에서 사용.
 class DownloadService {
   final YouTubeService _youtubeService;
   bool _isCancelled = false;
 
   DownloadService(this._youtubeService);
 
+  /// 진행 중인 다운로드 취소 요청.
   void cancel() {
     _isCancelled = true;
   }
 
+  /// 취소 플래그 초기화.
   void reset() {
     _isCancelled = false;
   }
 
+  /// [videoId]의 오디오를 [outputPath]에 다운로드. 취소 시 임시 파일 삭제 후 null 반환.
   Future<File?> downloadAudio({
     required String videoId,
     required String outputPath,
