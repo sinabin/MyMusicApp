@@ -80,6 +80,12 @@ class YouTubeService {
     return audioStreams.first; // Highest bitrate (sortByBitrate는 내림차순)
   }
 
+  /// [videoId]의 최고 비트레이트 오디오 스트림 URL 반환.
+  Future<Uri> getAudioStreamUrl(String videoId) async {
+    final streamInfo = await getBestAudioStream(videoId);
+    return streamInfo.url;
+  }
+
   /// [streamInfo]에 해당하는 오디오 바이트 스트림 반환.
   Stream<List<int>> getAudioStream(StreamInfo streamInfo) {
     return _client.videos.streams.get(streamInfo);

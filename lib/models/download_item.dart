@@ -56,6 +56,12 @@ class DownloadItem extends HiveObject {
   @HiveField(11)
   bool isFavorite;
 
+  /// 스트리밍 재생 여부 (비영속, 메모리 전용).
+  final bool isStreaming;
+
+  /// 스트리밍 재생 시 오디오 URL (비영속, 메모리 전용).
+  final String? streamUrl;
+
   /// 재생 시간 [Duration] 반환.
   Duration? get duration =>
       durationInMs != null ? Duration(milliseconds: durationInMs!) : null;
@@ -73,5 +79,36 @@ class DownloadItem extends HiveObject {
     this.artistName,
     this.durationInMs,
     this.isFavorite = false,
+    this.isStreaming = false,
+    this.streamUrl,
   });
+
+  /// [VideoInfo]와 스트림 URL로 스트리밍 전용 인스턴스 생성.
+  factory DownloadItem.streaming({
+    required String videoId,
+    required String title,
+    required String streamUrl,
+    String? thumbnailUrl,
+    String? channelName,
+    String? channelId,
+    String? artistName,
+    List<String>? keywords,
+    int? durationInMs,
+  }) {
+    return DownloadItem(
+      fileName: title,
+      filePath: '',
+      fileSize: 0,
+      downloadDate: DateTime.now(),
+      videoId: videoId,
+      thumbnailUrl: thumbnailUrl,
+      channelName: channelName,
+      channelId: channelId,
+      keywords: keywords,
+      artistName: artistName,
+      durationInMs: durationInMs,
+      isStreaming: true,
+      streamUrl: streamUrl,
+    );
+  }
 }

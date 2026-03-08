@@ -62,15 +62,17 @@ class AudioPlayerService {
 
   /// [items] 목록을 큐로 설정하고 [startIndex]부터 재생.
   ///
-  /// 파일 미존재 항목은 제외. 유효 항목이 없으면 무시.
+  /// 스트리밍 항목은 파일 검증을 건너뛰고, 로컬 파일은 존재 여부 확인.
   /// [_listenToIndex]가 setAudioSource 이후 currentIndexStream을 수신하여
   /// [QueueState]를 발행하므로 명시적 emit 불필요.
   Future<void> playQueue(
     List<DownloadItem> items, {
     int startIndex = 0,
   }) async {
-    final validItems =
-        items.where((item) => File(item.filePath).existsSync()).toList();
+    final validItems = items
+        .where((item) =>
+            item.isStreaming || File(item.filePath).existsSync())
+        .toList();
     if (validItems.isEmpty) return;
 
     var adjustedIndex = 0;
@@ -124,7 +126,7 @@ class AudioPlayerService {
   ///
   /// addQueueItem은 currentIndex를 변경하지 않으므로 명시적 emit 필요.
   Future<void> addToQueue(DownloadItem item) async {
-    if (!File(item.filePath).existsSync()) return;
+    if (!item.isStreaming && !File(item.filePath).existsSync()) return;
     final prevQueue = _queue;
     _queue = [..._queue, item];
     try {
@@ -192,7 +194,7 @@ class AudioPlayerService {
     });
   }
 
-  /// duration 수신 시 현재 트랙에 lazy backfill 수행.
+  /// duration 수신 시 현재 트랙에 lazy backfill 수행. 스트리밍 항목은 건너뜀.
   void _listenToDuration() {
     _durationSub = _handler.player.durationStream.listen((dur) {
       if (dur == null) return;
@@ -203,6 +205,7 @@ class AudioPlayerService {
         return;
       }
       final track = _queue[currentIndex];
+      if (track.isStreaming) return;
       if (track.duration == null && track.isInBox) {
         track.durationInMs = dur.inMilliseconds;
         track.save();
@@ -223,13 +226,13 @@ class AudioPlayerService {
     _emitQueueState(safeIndex);
   }
 
-  /// [DownloadItem]을 [MediaItem]으로 변환.
+  /// [DownloadItem]을 [MediaItem]으로 변환. 스트리밍 항목은 URL을 id로 사용.
   MediaItem _toMediaItem(DownloadItem item) {
     final title = item.fileName.endsWith('.m4a')
         ? item.fileName.substring(0, item.fileName.length - 4)
         : item.fileName;
     return MediaItem(
-      id: item.filePath,
+      id: item.isStreaming ? item.streamUrl! : item.filePath,
       title: title,
       artist: item.artistName ?? item.channelName ?? '',
       artUri: item.thumbnailUrl != null ? Uri.parse(item.thumbnailUrl!) : null,

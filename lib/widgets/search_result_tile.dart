@@ -6,8 +6,8 @@ import '../theme/app_colors.dart';
 
 /// 검색 결과 항목을 표시하는 타일 위젯.
 ///
-/// 썸네일·제목·채널·재생 시간을 표시하며, 탭 영역과 다운로드 버튼 영역을 분리.
-/// [SearchScreen]의 결과 목록에서 사용.
+/// 썸네일·제목·채널·재생 시간을 표시하며, 탭 영역과 버튼 영역을 분리.
+/// 스트리밍 재생·다운로드 버튼을 개별 제공.
 class SearchResultTile extends StatelessWidget {
   /// 표시할 영상 정보.
   final VideoInfo videoInfo;
@@ -18,8 +18,14 @@ class SearchResultTile extends StatelessWidget {
   /// 다운로드 아이콘 탭 콜백.
   final VoidCallback? onDownload;
 
+  /// 스트리밍 재생 아이콘 탭 콜백.
+  final VoidCallback? onStream;
+
   /// 다운로드 진행 중 여부 (이 영상).
   final bool isDownloading;
+
+  /// 스트리밍 준비 중 여부 (이 영상).
+  final bool isStreamLoading;
 
   /// 다운로드 비활성화 여부 (다른 영상 다운로드 중).
   final bool downloadDisabled;
@@ -29,7 +35,9 @@ class SearchResultTile extends StatelessWidget {
     required this.videoInfo,
     this.onTap,
     this.onDownload,
+    this.onStream,
     this.isDownloading = false,
+    this.isStreamLoading = false,
     this.downloadDisabled = false,
   });
 
@@ -60,7 +68,9 @@ class SearchResultTile extends StatelessWidget {
               ),
             ),
           ),
-          // 다운로드 버튼 영역
+          // 스트리밍 재생 버튼
+          _buildStreamButton(),
+          // 다운로드 버튼
           _buildDownloadButton(),
           const SizedBox(width: 4),
         ],
@@ -151,6 +161,33 @@ class SearchResultTile extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildStreamButton() {
+    if (isStreamLoading) {
+      return const Padding(
+        padding: EdgeInsets.all(12),
+        child: SizedBox(
+          width: 20,
+          height: 20,
+          child: CircularProgressIndicator(
+            strokeWidth: 2,
+            color: AppColors.primaryLight,
+          ),
+        ),
+      );
+    }
+
+    return IconButton(
+      icon: const Icon(
+        Icons.play_circle_outline,
+        color: AppColors.primaryLight,
+        size: 22,
+      ),
+      onPressed: onStream,
+      splashRadius: 20,
+      tooltip: 'Stream',
     );
   }
 

@@ -90,6 +90,15 @@ class MyAudioHandler extends BaseAudioHandler
     await _player.seek(Duration.zero, index: index);
   }
 
+  /// [MediaItem.id]가 URL인지 파일 경로인지 판별하여 적절한 [AudioSource] 생성.
+  AudioSource _audioSourceFor(MediaItem item) {
+    final id = item.id;
+    if (id.startsWith('http://') || id.startsWith('https://')) {
+      return AudioSource.uri(Uri.parse(id), tag: item);
+    }
+    return AudioSource.file(id, tag: item);
+  }
+
   /// 오디오 소스 목록을 설정하고 큐 업데이트.
   ///
   /// 기존 [ConcatenatingAudioSource]를 재사용하면 clear/addAll 과정에서
@@ -98,9 +107,7 @@ class MyAudioHandler extends BaseAudioHandler
     List<MediaItem> items, {
     int initialIndex = 0,
   }) async {
-    final audioSources = items
-        .map((item) => AudioSource.file(item.id, tag: item))
-        .toList();
+    final audioSources = items.map(_audioSourceFor).toList();
 
     _playlist = ConcatenatingAudioSource(children: audioSources);
     queue.add(items);
@@ -112,7 +119,7 @@ class MyAudioHandler extends BaseAudioHandler
   Future<void> addQueueItem(MediaItem mediaItem) async {
     final newQueue = [...queue.value, mediaItem];
     queue.add(newQueue);
-    await _playlist.add(AudioSource.file(mediaItem.id, tag: mediaItem));
+    await _playlist.add(_audioSourceFor(mediaItem));
   }
 
   @override

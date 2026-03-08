@@ -130,33 +130,35 @@ class MiniPlayer extends StatelessWidget {
                           ),
                         ),
                       ),
-                      // 즐겨찾기 토글
-                      _controlButton(
-                        icon: track.isFavorite
-                            ? Icons.favorite
-                            : Icons.favorite_border,
-                        size: 20,
-                        color: track.isFavorite
-                            ? AppColors.error
-                            : AppColors.textSecondary,
-                        onPressed: () => history.toggleFavorite(track),
-                      ),
-                      // 플레이리스트에 추가
-                      _controlButton(
-                        icon: Icons.playlist_add,
-                        size: 22,
-                        color: AppColors.textSecondary,
-                        onPressed: () {
-                          final navContext =
-                              appNavigatorKey.currentState?.overlay?.context;
-                          if (navContext != null) {
-                            AddToPlaylistSheet.show(
-                              navContext,
-                              videoId: track.videoId,
-                            );
-                          }
-                        },
-                      ),
+                      if (!track.isStreaming) ...[
+                        // 즐겨찾기 토글
+                        _controlButton(
+                          icon: track.isFavorite
+                              ? Icons.favorite
+                              : Icons.favorite_border,
+                          size: 20,
+                          color: track.isFavorite
+                              ? AppColors.error
+                              : AppColors.textSecondary,
+                          onPressed: () => history.toggleFavorite(track),
+                        ),
+                        // 플레이리스트에 추가
+                        _controlButton(
+                          icon: Icons.playlist_add,
+                          size: 22,
+                          color: AppColors.textSecondary,
+                          onPressed: () {
+                            final navContext =
+                                appNavigatorKey.currentState?.overlay?.context;
+                            if (navContext != null) {
+                              AddToPlaylistSheet.show(
+                                navContext,
+                                videoId: track.videoId,
+                              );
+                            }
+                          },
+                        ),
+                      ],
                       // 재생/일시정지
                       _controlButton(
                         icon: player.isPlaying

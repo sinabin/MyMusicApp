@@ -119,7 +119,7 @@ class QueueScreen extends StatelessWidget {
                     final item = player.queue[index];
                     final isCurrent = index == player.currentIndex;
                     return Dismissible(
-                      key: ValueKey('${item.filePath}_$index'),
+                      key: ValueKey('${item.videoId}_$index'),
                       direction: DismissDirection.endToStart,
                       background: Container(
                         alignment: Alignment.centerRight,

@@ -40,6 +40,9 @@ class _HomeScreenState extends State<HomeScreen> {
   final _searchScrollController = ScrollController();
   final _historyScrollController = ScrollController();
 
+  /// 스트리밍 준비 중인 영상 ID.
+  String? _streamingVideoId;
+
   @override
   void initState() {
     super.initState();
@@ -87,6 +90,40 @@ class _HomeScreenState extends State<HomeScreen> {
       player.playAll(items, startIndex: index);
     } else {
       player.playTrack(items[index]);
+    }
+  }
+
+  Future<void> _onStreamTap(VideoInfo info) async {
+    if (_streamingVideoId != null) return;
+    setState(() => _streamingVideoId = info.videoId);
+
+    try {
+      final youtubeService = context.read<YouTubeService>();
+      final streamUrl = await youtubeService.getAudioStreamUrl(info.videoId);
+
+      if (!mounted) return;
+
+      final streamItem = DownloadItem.streaming(
+        videoId: info.videoId,
+        title: info.title,
+        streamUrl: streamUrl.toString(),
+        thumbnailUrl: info.thumbnailUrl,
+        channelName: info.channelName,
+        channelId: info.channelId,
+        artistName: info.artistName,
+        keywords: info.keywords,
+        durationInMs: info.duration.inMilliseconds,
+      );
+
+      context.read<PlayerProvider>().playTrack(streamItem);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Streaming failed: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _streamingVideoId = null);
     }
   }
 
@@ -157,6 +194,10 @@ class _HomeScreenState extends State<HomeScreen> {
         onDownload: () {
           Navigator.of(context).pop();
           _onDownloadTap(info);
+        },
+        onStream: () {
+          Navigator.of(context).pop();
+          _onStreamTap(info);
         },
       ),
     );
@@ -362,7 +403,9 @@ class _HomeScreenState extends State<HomeScreen> {
               videoInfo: result,
               onTap: () => _onResultTap(result),
               onDownload: () => _onDownloadTap(result),
+              onStream: () => _onStreamTap(result),
               isDownloading: isThisDownloading,
+              isStreamLoading: _streamingVideoId == result.videoId,
               downloadDisabled: isActive && !isThisDownloading,
             ).animate().fadeIn(
                   duration: 200.ms,
@@ -498,16 +541,18 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-/// 다운로드 확인 바텀 시트.
+/// 다운로드·스트리밍 확인 바텀 시트.
 ///
-/// 검색 결과의 미리보기 정보와 다운로드 버튼을 표시.
+/// 검색 결과의 미리보기 정보와 다운로드·스트리밍 버튼을 표시.
 class _DownloadConfirmSheet extends StatelessWidget {
   final VideoInfo videoInfo;
   final VoidCallback onDownload;
+  final VoidCallback onStream;
 
   const _DownloadConfirmSheet({
     required this.videoInfo,
     required this.onDownload,
+    required this.onStream,
   });
 
   @override
@@ -601,6 +646,49 @@ class _DownloadConfirmSheet extends StatelessWidget {
           ),
           const SizedBox(height: 24),
 
+          // 스트리밍 재생 버튼
+          SizedBox(
+            width: double.infinity,
+            height: 52,
+            child: Material(
+              borderRadius: BorderRadius.circular(26),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(26),
+                onTap: () {
+                  HapticFeedback.mediumImpact();
+                  onStream();
+                },
+                child: Ink(
+                  decoration: BoxDecoration(
+                    gradient: AppColors.primaryGradient,
+                    borderRadius: BorderRadius.circular(26),
+                  ),
+                  child: const Center(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.play_circle_outline,
+                          color: Colors.white,
+                          size: 22,
+                        ),
+                        SizedBox(width: 8),
+                        Text(
+                          'Stream',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
           // 다운로드 버튼
           Consumer<DownloadProvider>(
             builder: (context, provider, _) {
@@ -620,8 +708,10 @@ class _DownloadConfirmSheet extends StatelessWidget {
                           },
                     child: Ink(
                       decoration: BoxDecoration(
-                        gradient:
-                            isActive ? null : AppColors.primaryGradient,
+                        border: isActive
+                            ? null
+                            : Border.all(
+                                color: AppColors.primary, width: 1.5),
                         color: isActive ? AppColors.surfaceVariant : null,
                         borderRadius: BorderRadius.circular(26),
                       ),
@@ -633,7 +723,7 @@ class _DownloadConfirmSheet extends StatelessWidget {
                               Icons.download_rounded,
                               color: isActive
                                   ? AppColors.textTertiary
-                                  : Colors.white,
+                                  : AppColors.primary,
                               size: 22,
                             ),
                             const SizedBox(width: 8),
@@ -644,7 +734,7 @@ class _DownloadConfirmSheet extends StatelessWidget {
                               style: TextStyle(
                                 color: isActive
                                     ? AppColors.textTertiary
-                                    : Colors.white,
+                                    : AppColors.primary,
                                 fontSize: 16,
                                 fontWeight: FontWeight.w700,
                               ),

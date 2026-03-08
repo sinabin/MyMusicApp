@@ -33,7 +33,10 @@ class _FullPlayerScreenState extends State<FullPlayerScreen> {
 
   @override
   void dispose() {
-    _playerProvider?.setFullPlayerOpen(false);
+    final provider = _playerProvider;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      provider?.setFullPlayerOpen(false);
+    });
     super.dispose();
   }
 
@@ -59,7 +62,9 @@ class _FullPlayerScreenState extends State<FullPlayerScreen> {
           Consumer2<PlayerProvider, HistoryProvider>(
             builder: (context, player, history, _) {
               final track = player.currentTrack;
-              if (track == null) return const SizedBox.shrink();
+              if (track == null || track.isStreaming) {
+                return const SizedBox.shrink();
+              }
               return IconButton(
                 tooltip: 'Favorite',
                 onPressed: () => history.toggleFavorite(track),
@@ -76,7 +81,9 @@ class _FullPlayerScreenState extends State<FullPlayerScreen> {
           Consumer<PlayerProvider>(
             builder: (context, player, _) {
               final track = player.currentTrack;
-              if (track == null) return const SizedBox.shrink();
+              if (track == null || track.isStreaming) {
+                return const SizedBox.shrink();
+              }
               return IconButton(
                 icon: const Icon(
                   Icons.playlist_add,

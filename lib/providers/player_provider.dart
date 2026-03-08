@@ -67,6 +67,9 @@ class PlayerProvider extends ChangeNotifier {
   /// 미니 플레이어 표시 여부. 현재 트랙 존재 시 표시.
   bool get isMiniPlayerVisible => _queueState.currentTrack != null;
 
+  /// 현재 트랙이 스트리밍 재생 중인지 여부.
+  bool get isCurrentTrackStreaming => currentTrack?.isStreaming ?? false;
+
   /// 풀 플레이어 화면 열림 여부.
   bool get isFullPlayerOpen => _isFullPlayerOpen;
 
