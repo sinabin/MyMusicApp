@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
 
@@ -59,17 +60,15 @@ class _FullPlayerScreenState extends State<FullPlayerScreen> {
             builder: (context, player, history, _) {
               final track = player.currentTrack;
               if (track == null) return const SizedBox.shrink();
-              return GestureDetector(
-                onTap: () => history.toggleFavorite(track),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  child: Icon(
-                    track.isFavorite ? Icons.favorite : Icons.favorite_border,
-                    color: track.isFavorite
-                        ? AppColors.error
-                        : AppColors.textSecondary,
-                    size: 24,
-                  ),
+              return IconButton(
+                tooltip: 'Favorite',
+                onPressed: () => history.toggleFavorite(track),
+                icon: Icon(
+                  track.isFavorite ? Icons.favorite : Icons.favorite_border,
+                  color: track.isFavorite
+                      ? AppColors.error
+                      : AppColors.textSecondary,
+                  size: 24,
                 ),
               );
             },
@@ -180,24 +179,50 @@ class _FullPlayerScreenState extends State<FullPlayerScreen> {
     );
   }
 
+  /// 셔플·반복 활성 시 아이콘 아래 표시하는 점 인디케이터.
+  Widget _activeDot() {
+    return Container(
+      width: 4,
+      height: 4,
+      decoration: const BoxDecoration(
+        shape: BoxShape.circle,
+        color: AppColors.primaryLight,
+      ),
+    );
+  }
+
   Widget _buildControls(BuildContext context, PlayerProvider player) {
+    final isShuffleActive = player.isShuffleEnabled;
+    final isRepeatActive = player.loopMode != LoopMode.off;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 32),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           // 셔플
-          IconButton(
-            icon: Icon(
-              Icons.shuffle,
-              color: player.isShuffleEnabled
-                  ? AppColors.primary
-                  : AppColors.textTertiary,
-            ),
-            onPressed: () => player.toggleShuffle(),
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                tooltip: 'Shuffle',
+                icon: Icon(
+                  Icons.shuffle,
+                  color: isShuffleActive
+                      ? AppColors.primary
+                      : AppColors.textTertiary,
+                ),
+                onPressed: () {
+                  HapticFeedback.lightImpact();
+                  player.toggleShuffle();
+                },
+              ),
+              if (isShuffleActive) _activeDot() else const SizedBox(height: 4),
+            ],
           ),
           // 이전
           IconButton(
+            tooltip: 'Previous',
             icon: const Icon(Icons.skip_previous, size: 36),
             color: AppColors.textPrimary,
             onPressed: () => player.skipPrevious(),
@@ -211,31 +236,44 @@ class _FullPlayerScreenState extends State<FullPlayerScreen> {
               gradient: AppColors.primaryGradient,
             ),
             child: IconButton(
+              tooltip: player.isPlaying ? 'Pause' : 'Play',
               icon: Icon(
                 player.isPlaying ? Icons.pause : Icons.play_arrow,
                 size: 32,
                 color: Colors.white,
               ),
               onPressed: () {
+                HapticFeedback.lightImpact();
                 player.isPlaying ? player.pause() : player.resume();
               },
             ),
           ),
           // 다음
           IconButton(
+            tooltip: 'Next',
             icon: const Icon(Icons.skip_next, size: 36),
             color: AppColors.textPrimary,
             onPressed: () => player.skipNext(),
           ),
           // 반복
-          IconButton(
-            icon: Icon(
-              _loopModeIcon(player.loopMode),
-              color: player.loopMode != LoopMode.off
-                  ? AppColors.primary
-                  : AppColors.textTertiary,
-            ),
-            onPressed: () => player.cycleLoopMode(),
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                tooltip: 'Repeat',
+                icon: Icon(
+                  _loopModeIcon(player.loopMode),
+                  color: isRepeatActive
+                      ? AppColors.primary
+                      : AppColors.textTertiary,
+                ),
+                onPressed: () {
+                  HapticFeedback.lightImpact();
+                  player.cycleLoopMode();
+                },
+              ),
+              if (isRepeatActive) _activeDot() else const SizedBox(height: 4),
+            ],
           ),
         ],
       ),

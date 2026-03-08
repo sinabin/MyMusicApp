@@ -80,14 +80,34 @@ class QueueScreen extends StatelessWidget {
                   return Padding(
                     padding: EdgeInsets.fromLTRB(
                         32, 32, 32, 32 + bottomPadding),
-                    child: const Text(
-                      'Queue is empty',
-                      style: TextStyle(color: AppColors.textTertiary),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.queue_music,
+                          size: 48,
+                          color: AppColors.textTertiary,
+                        ),
+                        const SizedBox(height: 12),
+                        const Text(
+                          'Queue is empty',
+                          style: TextStyle(
+                            color: AppColors.textTertiary,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        const Text(
+                          'Play a song to start your queue',
+                          style: TextStyle(
+                            color: AppColors.textTertiary,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
                     ),
                   );
                 }
                 return ReorderableListView.builder(
-                  shrinkWrap: true,
                   padding: EdgeInsets.fromLTRB(
                       0, 8, 0, 8 + bottomPadding),
                   itemCount: player.queue.length,

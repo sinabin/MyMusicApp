@@ -25,6 +25,30 @@ class AllSongsScreen extends StatelessWidget {
           showSortOptions: true,
           showFavoriteButton: true,
           headerWidget: _buildHeaderButtons(context),
+          emptyState: const Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.music_off, size: 48, color: AppColors.textTertiary),
+                SizedBox(height: 12),
+                Text(
+                  'No songs yet',
+                  style: TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 14,
+                  ),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  'Download music to see it here',
+                  style: TextStyle(
+                    color: AppColors.textTertiary,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ),
           onTap: (item) {
             final player = context.read<PlayerProvider>();
             final playAll =
