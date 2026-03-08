@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
 import '../models/download_item.dart';
@@ -9,6 +10,7 @@ import '../providers/history_provider.dart';
 import '../providers/player_provider.dart';
 import '../providers/playlist_provider.dart';
 import '../providers/settings_provider.dart';
+import '../services/file_service.dart';
 import '../theme/app_colors.dart';
 import '../utils/format_utils.dart';
 import '../widgets/add_to_playlist_sheet.dart';
@@ -31,6 +33,7 @@ class PlaylistDetailScreen extends StatefulWidget {
 
 class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
   List<DownloadItem> _tracks = [];
+  bool _isEditing = false;
 
   @override
   void initState() {
@@ -223,6 +226,45 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                 ),
               ),
 
+              // Edit mode toggle
+              if (_tracks.isNotEmpty)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
+                    child: Row(
+                      children: [
+                        Text(
+                          '${_tracks.length} tracks',
+                          style: const TextStyle(
+                            color: AppColors.textTertiary,
+                            fontSize: 13,
+                          ),
+                        ),
+                        const Spacer(),
+                        TextButton.icon(
+                          onPressed: () =>
+                              setState(() => _isEditing = !_isEditing),
+                          icon: Icon(
+                            _isEditing ? Icons.check : Icons.swap_vert,
+                            size: 18,
+                          ),
+                          label: Text(_isEditing ? 'Done' : 'Reorder'),
+                          style: TextButton.styleFrom(
+                            foregroundColor: _isEditing
+                                ? AppColors.primary
+                                : AppColors.textSecondary,
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 8),
+                            minimumSize: Size.zero,
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
               // Track list
               if (_tracks.isEmpty)
                 SliverToBoxAdapter(
@@ -257,7 +299,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                     ),
                   ),
                 )
-              else
+              else if (_isEditing)
                 SliverPadding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   sliver: SliverReorderableList(
@@ -271,88 +313,149 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                     },
                     itemBuilder: (context, index) {
                       final item = _tracks[index];
-                      return Dismissible(
-                        key: ValueKey('${widget.playlist.id}_${item.videoId}'),
-                        direction: DismissDirection.endToStart,
-                        background: Container(
-                          alignment: Alignment.centerRight,
-                          padding: const EdgeInsets.only(right: 20),
-                          decoration: BoxDecoration(
-                            color: AppColors.error.withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: const Icon(
-                            Icons.delete,
-                            color: AppColors.error,
-                          ),
-                        ),
-                        onDismissed: (_) {
-                          provider.removeTrackFromPlaylist(
-                            widget.playlist,
-                            item.videoId,
-                          );
-                        },
-                        child: Consumer<PlayerProvider>(
-                          builder: (context, player, _) {
-                            return ReorderableDragStartListener(
-                              index: index,
-                              child: Padding(
-                                padding: const EdgeInsets.only(bottom: 4),
-                                child: Row(
-                                  children: [
-                                    Expanded(
-                                      child: TrackListTile(
-                                        item: item,
-                                        isCurrentTrack:
-                                            player.currentTrack?.videoId ==
-                                                item.videoId,
-                                        onTap: () {
-                                          context
-                                              .read<PlayerProvider>()
-                                              .playAll(
-                                                _tracks,
-                                                startIndex: index,
-                                              );
-                                        },
-                                        onAddToQueue: () {
-                                          context
-                                              .read<PlayerProvider>()
-                                              .addToQueue(item);
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(
-                                            const SnackBar(
-                                              content:
-                                                  Text('Added to queue'),
-                                            ),
-                                          );
-                                        },
-                                        isFavorite: item.isFavorite,
-                                        onToggleFavorite: () {
-                                          context
-                                              .read<HistoryProvider>()
-                                              .toggleFavorite(item);
-                                        },
-                                        onAddToPlaylist: () {
-                                          AddToPlaylistSheet.show(
-                                            context,
-                                            videoId: item.videoId,
-                                          );
-                                        },
-                                      ),
+                      return ReorderableDelayedDragStartListener(
+                        key: ValueKey(
+                            'reorder_${widget.playlist.id}_${item.videoId}'),
+                        index: index,
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 4),
+                          child: Consumer<PlayerProvider>(
+                            builder: (context, player, _) {
+                              return Row(
+                                children: [
+                                  Expanded(
+                                    child: TrackListTile(
+                                      item: item,
+                                      isCurrentTrack:
+                                          player.currentTrack?.videoId ==
+                                              item.videoId,
+                                      onTap: () {
+                                        context
+                                            .read<PlayerProvider>()
+                                            .playAll(
+                                              _tracks,
+                                              startIndex: index,
+                                            );
+                                      },
+                                      onAddToQueue: () {
+                                        context
+                                            .read<PlayerProvider>()
+                                            .addToQueue(item);
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          const SnackBar(
+                                            content:
+                                                Text('Added to queue'),
+                                          ),
+                                        );
+                                      },
+                                      isFavorite: item.isFavorite,
+                                      onToggleFavorite: () {
+                                        context
+                                            .read<HistoryProvider>()
+                                            .toggleFavorite(item);
+                                      },
+                                      onAddToPlaylist: () {
+                                        AddToPlaylistSheet.show(
+                                          context,
+                                          videoId: item.videoId,
+                                        );
+                                      },
                                     ),
-                                    const Icon(
-                                      Icons.drag_handle,
-                                      color: AppColors.textTertiary,
-                                      size: 20,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
+                                  ),
+                                  const Icon(
+                                    Icons.drag_handle,
+                                    color: AppColors.textTertiary,
+                                    size: 20,
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
                         ),
                       );
                     },
+                  ),
+                )
+              else
+                SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  sliver: SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                        final item = _tracks[index];
+                        return Dismissible(
+                          key: ValueKey(
+                              '${widget.playlist.id}_${item.videoId}'),
+                          direction: DismissDirection.endToStart,
+                          background: Container(
+                            alignment: Alignment.centerRight,
+                            padding: const EdgeInsets.only(right: 20),
+                            decoration: BoxDecoration(
+                              color:
+                                  AppColors.error.withValues(alpha: 0.2),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Icon(
+                              Icons.delete,
+                              color: AppColors.error,
+                            ),
+                          ),
+                          onDismissed: (_) {
+                            provider.removeTrackFromPlaylist(
+                              widget.playlist,
+                              item.videoId,
+                            );
+                          },
+                          child: Consumer<PlayerProvider>(
+                            builder: (context, player, _) {
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 4),
+                                child: TrackListTile(
+                                  item: item,
+                                  isCurrentTrack:
+                                      player.currentTrack?.videoId ==
+                                          item.videoId,
+                                  onTap: () {
+                                    context
+                                        .read<PlayerProvider>()
+                                        .playAll(
+                                          _tracks,
+                                          startIndex: index,
+                                        );
+                                  },
+                                  onAddToQueue: () {
+                                    context
+                                        .read<PlayerProvider>()
+                                        .addToQueue(item);
+                                    ScaffoldMessenger.of(context)
+                                        .showSnackBar(
+                                      const SnackBar(
+                                        content:
+                                            Text('Added to queue'),
+                                      ),
+                                    );
+                                  },
+                                  isFavorite: item.isFavorite,
+                                  onToggleFavorite: () {
+                                    context
+                                        .read<HistoryProvider>()
+                                        .toggleFavorite(item);
+                                  },
+                                  onAddToPlaylist: () {
+                                    AddToPlaylistSheet.show(
+                                      context,
+                                      videoId: item.videoId,
+                                    );
+                                  },
+                                ),
+                              );
+                            },
+                          ),
+                        );
+                      },
+                      childCount: _tracks.length,
+                    ),
                   ),
                 ),
 
@@ -475,27 +578,23 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
       builder: (_) => _AddSongsSheet(
         playlist: widget.playlist,
         provider: provider,
-        historyProvider: context.read<HistoryProvider>(),
         savePath: context.read<SettingsProvider>().settings.savePath,
       ),
     );
   }
 }
 
-/// 다운로드 디렉토리의 m4a 파일을 스캔하여 멀티 선택으로 추가하는 바텀시트.
+/// DB 조회 및 디렉토리 스캔으로 추가 가능한 곡을 표시하는 바텀시트.
 ///
-/// 히스토리 DB에 없는 파일은 자동 등록 후 추가 가능.
-/// 개별 선택·전체 선택 지원.
+/// DB 미등록 m4a 파일은 자동 등록 후 표시. 개별 선택·전체 선택 지원.
 class _AddSongsSheet extends StatefulWidget {
   final PlaylistItem playlist;
   final PlaylistProvider provider;
-  final HistoryProvider historyProvider;
   final String savePath;
 
   const _AddSongsSheet({
     required this.playlist,
     required this.provider,
-    required this.historyProvider,
     required this.savePath,
   });
 
@@ -514,53 +613,60 @@ class _AddSongsSheetState extends State<_AddSongsSheet> {
   @override
   void initState() {
     super.initState();
-    _scanDirectory();
+    _loadAvailableSongs();
   }
 
-  /// 다운로드 디렉토리의 m4a 파일을 스캔하고 히스토리 DB와 매칭.
-  Future<void> _scanDirectory() async {
-    final dir = Directory(widget.savePath);
-    if (!await dir.exists()) {
-      if (mounted) setState(() => _loading = false);
-      return;
-    }
-
-    // 히스토리 DB 항목을 filePath 기준 맵으로 구성
-    final historyByPath = <String, DownloadItem>{};
-    for (final item in widget.historyProvider.items) {
-      historyByPath[item.filePath] = item;
-    }
-
+  /// DB 조회 + 디렉토리 스캔 병행으로 추가 가능한 곡 로드.
+  ///
+  /// [Permission.manageExternalStorage] 확보 후 디렉토리를 스캔하여
+  /// DB 미등록 m4a 파일을 자동 등록. 권한 미확보 시 DB 항목만 표시.
+  Future<void> _loadAvailableSongs() async {
+    final provider = widget.provider;
     final existingIds = widget.playlist.trackVideoIds.toSet();
-    final results = <DownloadItem>[];
 
-    final files = dir
-        .listSync()
-        .whereType<File>()
-        .where((f) => f.path.toLowerCase().endsWith('.m4a'))
-        .toList()
-      ..sort((a, b) => b.statSync().modified.compareTo(a.statSync().modified));
+    // 1차: DB에서 플레이리스트 미포함 곡
+    final results = provider.getAvailableTracks(widget.playlist);
 
-    for (final file in files) {
-      final existing = historyByPath[file.path];
-      if (existing != null) {
-        // 히스토리 DB에 존재하는 파일
-        if (!existingIds.contains(existing.videoId)) {
-          results.add(existing);
+    // 2차: 저장소 전체 접근 권한 확보 후 디렉토리 스캔
+    if (widget.savePath.isNotEmpty) {
+      try {
+        final hasAccess = await _ensureStorageAccess();
+        if (hasAccess) {
+          final dir = Directory(widget.savePath);
+          if (dir.existsSync()) {
+            final trackedPaths = provider.allTrackedPaths;
+            final files = dir
+                .listSync()
+                .whereType<File>()
+                .where((f) => f.path.toLowerCase().endsWith('.m4a'))
+                .where((f) => !trackedPaths.contains(f.path))
+                .toList()
+              ..sort((a, b) =>
+                  b.statSync().modified.compareTo(a.statSync().modified));
+
+            final fileService = FileService();
+            for (final file in files) {
+              final fileName = file.path.split('/').last;
+              final stat = file.statSync();
+              final thumbPath =
+                  await fileService.getLocalThumbnailPath(fileName);
+              final newItem = DownloadItem(
+                fileName: fileName,
+                filePath: file.path,
+                fileSize: stat.size,
+                downloadDate: stat.modified,
+                videoId: 'local_${file.path.hashCode.toRadixString(36)}',
+                thumbnailUrl: thumbPath,
+              );
+              await provider.registerDownloadItem(newItem);
+              if (!existingIds.contains(newItem.videoId)) {
+                results.add(newItem);
+              }
+            }
+          }
         }
-      } else {
-        // 히스토리 DB에 없는 파일 → 자동 등록
-        final fileName = file.path.split('/').last;
-        final stat = file.statSync();
-        final newItem = DownloadItem(
-          fileName: fileName,
-          filePath: file.path,
-          fileSize: stat.size,
-          downloadDate: stat.modified,
-          videoId: 'local_${file.path.hashCode.toRadixString(36)}',
-        );
-        await widget.historyProvider.addItem(newItem);
-        results.add(newItem);
+      } catch (e) {
+        debugPrint('[AddSongs] Directory scan failed: $e');
       }
     }
 
@@ -570,6 +676,19 @@ class _AddSongsSheetState extends State<_AddSongsSheet> {
         _loading = false;
       });
     }
+  }
+
+  /// Android 11+ 저장소 전체 접근 권한 확보.
+  ///
+  /// 이미 허용됐으면 즉시 true, 아니면 시스템 설정 화면으로 유도.
+  Future<bool> _ensureStorageAccess() async {
+    if (Platform.isAndroid) {
+      final status = await Permission.manageExternalStorage.status;
+      if (status.isGranted) return true;
+      final result = await Permission.manageExternalStorage.request();
+      return result.isGranted;
+    }
+    return true;
   }
 
   void _toggleAll() {
