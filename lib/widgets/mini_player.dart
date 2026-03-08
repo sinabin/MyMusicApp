@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/history_provider.dart';
@@ -35,7 +36,10 @@ class MiniPlayer extends StatelessWidget {
             ? player.position.inMilliseconds / player.duration.inMilliseconds
             : 0.0;
 
-        return Container(
+        return AnimatedSize(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+          child: Container(
           decoration: const BoxDecoration(
             color: AppColors.surface,
             border: Border(
@@ -161,6 +165,7 @@ class MiniPlayer extends StatelessWidget {
                         size: 28,
                         color: AppColors.textPrimary,
                         onPressed: () {
+                          HapticFeedback.lightImpact();
                           player.isPlaying
                               ? player.pause()
                               : player.resume();
@@ -172,6 +177,7 @@ class MiniPlayer extends StatelessWidget {
               ),
             ],
           ),
+        ),
         );
       },
     );
@@ -184,8 +190,8 @@ class MiniPlayer extends StatelessWidget {
     VoidCallback? onPressed,
   }) {
     return SizedBox(
-      width: 36,
-      height: 36,
+      width: 48,
+      height: 48,
       child: IconButton(
         padding: EdgeInsets.zero,
         constraints: const BoxConstraints(),

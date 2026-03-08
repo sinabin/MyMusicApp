@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../models/download_item.dart';
 import '../providers/player_provider.dart';
 import '../theme/app_colors.dart';
+import 'empty_state_widget.dart';
 import 'track_list_tile.dart';
 
 /// AllSongsScreen·FavoritesScreen 공통 레이아웃 위젯.
@@ -66,9 +67,17 @@ enum _SortOption { recent, name, duration }
 
 class _SongListScreenState extends State<SongListScreen> {
   _SortOption _sortOption = _SortOption.recent;
+  _SortOption? _lastSortOption;
+  List<DownloadItem>? _lastItems;
+  List<DownloadItem> _cachedItems = const [];
 
+  /// 정렬 옵션·원본 목록이 변경될 때만 재정렬하여 캐시 반환.
   List<DownloadItem> get _sortedItems {
     if (!widget.showSortOptions) return widget.items;
+    if (_lastSortOption == _sortOption &&
+        identical(_lastItems, widget.items)) {
+      return _cachedItems;
+    }
     final items = List<DownloadItem>.from(widget.items);
     switch (_sortOption) {
       case _SortOption.recent:
@@ -79,7 +88,10 @@ class _SongListScreenState extends State<SongListScreen> {
         items.sort((a, b) =>
             (b.durationInMs ?? 0).compareTo(a.durationInMs ?? 0));
     }
-    return items;
+    _lastSortOption = _sortOption;
+    _lastItems = widget.items;
+    _cachedItems = items;
+    return _cachedItems;
   }
 
   @override
@@ -99,7 +111,7 @@ class _SongListScreenState extends State<SongListScreen> {
         actions: widget.actions,
       ),
       body: widget.items.isEmpty
-          ? Center(child: widget.emptyState ?? const SizedBox.shrink())
+          ? Center(child: widget.emptyState ?? const EmptyStateWidget())
           : Consumer<PlayerProvider>(
               builder: (context, player, _) {
                 final sorted = _sortedItems;
@@ -107,6 +119,7 @@ class _SongListScreenState extends State<SongListScreen> {
                   padding: const EdgeInsets.only(
                     left: 16,
                     right: 16,
+                    top: 8,
                     bottom: 16,
                   ),
                   itemCount: sorted.length +
@@ -182,7 +195,7 @@ class _SongListScreenState extends State<SongListScreen> {
         label,
         style: TextStyle(
           fontSize: 12,
-          color: selected ? AppColors.textOnPrimary : AppColors.textSecondary,
+          color: selected ? AppColors.textPrimary : AppColors.textSecondary,
         ),
       ),
       selected: selected,

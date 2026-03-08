@@ -51,6 +51,28 @@ class DownloadHistoryTile extends StatelessWidget {
         ),
         child: const Icon(Icons.delete, color: AppColors.error),
       ),
+      confirmDismiss: (direction) async {
+        return await showDialog<bool>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: const Text('Delete'),
+            content: const Text('Remove this download?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                child: const Text(
+                  'Delete',
+                  style: TextStyle(color: AppColors.error),
+                ),
+              ),
+            ],
+          ),
+        ) ?? false;
+      },
       onDismissed: (_) => onDelete?.call(),
       child: InkWell(
         onTap: onTap,
@@ -114,7 +136,7 @@ class DownloadHistoryTile extends StatelessWidget {
                   size: 20,
                 ),
                 padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+                constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
                 color: AppColors.surfaceVariant,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),

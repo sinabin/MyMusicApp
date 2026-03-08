@@ -5,6 +5,7 @@ import '../models/recommendation.dart';
 import '../models/video_info.dart';
 import '../services/youtube_service.dart';
 import '../theme/app_colors.dart';
+import '../utils/format_utils.dart';
 
 /// 추천 곡 상세 정보 바텀시트.
 ///
@@ -155,7 +156,7 @@ class _RecommendationDetailSheetState
 
             // 재생 시간
             if (rec.duration != null) ...[
-              _infoRow(Icons.access_time, _formatDuration(rec.duration!)),
+              _infoRow(Icons.access_time, FormatUtils.duration(rec.duration!)),
               const SizedBox(height: 4),
             ],
 
@@ -172,6 +173,8 @@ class _RecommendationDetailSheetState
               ),
               child: Text(
                 rec.reason,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
                   color: AppColors.primaryLight,
                   fontSize: 12,
@@ -329,14 +332,4 @@ class _RecommendationDetailSheetState
     }
   }
 
-  /// "M:SS" 또는 "H:MM:SS" 형식의 재생 시간 문자열 반환.
-  String _formatDuration(Duration d) {
-    final hours = d.inHours;
-    final minutes = d.inMinutes.remainder(60);
-    final seconds = d.inSeconds.remainder(60);
-    if (hours > 0) {
-      return '$hours:${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
-    }
-    return '$minutes:${seconds.toString().padLeft(2, '0')}';
-  }
 }

@@ -41,16 +41,24 @@ class _CreatePlaylistSheetState extends State<CreatePlaylistSheet> {
     if (name.isEmpty) return;
     final desc = _descController.text.trim();
 
-    await context.read<PlaylistProvider>().createPlaylist(
-          name,
-          description: desc.isEmpty ? null : desc,
-        );
+    try {
+      await context.read<PlaylistProvider>().createPlaylist(
+            name,
+            description: desc.isEmpty ? null : desc,
+          );
 
-    if (mounted) {
-      Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Playlist created')),
-      );
+      if (mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Playlist created')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e')),
+        );
+      }
     }
   }
 

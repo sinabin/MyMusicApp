@@ -42,61 +42,66 @@ class RecentPlayHorizontalList extends StatelessWidget {
               : item.fileName;
           final artist = item.artistName ?? item.channelName ?? '';
 
-          return GestureDetector(
-            onTap: () => onTap(item),
-            child: Padding(
-              padding: EdgeInsets.only(right: index < items.length - 1 ? 10 : 0),
-              child: SizedBox(
-                width: 110,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      width: 100,
-                      height: 100,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
-                        border: isCurrent
-                            ? Border.all(color: AppColors.primary, width: 2)
-                            : null,
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(
-                          isCurrent ? 10 : 12,
+          return Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(12),
+              onTap: () => onTap(item),
+              child: Padding(
+                padding: EdgeInsets.only(right: index < items.length - 1 ? 10 : 0),
+                child: SizedBox(
+                  width: 110,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        width: 100,
+                        height: 100,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          border: isCurrent
+                              ? Border.all(color: AppColors.primary, width: 2)
+                              : null,
                         ),
-                        child: item.thumbnailUrl != null
-                            ? CachedNetworkImage(
-                                imageUrl: item.thumbnailUrl!,
-                                fit: BoxFit.cover,
-                                placeholder: (_, _) => _placeholder(),
-                                errorWidget: (_, _, _) => _placeholder(),
-                              )
-                            : _placeholder(),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(
+                            isCurrent ? 10 : 12,
+                          ),
+                          child: item.thumbnailUrl != null
+                              ? CachedNetworkImage(
+                                  imageUrl: item.thumbnailUrl!,
+                                  fit: BoxFit.cover,
+                                  memCacheWidth: 200,
+                                  placeholder: (_, _) => _placeholder(),
+                                  errorWidget: (_, _, _) => _placeholder(),
+                                )
+                              : _placeholder(),
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: isCurrent
-                            ? AppColors.primaryLight
-                            : AppColors.textPrimary,
-                        fontSize: 12,
-                      ),
-                    ),
-                    if (artist.isNotEmpty)
+                      const SizedBox(height: 6),
                       Text(
-                        artist,
+                        title,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: AppColors.textTertiary,
-                          fontSize: 11,
+                        style: TextStyle(
+                          color: isCurrent
+                              ? AppColors.primaryLight
+                              : AppColors.textPrimary,
+                          fontSize: 12,
                         ),
                       ),
-                  ],
+                      if (artist.isNotEmpty)
+                        Text(
+                          artist,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 11,
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
               ),
             ),

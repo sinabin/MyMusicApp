@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../models/download_item.dart';
 import '../theme/app_colors.dart';
@@ -99,18 +100,21 @@ class TrackListTile extends StatelessWidget {
             ),
             // 즐겨찾기 버튼
             if (onToggleFavorite != null)
-              GestureDetector(
-                onTap: onToggleFavorite,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4),
-                  child: Icon(
-                    isFavorite ? Icons.favorite : Icons.favorite_border,
-                    color: isFavorite
-                        ? AppColors.error
-                        : AppColors.textSecondary,
-                    size: 20,
-                  ),
+              IconButton(
+                icon: Icon(
+                  isFavorite ? Icons.favorite : Icons.favorite_border,
+                  color: isFavorite
+                      ? AppColors.error
+                      : AppColors.textSecondary,
+                  size: 20,
                 ),
+                onPressed: () {
+                  HapticFeedback.lightImpact();
+                  onToggleFavorite?.call();
+                },
+                tooltip: 'Favorite',
+                constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+                padding: EdgeInsets.zero,
               ),
             // 점 메뉴
             if (onAddToQueue != null || onAddToPlaylist != null)
@@ -121,7 +125,7 @@ class TrackListTile extends StatelessWidget {
                   size: 20,
                 ),
                 padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+                constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
                 color: AppColors.surfaceVariant,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),

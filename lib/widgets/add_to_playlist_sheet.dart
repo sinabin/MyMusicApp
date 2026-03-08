@@ -41,22 +41,39 @@ class _AddToPlaylistSheetState extends State<AddToPlaylistSheet> {
 
   Future<void> _createAndAdd() async {
     final name = _newNameController.text.trim();
-    if (name.isEmpty) return;
-    final provider = context.read<PlaylistProvider>();
-    final playlist = await provider.createPlaylist(name);
-    await provider.addTrackToPlaylist(playlist, widget.videoId);
-    if (mounted) {
-      Navigator.pop(context);
+    if (name.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Added to $name')),
+        const SnackBar(content: Text('Please enter a playlist name')),
       );
+      return;
+    }
+    try {
+      final provider = context.read<PlaylistProvider>();
+      final playlist = await provider.createPlaylist(name);
+      await provider.addTrackToPlaylist(playlist, widget.videoId);
+      if (mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Added to $name')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e')),
+        );
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final bottomPadding = MediaQuery.of(context).viewPadding.bottom;
-    return Container(
+    return Padding(
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+      ),
+      child: Container(
       constraints: BoxConstraints(
         maxHeight: MediaQuery.of(context).size.height * 0.7,
       ),
@@ -197,17 +214,25 @@ class _AddToPlaylistSheetState extends State<AddToPlaylistSheet> {
                         ),
                       ),
                       onTap: () async {
-                        await provider.addTrackToPlaylist(
-                          playlist,
-                          widget.videoId,
-                        );
-                        if (context.mounted) {
-                          Navigator.pop(context);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Added to ${playlist.name}'),
-                            ),
+                        try {
+                          await provider.addTrackToPlaylist(
+                            playlist,
+                            widget.videoId,
                           );
+                          if (context.mounted) {
+                            Navigator.pop(context);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Added to ${playlist.name}'),
+                              ),
+                            );
+                          }
+                        } catch (e) {
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Error: $e')),
+                            );
+                          }
                         }
                       },
                     );
@@ -218,6 +243,7 @@ class _AddToPlaylistSheetState extends State<AddToPlaylistSheet> {
           ),
         ],
       ),
+    ),
     );
   }
 }

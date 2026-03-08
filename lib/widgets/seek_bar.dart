@@ -43,6 +43,10 @@ class _SeekBarState extends State<SeekBar> {
                 min: 0,
                 max: maxVal,
                 value: position.clamp(0, maxVal),
+                semanticFormatterCallback: (value) {
+                  final d = Duration(milliseconds: value.toInt());
+                  return FormatUtils.duration(d);
+                },
                 onChanged: (value) {
                   setState(() => _dragValue = value);
                 },

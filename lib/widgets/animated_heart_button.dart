@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../theme/app_colors.dart';
 
@@ -53,6 +54,7 @@ class _AnimatedHeartButtonState extends State<AnimatedHeartButton>
   }
 
   void _handleTap() {
+    HapticFeedback.lightImpact();
     _controller.forward(from: 0);
     widget.onToggle();
   }
@@ -60,21 +62,28 @@ class _AnimatedHeartButtonState extends State<AnimatedHeartButton>
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTap: _handleTap,
-      child: AnimatedBuilder(
-        animation: _scaleAnimation,
-        builder: (context, child) {
-          return Transform.scale(
-            scale: _scaleAnimation.value,
-            child: Icon(
-              widget.isFavorite ? Icons.favorite : Icons.favorite_border,
-              color: widget.isFavorite
-                  ? AppColors.error
-                  : AppColors.textSecondary,
-              size: widget.size,
-            ),
-          );
-        },
+      child: SizedBox(
+        width: 48,
+        height: 48,
+        child: Center(
+          child: AnimatedBuilder(
+            animation: _scaleAnimation,
+            builder: (context, child) {
+              return Transform.scale(
+                scale: _scaleAnimation.value,
+                child: Icon(
+                  widget.isFavorite ? Icons.favorite : Icons.favorite_border,
+                  color: widget.isFavorite
+                      ? AppColors.error
+                      : AppColors.textSecondary,
+                  size: widget.size,
+                ),
+              );
+            },
+          ),
+        ),
       ),
     );
   }

@@ -47,6 +47,28 @@ class PlaylistTile extends StatelessWidget {
         ),
         child: const Icon(Icons.delete, color: AppColors.error),
       ),
+      confirmDismiss: (direction) async {
+        return await showDialog<bool>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: const Text('Delete'),
+            content: Text('Delete playlist "${playlist.name}"?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                child: const Text(
+                  'Delete',
+                  style: TextStyle(color: AppColors.error),
+                ),
+              ),
+            ],
+          ),
+        ) ?? false;
+      },
       onDismissed: (_) => onDelete(),
       child: InkWell(
         onTap: onTap,

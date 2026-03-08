@@ -55,7 +55,7 @@ class PlaylistMosaicArt extends StatelessWidget {
         cells.add(SizedBox(
           width: half,
           height: half,
-          child: Container(color: AppColors.primarySurface),
+          child: _placeholder(),
         ));
       }
     }

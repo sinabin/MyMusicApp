@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import '../models/recommendation.dart';
 import '../theme/app_colors.dart';
+import '../utils/format_utils.dart';
 
 /// 추천 곡 카드 위젯.
 ///
@@ -57,9 +58,7 @@ class RecommendationCard extends StatelessWidget {
         ),
       ),
       onDismissed: (_) => onDismiss?.call(),
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
+      child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: AppColors.surface,
@@ -68,110 +67,121 @@ class RecommendationCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-            // 썸네일
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: SizedBox(
-                width: 80,
-                height: 56,
-                child: Stack(
-                  fit: StackFit.expand,
+            // 탭 영역: 썸네일 + 정보
+            Expanded(
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: onTap,
+                child: Row(
                   children: [
-                    CachedNetworkImage(
-                      imageUrl: recommendation.thumbnailUrl,
-                      fit: BoxFit.cover,
-                      placeholder: (_, _) => Container(
-                        color: AppColors.surfaceVariant,
-                        child: const Icon(
-                          Icons.music_note,
-                          color: AppColors.textTertiary,
-                          size: 24,
-                        ),
-                      ),
-                      errorWidget: (_, _, _) => Container(
-                        color: AppColors.surfaceVariant,
-                        child: const Icon(
-                          Icons.music_note,
-                          color: AppColors.textTertiary,
-                          size: 24,
+                    // 썸네일
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: SizedBox(
+                        width: 80,
+                        height: 56,
+                        child: Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            CachedNetworkImage(
+                              imageUrl: recommendation.thumbnailUrl,
+                              fit: BoxFit.cover,
+                              placeholder: (_, _) => Container(
+                                color: AppColors.surfaceVariant,
+                                child: const Icon(
+                                  Icons.music_note,
+                                  color: AppColors.textTertiary,
+                                  size: 24,
+                                ),
+                              ),
+                              errorWidget: (_, _, _) => Container(
+                                color: AppColors.surfaceVariant,
+                                child: const Icon(
+                                  Icons.music_note,
+                                  color: AppColors.textTertiary,
+                                  size: 24,
+                                ),
+                              ),
+                            ),
+                            // 재생 시간 오버레이
+                            if (recommendation.duration != null)
+                              Positioned(
+                                right: 4,
+                                bottom: 4,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 4,
+                                    vertical: 2,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withValues(alpha: 0.7),
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: Text(
+                                    FormatUtils.duration(recommendation.duration!),
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                          ],
                         ),
                       ),
                     ),
-                    // 재생 시간 오버레이
-                    if (recommendation.duration != null)
-                      Positioned(
-                        right: 4,
-                        bottom: 4,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 4,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.black.withValues(alpha: 0.7),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Text(
-                            _formatDuration(recommendation.duration!),
+                    const SizedBox(width: 12),
+                    // 정보
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            recommendation.title,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 10,
+                              color: AppColors.textPrimary,
+                              fontSize: 13,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
-                        ),
+                          const SizedBox(height: 2),
+                          Text(
+                            recommendation.channelName,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              color: AppColors.textTertiary,
+                              fontSize: 11,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.primarySurface,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              recommendation.reason,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: AppColors.primaryLight,
+                                fontSize: 10,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
+                    ),
                   ],
                 ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            // 정보
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    recommendation.title,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: AppColors.textPrimary,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    recommendation.channelName,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: AppColors.textTertiary,
-                      fontSize: 11,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 6,
-                      vertical: 2,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.primarySurface,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Text(
-                      recommendation.reason,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: AppColors.primaryLight,
-                        fontSize: 10,
-                      ),
-                    ),
-                  ),
-                ],
               ),
             ),
             const SizedBox(width: 8),
@@ -193,23 +203,12 @@ class RecommendationCard extends StatelessWidget {
                     ),
               onPressed: isDownloading ? null : onDownload,
               padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+              constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
             ),
           ],
         ),
       ),
-      ),
     );
   }
 
-  /// "M:SS" 또는 "H:MM:SS" 형식의 재생 시간 문자열 반환.
-  String _formatDuration(Duration d) {
-    final hours = d.inHours;
-    final minutes = d.inMinutes.remainder(60);
-    final seconds = d.inSeconds.remainder(60);
-    if (hours > 0) {
-      return '$hours:${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
-    }
-    return '$minutes:${seconds.toString().padLeft(2, '0')}';
-  }
 }
