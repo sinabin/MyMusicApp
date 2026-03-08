@@ -307,7 +307,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                             playlist: playlist,
                             thumbnailUrls: urls,
                             subtitle: FormatUtils.trackCount(
-                              playlist.trackVideoIds.length,
+                              tracks.length,
                             ),
                             onTap: () => Navigator.push(
                               context,
@@ -321,7 +321,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                                 provider.deletePlaylist(playlist),
                           ).animate().fadeIn(
                                 duration: 300.ms,
-                                delay: (index * 50).ms,
+                                delay: (index * 50).clamp(0, 500).ms,
                               ),
                         );
                       },

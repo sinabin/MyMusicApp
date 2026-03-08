@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../models/download_item.dart';
 import '../providers/history_provider.dart';
 import '../providers/playback_history_provider.dart';
 import '../providers/player_provider.dart';
@@ -81,84 +82,82 @@ class RecentPlaysScreen extends StatelessWidget {
             );
           }
 
+          // 섹션 헤더와 트랙을 하나의 리스트로 평탄화하여 O(1) 인덱싱 지원.
           final sections = grouped.entries.toList();
+          final flatEntries = <_FlatEntry>[];
+          final allTracks = <DownloadItem>[];
+          for (final section in sections) {
+            flatEntries.add(_FlatEntry.header(section.key));
+            for (final track in section.value) {
+              flatEntries.add(_FlatEntry.track(track));
+              allTracks.add(track);
+            }
+          }
+
           return ListView.builder(
             padding: const EdgeInsets.only(
               left: 16,
               right: 16,
               bottom: 16,
             ),
-            itemCount: sections.fold<int>(
-              0,
-              (sum, e) => sum + 1 + e.value.length,
-            ),
+            itemCount: flatEntries.length,
             itemBuilder: (context, index) {
-              int current = 0;
-              for (final section in sections) {
-                if (index == current) {
-                  return Padding(
-                    padding: const EdgeInsets.only(top: 16, bottom: 8),
-                    child: Text(
-                      section.key.toUpperCase(),
-                      style: const TextStyle(
-                        color: AppColors.textTertiary,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 0.5,
-                      ),
+              final entry = flatEntries[index];
+              if (entry.isHeader) {
+                return Padding(
+                  padding: const EdgeInsets.only(top: 16, bottom: 8),
+                  child: Text(
+                    entry.headerLabel!.toUpperCase(),
+                    style: const TextStyle(
+                      color: AppColors.textTertiary,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 0.5,
                     ),
-                  );
-                }
-                current++;
-                if (index < current + section.value.length) {
-                  final item = section.value[index - current];
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 4),
-                    child: TrackListTile(
-                      item: item,
-                      isCurrentTrack:
-                          player.currentTrack?.videoId == item.videoId,
-                      onTap: () {
-                        final allTracks = sections
-                            .expand((e) => e.value)
-                            .toList();
-                        final playAll = context
-                            .read<SettingsProvider>()
-                            .settings
-                            .playAllOnTap;
-                        if (playAll) {
-                          final idx = allTracks.indexOf(item);
-                          context
-                              .read<PlayerProvider>()
-                              .playAll(allTracks, startIndex: idx);
-                        } else {
-                          context.read<PlayerProvider>().playTrack(item);
-                        }
-                      },
-                      onAddToQueue: () {
-                        context.read<PlayerProvider>().addToQueue(item);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Added to queue')),
-                        );
-                      },
-                      isFavorite: item.isFavorite,
-                      onToggleFavorite: () {
-                        context
-                            .read<HistoryProvider>()
-                            .toggleFavorite(item);
-                      },
-                      onAddToPlaylist: () {
-                        AddToPlaylistSheet.show(
-                          context,
-                          videoId: item.videoId,
-                        );
-                      },
-                    ),
-                  );
-                }
-                current += section.value.length;
+                  ),
+                );
               }
-              return const SizedBox.shrink();
+              final item = entry.item!;
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: TrackListTile(
+                  item: item,
+                  isCurrentTrack:
+                      player.currentTrack?.videoId == item.videoId,
+                  onTap: () {
+                    final playAll = context
+                        .read<SettingsProvider>()
+                        .settings
+                        .playAllOnTap;
+                    if (playAll) {
+                      final idx = allTracks.indexOf(item);
+                      context
+                          .read<PlayerProvider>()
+                          .playAll(allTracks, startIndex: idx);
+                    } else {
+                      context.read<PlayerProvider>().playTrack(item);
+                    }
+                  },
+                  onAddToQueue: () {
+                    context.read<PlayerProvider>().addToQueue(item);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Added to queue')),
+                    );
+                  },
+                  isFavorite: item.isFavorite,
+                  onToggleFavorite: () {
+                    context
+                        .read<HistoryProvider>()
+                        .toggleFavorite(item);
+                  },
+                  onAddToPlaylist: () {
+                    AddToPlaylistSheet.show(
+                      context,
+                      videoId: item.videoId,
+                    );
+                  },
+                ),
+              );
             },
           );
         },
@@ -201,4 +200,19 @@ class RecentPlaysScreen extends StatelessWidget {
       ),
     );
   }
+}
+
+/// 섹션 헤더 또는 트랙 항목을 나타내는 평탄화된 리스트 엔트리.
+class _FlatEntry {
+  /// 섹션 헤더 레이블 (헤더인 경우).
+  final String? headerLabel;
+
+  /// 트랙 항목 (트랙인 경우).
+  final DownloadItem? item;
+
+  /// 헤더 여부.
+  bool get isHeader => headerLabel != null;
+
+  const _FlatEntry.header(this.headerLabel) : item = null;
+  const _FlatEntry.track(this.item) : headerLabel = null;
 }

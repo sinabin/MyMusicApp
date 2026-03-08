@@ -35,8 +35,16 @@ class DownloadHistoryDb {
   }
 
   /// [item]을 다운로드 기록에 추가.
-  Future<void> add(DownloadItem item) async {
+  ///
+  /// 동일 [filePath]가 이미 존재하면 중복 등록하지 않고 기존 항목 반환.
+  Future<DownloadItem?> add(DownloadItem item) async {
+    final existing = box.values.cast<DownloadItem?>().firstWhere(
+          (e) => e!.filePath == item.filePath,
+          orElse: () => null,
+        );
+    if (existing != null) return existing;
     await box.add(item);
+    return null;
   }
 
   /// [index] 위치의 다운로드 기록 삭제.

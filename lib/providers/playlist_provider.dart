@@ -132,17 +132,32 @@ class PlaylistProvider extends ChangeNotifier {
     });
   }
 
-  /// 플레이리스트의 곡 목록을 [DownloadItem]으로 resolve (미존재 필터링).
+  /// 플레이리스트의 곡 목록을 [DownloadItem]으로 resolve.
+  ///
+  /// DB에 존재하지 않는 고아 videoId는 자동 제거 후 저장.
   List<DownloadItem> getTracksForPlaylist(PlaylistItem playlist) {
     final allDownloads = _downloadDb.getAll();
     final downloadMap = <String, DownloadItem>{};
     for (final item in allDownloads) {
       downloadMap[item.videoId] = item;
     }
-    return playlist.trackVideoIds
-        .where((id) => downloadMap.containsKey(id))
-        .map((id) => downloadMap[id]!)
-        .toList();
+    final resolved = <DownloadItem>[];
+    final validIds = <String>[];
+    for (final id in playlist.trackVideoIds) {
+      final item = downloadMap[id];
+      if (item != null) {
+        resolved.add(item);
+        validIds.add(id);
+      }
+    }
+    // 고아 videoId 정리.
+    if (validIds.length != playlist.trackVideoIds.length) {
+      playlist.trackVideoIds
+        ..clear()
+        ..addAll(validIds);
+      playlist.save();
+    }
+    return resolved;
   }
 
   /// 플레이리스트에 아직 포함되지 않은 다운로드 곡 목록 반환.
@@ -159,7 +174,10 @@ class PlaylistProvider extends ChangeNotifier {
       _downloadDb.getAll().map((e) => e.filePath).toSet();
 
   /// [item]을 다운로드 DB에 등록.
-  Future<void> registerDownloadItem(DownloadItem item) async {
-    await _downloadDb.add(item);
+  ///
+  /// 동일 filePath가 이미 존재하면 기존 항목의 videoId 반환.
+  Future<String?> registerDownloadItem(DownloadItem item) async {
+    final existing = await _downloadDb.add(item);
+    return existing?.videoId;
   }
 }
