@@ -16,6 +16,7 @@ import 'providers/playback_history_provider.dart';
 import 'providers/player_provider.dart';
 import 'providers/playlist_provider.dart';
 import 'providers/recommendation_provider.dart';
+import 'providers/search_provider.dart';
 import 'providers/settings_provider.dart';
 import 'providers/video_info_provider.dart';
 import 'services/audio_converter_service.dart';
@@ -106,6 +107,9 @@ void main() async {
         ),
         ChangeNotifierProvider(
           create: (_) => VideoInfoProvider(youtubeService: youtubeService),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => SearchProvider(youtubeService: youtubeService),
         ),
         ChangeNotifierProvider(
           create: (_) => DownloadProvider(
