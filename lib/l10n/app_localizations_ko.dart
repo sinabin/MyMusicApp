@@ -149,7 +149,7 @@ class LKo extends L {
   String get noPlaylists => '플레이리스트가 없어요';
 
   @override
-  String get noPlaylistsHint => '"+ 만들기"를 눌러 첫 플레이리스트를 만들어보세요';
+  String get noPlaylistsHint => '\"+ 만들기\"를 눌러 첫 플레이리스트를 만들어보세요';
 
   @override
   String get discoverTitle => '발견';
@@ -212,8 +212,7 @@ class LKo extends L {
   String get clearHistory => '기록 삭제';
 
   @override
-  String get clearHistoryConfirm =>
-      '모든 재생 기록을 삭제할까요?';
+  String get clearHistoryConfirm => '모든 재생 기록을 삭제할까요?';
 
   @override
   String get settings => '설정';

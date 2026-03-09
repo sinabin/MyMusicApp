@@ -106,25 +106,25 @@ abstract class L {
   /// No description provided for @tabHome.
   ///
   /// In ko, this message translates to:
-  /// **'Home'**
+  /// **'홈'**
   String get tabHome;
 
   /// No description provided for @tabDiscover.
   ///
   /// In ko, this message translates to:
-  /// **'Discover'**
+  /// **'발견'**
   String get tabDiscover;
 
   /// No description provided for @tabLibrary.
   ///
   /// In ko, this message translates to:
-  /// **'Library'**
+  /// **'보관함'**
   String get tabLibrary;
 
   /// No description provided for @searchHint.
   ///
   /// In ko, this message translates to:
-  /// **'Search music...'**
+  /// **'음악 검색...'**
   String get searchHint;
 
   /// No description provided for @searchFailed.
@@ -148,31 +148,31 @@ abstract class L {
   /// No description provided for @recentDownloads.
   ///
   /// In ko, this message translates to:
-  /// **'Recent Downloads'**
+  /// **'최근 다운로드'**
   String get recentDownloads;
 
   /// No description provided for @recentDownloadsCount.
   ///
   /// In ko, this message translates to:
-  /// **'Recent Downloads ({count})'**
+  /// **'최근 다운로드 ({count})'**
   String recentDownloadsCount(int count);
 
   /// No description provided for @recentlyPlayed.
   ///
   /// In ko, this message translates to:
-  /// **'Recently Played'**
+  /// **'최근 재생'**
   String get recentlyPlayed;
 
   /// No description provided for @seeAll.
   ///
   /// In ko, this message translates to:
-  /// **'See All >'**
+  /// **'모두 보기 >'**
   String get seeAll;
 
   /// No description provided for @download.
   ///
   /// In ko, this message translates to:
-  /// **'Download Audio'**
+  /// **'오디오 다운로드'**
   String get download;
 
   /// No description provided for @downloadInProgress.
@@ -184,73 +184,73 @@ abstract class L {
   /// No description provided for @downloadPreparing.
   ///
   /// In ko, this message translates to:
-  /// **'Preparing download...'**
+  /// **'다운로드 준비 중...'**
   String get downloadPreparing;
 
   /// No description provided for @downloadComplete.
   ///
   /// In ko, this message translates to:
-  /// **'Download Complete!'**
+  /// **'다운로드 완료!'**
   String get downloadComplete;
 
   /// No description provided for @downloadFailed.
   ///
   /// In ko, this message translates to:
-  /// **'Download failed'**
+  /// **'다운로드 실패'**
   String get downloadFailed;
 
   /// No description provided for @downloadSaved.
   ///
   /// In ko, this message translates to:
-  /// **'Saved: {fileName}'**
+  /// **'저장됨: {fileName}'**
   String downloadSaved(String fileName);
 
   /// No description provided for @stream.
   ///
   /// In ko, this message translates to:
-  /// **'Stream'**
+  /// **'스트리밍'**
   String get stream;
 
   /// No description provided for @streamFailed.
   ///
   /// In ko, this message translates to:
-  /// **'Streaming failed'**
+  /// **'스트리밍 실패'**
   String get streamFailed;
 
   /// No description provided for @play.
   ///
   /// In ko, this message translates to:
-  /// **'Play'**
+  /// **'재생'**
   String get play;
 
   /// No description provided for @pause.
   ///
   /// In ko, this message translates to:
-  /// **'Pause'**
+  /// **'일시정지'**
   String get pause;
 
   /// No description provided for @previous.
   ///
   /// In ko, this message translates to:
-  /// **'Previous'**
+  /// **'이전'**
   String get previous;
 
   /// No description provided for @next.
   ///
   /// In ko, this message translates to:
-  /// **'Next'**
+  /// **'다음'**
   String get next;
 
   /// No description provided for @shuffle.
   ///
   /// In ko, this message translates to:
-  /// **'Shuffle'**
+  /// **'셔플'**
   String get shuffle;
 
   /// No description provided for @repeat.
   ///
   /// In ko, this message translates to:
-  /// **'Repeat'**
+  /// **'반복'**
   String get repeat;
 
   /// No description provided for @addToQueue.
@@ -262,7 +262,7 @@ abstract class L {
   /// No description provided for @addedToQueue.
   ///
   /// In ko, this message translates to:
-  /// **'Added to queue'**
+  /// **'현재 재생리스트에 추가했어요'**
   String get addedToQueue;
 
   /// No description provided for @addToPlaylist.
@@ -286,103 +286,103 @@ abstract class L {
   /// No description provided for @queueTitle.
   ///
   /// In ko, this message translates to:
-  /// **'Queue'**
+  /// **'현재 재생리스트'**
   String get queueTitle;
 
   /// No description provided for @queueCount.
   ///
   /// In ko, this message translates to:
-  /// **'Queue ({count})'**
+  /// **'현재 재생리스트 ({count})'**
   String queueCount(int count);
 
   /// No description provided for @queueEmpty.
   ///
   /// In ko, this message translates to:
-  /// **'Queue is empty'**
+  /// **'현재 재생리스트가 비어 있어요'**
   String get queueEmpty;
 
   /// No description provided for @queueEmptyHint.
   ///
   /// In ko, this message translates to:
-  /// **'Play a song to start your queue'**
+  /// **'곡을 재생하면 여기에 표시돼요'**
   String get queueEmptyHint;
 
   /// No description provided for @libraryTitle.
   ///
   /// In ko, this message translates to:
-  /// **'My Library'**
+  /// **'내 보관함'**
   String get libraryTitle;
 
   /// No description provided for @librarySubtitle.
   ///
   /// In ko, this message translates to:
-  /// **'Your music collection'**
+  /// **'내 음악 컬렉션'**
   String get librarySubtitle;
 
   /// No description provided for @favorites.
   ///
   /// In ko, this message translates to:
-  /// **'Favorites'**
+  /// **'좋아요 목록'**
   String get favorites;
 
   /// No description provided for @recent.
   ///
   /// In ko, this message translates to:
-  /// **'Recent'**
+  /// **'최근'**
   String get recent;
 
   /// No description provided for @allSongs.
   ///
   /// In ko, this message translates to:
-  /// **'All Songs'**
+  /// **'전체 곡'**
   String get allSongs;
 
   /// No description provided for @playlists.
   ///
   /// In ko, this message translates to:
-  /// **'Playlists'**
+  /// **'플레이리스트'**
   String get playlists;
 
   /// No description provided for @playlistsCount.
   ///
   /// In ko, this message translates to:
-  /// **'Playlists ({count})'**
+  /// **'플레이리스트 ({count})'**
   String playlistsCount(int count);
 
   /// No description provided for @createPlaylist.
   ///
   /// In ko, this message translates to:
-  /// **'Create'**
+  /// **'만들기'**
   String get createPlaylist;
 
   /// No description provided for @noPlaylists.
   ///
   /// In ko, this message translates to:
-  /// **'No playlists yet'**
+  /// **'플레이리스트가 없어요'**
   String get noPlaylists;
 
   /// No description provided for @noPlaylistsHint.
   ///
   /// In ko, this message translates to:
-  /// **'Tap \"+ Create\" to make your first playlist'**
+  /// **'\"+ 만들기\"를 눌러 첫 플레이리스트를 만들어보세요'**
   String get noPlaylistsHint;
 
   /// No description provided for @discoverTitle.
   ///
   /// In ko, this message translates to:
-  /// **'Discover'**
+  /// **'발견'**
   String get discoverTitle;
 
   /// No description provided for @discoverSubtitle.
   ///
   /// In ko, this message translates to:
-  /// **'Recommendations based on your downloads'**
+  /// **'다운로드한 곡 기반 추천'**
   String get discoverSubtitle;
 
   /// No description provided for @forYou.
   ///
   /// In ko, this message translates to:
-  /// **'For You'**
+  /// **'맞춤 추천'**
   String get forYou;
 
   /// No description provided for @notInterested.
@@ -406,91 +406,91 @@ abstract class L {
   /// No description provided for @noDownloads.
   ///
   /// In ko, this message translates to:
-  /// **'No downloads yet'**
+  /// **'다운로드한 곡이 없어요'**
   String get noDownloads;
 
   /// No description provided for @noDownloadsHint.
   ///
   /// In ko, this message translates to:
-  /// **'Your downloaded audio files will appear here'**
+  /// **'다운로드한 곡이 여기에 표시돼요'**
   String get noDownloadsHint;
 
   /// No description provided for @noPlays.
   ///
   /// In ko, this message translates to:
-  /// **'No plays yet'**
+  /// **'재생 기록이 없어요'**
   String get noPlays;
 
   /// No description provided for @noPlaysHint.
   ///
   /// In ko, this message translates to:
-  /// **'Songs you play will appear here'**
+  /// **'재생한 곡이 여기에 표시돼요'**
   String get noPlaysHint;
 
   /// No description provided for @noFavorites.
   ///
   /// In ko, this message translates to:
-  /// **'No favorites yet'**
+  /// **'좋아요한 곡이 없어요'**
   String get noFavorites;
 
   /// No description provided for @noFavoritesHint.
   ///
   /// In ko, this message translates to:
-  /// **'Tap the heart icon to add favorites'**
+  /// **'하트를 눌러 좋아요를 추가하세요'**
   String get noFavoritesHint;
 
   /// No description provided for @noSongs.
   ///
   /// In ko, this message translates to:
-  /// **'No songs yet'**
+  /// **'곡이 없어요'**
   String get noSongs;
 
   /// No description provided for @noSongsHint.
   ///
   /// In ko, this message translates to:
-  /// **'Download songs to build your collection'**
+  /// **'곡을 다운로드해서 컬렉션을 만들어보세요'**
   String get noSongsHint;
 
   /// No description provided for @noTrackPlaying.
   ///
   /// In ko, this message translates to:
-  /// **'No track playing'**
+  /// **'재생 중인 곡 없음'**
   String get noTrackPlaying;
 
   /// No description provided for @delete.
   ///
   /// In ko, this message translates to:
-  /// **'Delete'**
+  /// **'삭제'**
   String get delete;
 
   /// No description provided for @deleteConfirm.
   ///
   /// In ko, this message translates to:
-  /// **'Remove this download?'**
+  /// **'이 다운로드를 삭제할까요?'**
   String get deleteConfirm;
 
   /// No description provided for @cancel.
   ///
   /// In ko, this message translates to:
-  /// **'Cancel'**
+  /// **'취소'**
   String get cancel;
 
   /// No description provided for @clear.
   ///
   /// In ko, this message translates to:
-  /// **'Clear'**
+  /// **'지우기'**
   String get clear;
 
   /// No description provided for @clearHistory.
   ///
   /// In ko, this message translates to:
-  /// **'Clear History'**
+  /// **'기록 삭제'**
   String get clearHistory;
 
   /// No description provided for @clearHistoryConfirm.
   ///
   /// In ko, this message translates to:
-  /// **'Are you sure you want to clear all play history?'**
+  /// **'모든 재생 기록을 삭제할까요?'**
   String get clearHistoryConfirm;
 
   /// No description provided for @settings.
@@ -520,7 +520,7 @@ abstract class L {
   /// No description provided for @playQueue.
   ///
   /// In ko, this message translates to:
-  /// **'재생 큐'**
+  /// **'현재 재생리스트'**
   String get playQueue;
 
   /// No description provided for @downloadCompleteNotification.
