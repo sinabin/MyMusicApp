@@ -64,17 +64,19 @@ class DownloadHistoryTile extends StatelessWidget {
         return await showDialog<bool>(
           context: context,
           builder: (ctx) => AlertDialog(
-            title: const Text('Delete'),
-            content: const Text('Remove this download?'),
+            title: const Text('파일 삭제'),
+            content: Text(
+              '"$title" 파일이 기기에서 영구적으로 삭제됩니다.\n정말로 삭제하시겠습니까?',
+            ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(ctx, false),
-                child: const Text('Cancel'),
+                child: const Text('취소'),
               ),
               TextButton(
                 onPressed: () => Navigator.pop(ctx, true),
                 child: Text(
-                  'Delete',
+                  '삭제',
                   style: TextStyle(color: cs.error),
                 ),
               ),
@@ -148,7 +150,7 @@ class DownloadHistoryTile extends StatelessWidget {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                 ),
-                onSelected: _onMenuSelected,
+                onSelected: (v) => _onMenuSelected(v, context),
                 itemBuilder: (_) => _buildMenuItems(context),
               ),
             ],
@@ -179,12 +181,12 @@ class DownloadHistoryTile extends StatelessWidget {
       ),
       items: _buildMenuItems(context),
     ).then((value) {
-      if (value != null) _onMenuSelected(value);
+      if (value != null && context.mounted) _onMenuSelected(value, context);
     });
   }
 
   /// 메뉴 항목 선택 처리.
-  void _onMenuSelected(String value) {
+  void _onMenuSelected(String value, BuildContext context) {
     switch (value) {
       case 'add_to_queue':
         onAddToQueue?.call();
@@ -193,6 +195,8 @@ class DownloadHistoryTile extends StatelessWidget {
       case 'toggle_favorite':
         HapticFeedback.lightImpact();
         onToggleFavorite?.call();
+      case 'delete':
+        _confirmAndDelete(context);
     }
   }
 
@@ -245,7 +249,49 @@ class DownloadHistoryTile extends StatelessWidget {
             ],
           ),
         ),
+      if (onDelete != null) ...[
+        const PopupMenuDivider(),
+        PopupMenuItem(
+          value: 'delete',
+          child: Row(
+            children: [
+              Icon(Icons.delete, size: AppSizes.iconMd, color: cs.error),
+              const SizedBox(width: AppSpacing.md),
+              Text('삭제', style: AppTextStyles.body.copyWith(color: cs.error)),
+            ],
+          ),
+        ),
+      ],
     ];
+  }
+
+  /// 삭제 확인 다이얼로그를 표시하고 승인 시 [onDelete] 실행.
+  void _confirmAndDelete(BuildContext context) {
+    final cs = AppColorScheme.of(context);
+    final title = item.fileName.endsWith('.m4a')
+        ? item.fileName.substring(0, item.fileName.length - 4)
+        : item.fileName;
+    showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('파일 삭제'),
+        content: Text(
+          '"$title" 파일이 기기에서 영구적으로 삭제됩니다.\n정말로 삭제하시겠습니까?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('취소'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text('삭제', style: TextStyle(color: cs.error)),
+          ),
+        ],
+      ),
+    ).then((confirmed) {
+      if (confirmed == true) onDelete?.call();
+    });
   }
 
   /// 로컬 파일 우선, 네트워크 URL 폴백으로 썸네일 반환.

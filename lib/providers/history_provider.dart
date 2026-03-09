@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 import '../data/download_history_db.dart';
 import '../data/local_storage.dart';
@@ -74,9 +75,9 @@ class HistoryProvider extends ChangeNotifier {
     });
   }
 
-  /// [item]을 기록에서 삭제 및 목록 갱신.
+  /// [item]을 기록에서 삭제하고 실제 m4a 파일도 제거.
   ///
-  /// 메모리 리스트에서 즉시 제거 후 DB 삭제를 수행하여
+  /// 메모리 리스트에서 즉시 제거 후 DB 삭제·파일 삭제를 수행하여
   /// [Dismissible] 위젯 동기화 문제를 방지.
   void removeItem(DownloadItem item) {
     _items.remove(item);
@@ -84,6 +85,14 @@ class HistoryProvider extends ChangeNotifier {
     _synchronized(() async {
       if (item.isInBox) {
         await item.delete();
+      }
+      try {
+        final file = File(item.filePath);
+        if (await file.exists()) {
+          await file.delete();
+        }
+      } catch (_) {
+        // 파일 삭제 실패는 무시 (이미 DB에서 제거됨).
       }
     });
   }

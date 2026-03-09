@@ -43,6 +43,19 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  /// 삭제 대상 [item]이 재생 큐에 있으면 큐에서 제거(또는 정지).
+  Future<void> _removeFromPlayerIfNeeded(DownloadItem item) async {
+    final player = context.read<PlayerProvider>();
+    final queue = player.queue;
+    final idx = queue.indexWhere((q) => q.filePath == item.filePath);
+    if (idx < 0) return;
+    if (queue.length <= 1) {
+      await player.stop();
+    } else {
+      await player.removeFromQueue(idx);
+    }
+  }
+
   void _playFromHistory(List<DownloadItem> items, int index) {
     final player = context.read<PlayerProvider>();
     final playAll = context.read<SettingsProvider>().settings.playAllOnTap;
@@ -209,7 +222,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: DownloadHistoryTile(
                     item: item,
                     fileService: context.read<FileService>(),
-                    onDelete: () => history.removeItem(item),
+                    onDelete: () async {
+                      await _removeFromPlayerIfNeeded(item);
+                      history.removeItem(item);
+                    },
                     onTap: () => _playFromHistory(recent, index),
                     onAddToQueue: () {
                       HapticFeedback.lightImpact();
