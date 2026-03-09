@@ -4,9 +4,11 @@ import 'package:provider/provider.dart';
 
 import '../models/download_item.dart';
 import '../providers/history_provider.dart';
+import '../services/file_service.dart';
 import '../providers/playback_history_provider.dart';
 import '../providers/player_provider.dart';
 import '../providers/playlist_provider.dart';
+import '../providers/premium_provider.dart';
 import '../providers/settings_provider.dart';
 import '../theme/app_color_scheme.dart';
 import '../theme/app_colors.dart';
@@ -17,12 +19,15 @@ import '../theme/app_text_styles.dart';
 import '../theme/app_theme.dart';
 import '../utils/format_utils.dart';
 import '../widgets/create_playlist_sheet.dart';
+import '../widgets/auto_playlist_section.dart';
 import '../widgets/empty_state_widget.dart';
 import '../widgets/gradient_text.dart';
 import '../widgets/library_quick_card.dart';
 import '../widgets/playlist_tile.dart';
+import '../widgets/premium_gate.dart';
 import '../widgets/recent_play_horizontal_list.dart';
 import 'all_songs_screen.dart';
+import 'artist_explorer_screen.dart';
 import 'favorites_screen.dart';
 import 'playlist_detail_screen.dart';
 import 'recent_plays_screen.dart';
@@ -160,6 +165,87 @@ class _LibraryScreenState extends State<LibraryScreen> {
               ),
             ),
 
+            // Artists entry point
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.only(
+                  left: AppSpacing.xxl,
+                  right: AppSpacing.xxl,
+                  top: AppSpacing.lg,
+                ),
+                child: PremiumGate(
+                  featureLabel: 'Artists',
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () {
+                      final premium = context.read<PremiumProvider>();
+                      if (!premium.isPremium) return;
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const ArtistExplorerScreen(),
+                        ),
+                      );
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(AppSpacing.md),
+                      decoration: BoxDecoration(
+                        color: cs.surface,
+                        borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+                        border: Border.all(color: cs.border),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 44,
+                            height: 44,
+                            decoration: BoxDecoration(
+                              color: cs.primarySurface,
+                              borderRadius:
+                                  BorderRadius.circular(AppTheme.radiusSm),
+                            ),
+                            child: Icon(Icons.people,
+                                color: cs.primary, size: AppSizes.iconMd),
+                          ),
+                          const SizedBox(width: AppSpacing.md),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Artists',
+                                  style: AppTextStyles.tileTitle
+                                      .copyWith(fontWeight: FontWeight.w600),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  '즐겨듣는 아티스트 인기곡 & 관련 아티스트 탐색',
+                                  style: AppTextStyles.caption
+                                      .copyWith(color: cs.textTertiary),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Icon(Icons.chevron_right, color: cs.textTertiary),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
+            // Smart Mixes
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.only(top: AppSpacing.xxl),
+                child: PremiumGate(
+                  featureLabel: 'Smart Mixes',
+                  child: const AutoPlaylistSection(),
+                ),
+              ),
+            ),
+
             // Recently Played
             Consumer<PlaybackHistoryProvider>(
               builder: (context, playback, _) {
@@ -206,6 +292,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                           return RecentPlayHorizontalList(
                             tracks: recentTracks,
                             currentTrack: currentTrack,
+                            fileService: context.read<FileService>(),
                             onTap: (item) {
                               final player = context.read<PlayerProvider>();
                               final playAll = context

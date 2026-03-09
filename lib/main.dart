@@ -8,23 +8,33 @@ import 'app.dart';
 import 'data/dismissed_recommendation_db.dart';
 import 'data/download_history_db.dart';
 import 'data/local_storage.dart';
+import 'data/lyrics_db.dart';
 import 'data/playback_history_db.dart';
 import 'data/playlist_db.dart';
+import 'providers/artist_explorer_provider.dart';
+import 'providers/auto_playlist_provider.dart';
 import 'providers/download_provider.dart';
 import 'providers/history_provider.dart';
+import 'providers/lyrics_provider.dart';
 import 'providers/playback_history_provider.dart';
 import 'providers/player_provider.dart';
 import 'providers/playlist_provider.dart';
+import 'providers/premium_provider.dart';
 import 'providers/recommendation_provider.dart';
 import 'providers/search_provider.dart';
 import 'providers/settings_provider.dart';
 import 'providers/video_info_provider.dart';
+import 'services/artist_explorer_service.dart';
 import 'services/audio_converter_service.dart';
 import 'services/audio_handler.dart';
 import 'services/audio_player_service.dart';
 import 'services/auth_service.dart';
+import 'services/classification/auto_playlist_service.dart';
+import 'services/classification/track_classifier_service.dart';
 import 'services/download_service.dart';
 import 'services/file_service.dart';
+import 'services/lyrics_service.dart';
+import 'services/premium_service.dart';
 import 'services/recommendation/recommendation_service.dart';
 import 'services/youtube_service.dart';
 
@@ -40,7 +50,7 @@ void main() async {
     statusBarColor: Colors.transparent,
   ));
 
-  // Initialize services
+  // Initialize databases
   final downloadHistoryDb = DownloadHistoryDb();
   await downloadHistoryDb.init();
 
@@ -55,9 +65,15 @@ void main() async {
   await playbackHistoryDb.init();
   await playbackHistoryDb.cleanup();
 
+  final lyricsDb = LyricsDb();
+  await lyricsDb.init();
+  await lyricsDb.cleanup();
+
+  // Initialize core services
   final authService = AuthService();
   final youtubeService = YouTubeService(authService: authService);
   final fileService = FileService();
+  await fileService.getThumbnailDir();
   final localStorage = LocalStorage();
   final downloadService = DownloadService(youtubeService);
   final converterService = AudioConverterService();
@@ -66,6 +82,18 @@ void main() async {
     youtubeService: youtubeService,
     downloadHistoryDb: downloadHistoryDb,
     dismissedDb: dismissedDb,
+  );
+
+  // Phase 2: Classification services
+  final classifierService = TrackClassifierService();
+  final autoPlaylistService = AutoPlaylistService(classifierService);
+
+  // Phase 3: Lyrics service
+  final lyricsService = LyricsService(db: lyricsDb);
+
+  // Phase 4: Artist explorer service
+  final artistExplorerService = ArtistExplorerService(
+    youtubeService: youtubeService,
   );
 
   // Initialize AudioService
@@ -90,18 +118,39 @@ void main() async {
     downloadDb: downloadHistoryDb,
   );
 
+  // Phase 0: SettingsProvider (필요한 다른 Provider보다 먼저 생성)
+  final settingsProvider = SettingsProvider(
+    localStorage: localStorage,
+    authService: authService,
+    fileService: fileService,
+    youtubeService: youtubeService,
+  )..init();
+
+  // Phase 0: Premium service
+  final premiumService = PremiumService(
+    localStorage: localStorage,
+    settingsProvider: settingsProvider,
+  );
+  await premiumService.initialize();
+
+  // Phase 1: Recommendation provider with playback history
+  final recommendationProvider = RecommendationProvider(
+    service: recommendationService,
+    dismissedDb: dismissedDb,
+  )..setPlaybackHistoryDb(playbackHistoryDb);
+
   runApp(
     MultiProvider(
       providers: [
         Provider<YouTubeService>.value(value: youtubeService),
         Provider<AuthService>.value(value: authService),
+        Provider<FileService>.value(value: fileService),
+        ChangeNotifierProvider.value(value: settingsProvider),
         ChangeNotifierProvider(
-          create: (_) => SettingsProvider(
-            localStorage: localStorage,
-            authService: authService,
-            fileService: fileService,
-            youtubeService: youtubeService,
-          )..init(),
+          create: (_) => PremiumProvider(
+            service: premiumService,
+            settingsProvider: settingsProvider,
+          ),
         ),
         ChangeNotifierProvider(
           create: (_) => VideoInfoProvider(youtubeService: youtubeService),
@@ -122,12 +171,7 @@ void main() async {
             localStorage: localStorage,
           ),
         ),
-        ChangeNotifierProvider(
-          create: (_) => RecommendationProvider(
-            service: recommendationService,
-            dismissedDb: dismissedDb,
-          ),
-        ),
+        ChangeNotifierProvider.value(value: recommendationProvider),
         ChangeNotifierProvider(
           create: (_) => PlayerProvider(
             audioPlayerService: audioPlayerService,
@@ -141,6 +185,15 @@ void main() async {
             db: playlistDb,
             downloadDb: downloadHistoryDb,
           ),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => AutoPlaylistProvider(service: autoPlaylistService),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => LyricsProvider(service: lyricsService),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => ArtistExplorerProvider(service: artistExplorerService),
         ),
       ],
       child: const App(),

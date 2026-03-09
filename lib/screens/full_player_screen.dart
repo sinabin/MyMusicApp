@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -6,7 +8,10 @@ import 'package:provider/provider.dart';
 
 import '../models/download_item.dart';
 import '../providers/history_provider.dart';
+import '../services/file_service.dart';
+import '../providers/lyrics_provider.dart';
 import '../providers/player_provider.dart';
+import '../providers/premium_provider.dart';
 import '../theme/app_color_scheme.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_durations.dart';
@@ -15,7 +20,10 @@ import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
 import '../theme/app_theme.dart';
 import '../widgets/add_to_playlist_sheet.dart';
+import '../widgets/lyrics_widget.dart';
+import '../widgets/premium_purchase_sheet.dart';
 import '../widgets/seek_bar.dart';
+import 'car_mode_screen.dart';
 import 'queue_screen.dart';
 
 /// 전체 화면 플레이어.
@@ -30,6 +38,8 @@ class FullPlayerScreen extends StatefulWidget {
 }
 
 class _FullPlayerScreenState extends State<FullPlayerScreen> {
+  bool _isLyricsVisible = false;
+
   @override
   void initState() {
     super.initState();
@@ -75,22 +85,26 @@ class _FullPlayerScreenState extends State<FullPlayerScreen> {
               if (track == null || track.isStreaming) {
                 return const SizedBox.shrink();
               }
-              final cs = AppColorScheme.of(context);
-              return IconButton(
-                tooltip: 'Favorite',
-                onPressed: () =>
-                    context.read<HistoryProvider>().toggleFavorite(track),
-                icon: AnimatedSwitcher(
-                  duration: AppDurations.fast,
-                  child: Icon(
-                    track.isFavorite ? Icons.favorite : Icons.favorite_border,
-                    key: ValueKey(track.isFavorite),
-                    color: track.isFavorite
-                        ? cs.error
-                        : cs.textSecondary,
-                    size: AppSizes.iconLg,
-                  ),
-                ),
+              // HistoryProvider를 listen하여 isFavorite 변경 감지.
+              return Selector<HistoryProvider, bool>(
+                selector: (_, h) => track.isFavorite,
+                builder: (context, isFav, _) {
+                  final cs = AppColorScheme.of(context);
+                  return IconButton(
+                    tooltip: 'Favorite',
+                    onPressed: () =>
+                        context.read<HistoryProvider>().toggleFavorite(track),
+                    icon: AnimatedSwitcher(
+                      duration: AppDurations.fast,
+                      child: Icon(
+                        isFav ? Icons.favorite : Icons.favorite_border,
+                        key: ValueKey(isFav),
+                        color: isFav ? cs.error : cs.textSecondary,
+                        size: AppSizes.iconLg,
+                      ),
+                    ),
+                  );
+                },
               );
             },
           ),
@@ -111,6 +125,60 @@ class _FullPlayerScreenState extends State<FullPlayerScreen> {
                   context,
                   videoId: track.videoId,
                 ),
+              );
+            },
+          ),
+          // 가사 토글
+          Selector<PlayerProvider, DownloadItem?>(
+            selector: (_, p) => p.currentTrack,
+            builder: (context, track, _) {
+              if (track == null) return const SizedBox.shrink();
+              final cs = AppColorScheme.of(context);
+              return IconButton(
+                tooltip: '가사',
+                icon: Icon(
+                  _isLyricsVisible ? Icons.lyrics : Icons.lyrics_outlined,
+                  color: _isLyricsVisible ? cs.primary : cs.textSecondary,
+                ),
+                onPressed: () {
+                  final premium = context.read<PremiumProvider>();
+                  if (!premium.isPremium) {
+                    PremiumPurchaseSheet.show(context);
+                    return;
+                  }
+                  setState(() => _isLyricsVisible = !_isLyricsVisible);
+                  if (_isLyricsVisible) {
+                    context.read<LyricsProvider>().loadLyrics(track);
+                  }
+                },
+              );
+            },
+          ),
+          // 차량 모드
+          Selector<PlayerProvider, DownloadItem?>(
+            selector: (_, p) => p.currentTrack,
+            builder: (context, track, _) {
+              if (track == null) return const SizedBox.shrink();
+              final cs = AppColorScheme.of(context);
+              return IconButton(
+                tooltip: '차량 모드',
+                icon: Icon(
+                  Icons.directions_car,
+                  color: cs.textSecondary,
+                ),
+                onPressed: () {
+                  final premium = context.read<PremiumProvider>();
+                  if (!premium.isPremium) {
+                    PremiumPurchaseSheet.show(context);
+                    return;
+                  }
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const CarModeScreen(),
+                    ),
+                  );
+                },
               );
             },
           ),
@@ -145,26 +213,31 @@ class _FullPlayerScreenState extends State<FullPlayerScreen> {
 
           return Column(
             children: [
-              const Spacer(),
-              // 앨범아트
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: artPadding),
-                child: AspectRatio(
-                  aspectRatio: 1,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-                    child: track.thumbnailUrl != null
-                        ? CachedNetworkImage(
-                            imageUrl: track.thumbnailUrl!,
-                            fit: BoxFit.cover,
-                            placeholder: (context, url) => _placeholderArt(AppColorScheme.of(context)),
-                            errorWidget: (context, url, error) => _placeholderArt(AppColorScheme.of(context)),
-                          )
-                        : _placeholderArt(cs),
+              if (_isLyricsVisible) ...[
+                const SizedBox(height: AppSpacing.lg),
+                Expanded(
+                  flex: 3,
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: artPadding),
+                    child: const LyricsWidget(),
                   ),
                 ),
-              ),
-              const SizedBox(height: AppSpacing.xxxl),
+                const SizedBox(height: AppSpacing.lg),
+              ] else ...[
+                const Spacer(),
+                // 앨범아트
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: artPadding),
+                  child: AspectRatio(
+                    aspectRatio: 1,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+                      child: _buildAlbumArt(context, track, cs),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.xxxl),
+              ],
               // 곡 정보
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxxl),
@@ -195,7 +268,10 @@ class _FullPlayerScreenState extends State<FullPlayerScreen> {
               const SizedBox(height: AppSpacing.lg),
               // 컨트롤
               _buildControls(context),
-              const Spacer(flex: 2),
+              if (_isLyricsVisible)
+                const Spacer()
+              else
+                const Spacer(flex: 2),
             ],
           );
         },
@@ -328,6 +404,39 @@ class _FullPlayerScreenState extends State<FullPlayerScreen> {
       LoopMode.one => Icons.repeat_one,
       _ => Icons.repeat,
     };
+  }
+
+  /// 로컬 파일 우선, 네트워크 URL 폴백으로 앨범아트 반환.
+  Widget _buildAlbumArt(
+      BuildContext context, DownloadItem track, AppColorScheme cs) {
+    final url = track.thumbnailUrl;
+    if (url == null) return _placeholderArt(cs);
+
+    if (url.startsWith('/')) {
+      return Image.file(
+        File(url),
+        fit: BoxFit.cover,
+        errorBuilder: (_, _, _) => _placeholderArt(cs),
+      );
+    }
+
+    final localPath = context
+        .read<FileService>()
+        .getLocalThumbnailPathSync(track.fileName);
+    if (localPath != null) {
+      return Image.file(
+        File(localPath),
+        fit: BoxFit.cover,
+        errorBuilder: (_, _, _) => _placeholderArt(cs),
+      );
+    }
+
+    return CachedNetworkImage(
+      imageUrl: url,
+      fit: BoxFit.cover,
+      placeholder: (context, url) => _placeholderArt(cs),
+      errorWidget: (context, url, error) => _placeholderArt(cs),
+    );
   }
 
   Widget _placeholderArt(AppColorScheme cs) {
