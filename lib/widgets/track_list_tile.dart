@@ -16,7 +16,8 @@ import '../utils/format_utils.dart';
 
 /// 곡 목록 공통 타일 위젯.
 ///
-/// 썸네일·제목·아티스트·길이를 표시하며, 탭→재생, 점 메뉴/롱프레스→컨텍스트 메뉴 지원.
+/// 썸네일·제목·아티스트·길이를 표시하며, 탭→재생, 점 메뉴→컨텍스트 액션,
+/// 롱프레스→외부 콜백(예: 플레이리스트 제거) 지원.
 /// 큐·즐겨찾기·플레이리스트 화면 등에서 재활용.
 class TrackListTile extends StatelessWidget {
   final DownloadItem item;
@@ -26,6 +27,9 @@ class TrackListTile extends StatelessWidget {
   final bool isFavorite;
   final VoidCallback? onToggleFavorite;
   final VoidCallback? onAddToPlaylist;
+
+  /// 롱프레스 시 호출할 콜백 (예: 플레이리스트에서 제거).
+  final VoidCallback? onLongPress;
 
   /// 로컬 썸네일 조회용 [FileService].
   final FileService? fileService;
@@ -39,10 +43,11 @@ class TrackListTile extends StatelessWidget {
     this.isFavorite = false,
     this.onToggleFavorite,
     this.onAddToPlaylist,
+    this.onLongPress,
     this.fileService,
   });
 
-  /// 컨텍스트 메뉴 항목 유무.
+  /// 점 메뉴 항목 유무.
   bool get _hasMenuItems =>
       onAddToQueue != null || onAddToPlaylist != null || onToggleFavorite != null;
 
@@ -58,7 +63,10 @@ class TrackListTile extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        onLongPress: _hasMenuItems ? () => _showContextMenu(context) : null,
+        onLongPress: onLongPress != null ? () {
+          HapticFeedback.mediumImpact();
+          onLongPress!();
+        } : null,
         borderRadius: BorderRadius.circular(AppTheme.radiusMd),
         child: Container(
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 10),
@@ -130,8 +138,8 @@ class TrackListTile extends StatelessWidget {
                 ),
                 padding: EdgeInsets.zero,
               ),
-            // 점 메뉴
-            if (onAddToQueue != null || onAddToPlaylist != null)
+            // 점 메뉴 (큐·플레이리스트·좋아요)
+            if (_hasMenuItems)
               PopupMenuButton<String>(
                 icon: Icon(
                   Icons.more_vert,
@@ -148,38 +156,13 @@ class TrackListTile extends StatelessWidget {
                   borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                 ),
                 onSelected: _onMenuSelected,
-                itemBuilder: (ctx) => _buildMenuItems(ctx),
+                itemBuilder: (ctx) => _buildMenuItems(ctx, includeFavorite: true),
               ),
           ],
         ),
       ),
       ),
     );
-  }
-
-  /// 롱프레스 시 컨텍스트 메뉴 표시.
-  void _showContextMenu(BuildContext context) {
-    final cs = AppColorScheme.of(context);
-    HapticFeedback.mediumImpact();
-    final box = context.findRenderObject() as RenderBox;
-    final offset = box.localToGlobal(Offset.zero);
-
-    showMenu<String>(
-      context: context,
-      position: RelativeRect.fromLTRB(
-        offset.dx + box.size.width * 0.5,
-        offset.dy,
-        offset.dx + box.size.width,
-        offset.dy + box.size.height,
-      ),
-      color: cs.surfaceVariant,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-      ),
-      items: _buildMenuItems(context, includeFavorite: true),
-    ).then((value) {
-      if (value != null) _onMenuSelected(value);
-    });
   }
 
   /// 메뉴 항목 선택 처리.
