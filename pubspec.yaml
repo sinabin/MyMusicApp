@@ -23,6 +23,9 @@ dependencies:
   # Auth & WebView
   webview_flutter: ^4.10.0
 
+  # IAP
+  in_app_purchase: ^3.2.0
+
   # State Management
   provider: ^6.1.2
 
@@ -40,6 +43,10 @@ dependencies:
   shimmer: ^3.0.0
   flutter_animate: ^4.5.0
   google_fonts: ^6.2.1
+
+  # HTTP & Speech
+  http: ^1.2.0
+  speech_to_text: ^7.0.0
 
   # Utility
   intl: ^0.20.2
