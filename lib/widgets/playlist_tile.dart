@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 
 import '../models/playlist_item.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_sizes.dart';
+import '../theme/app_spacing.dart';
+import '../theme/app_text_styles.dart';
+import '../theme/app_theme.dart';
 import 'playlist_mosaic_art.dart';
 
 /// 플레이리스트 목록의 개별 타일 위젯.
@@ -40,10 +44,10 @@ class PlaylistTile extends StatelessWidget {
       direction: DismissDirection.endToStart,
       background: Container(
         alignment: Alignment.centerRight,
-        padding: const EdgeInsets.only(right: 20),
+        padding: const EdgeInsets.only(right: AppSpacing.xl),
         decoration: BoxDecoration(
           color: AppColors.error.withValues(alpha: 0.2),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppTheme.radiusMd),
         ),
         child: const Icon(Icons.delete, color: AppColors.error),
       ),
@@ -72,21 +76,21 @@ class PlaylistTile extends StatelessWidget {
       onDismissed: (_) => onDelete(),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppTheme.radiusMd),
         child: Container(
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.all(AppSpacing.md),
           decoration: BoxDecoration(
             color: AppColors.surface,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(AppTheme.radiusMd),
             border: Border.all(color: AppColors.border, width: 1),
           ),
           child: Row(
             children: [
               PlaylistMosaicArt(
                 thumbnailUrls: thumbnailUrls,
-                size: 56,
+                size: AppSizes.thumbnailLg,
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: AppSpacing.md),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -95,19 +99,12 @@ class PlaylistTile extends StatelessWidget {
                       playlist.name,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: AppColors.textPrimary,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                      ),
+                      style: AppTextStyles.tileTitle,
                     ),
-                    const SizedBox(height: 2),
+                    const SizedBox(height: AppSpacing.xxs),
                     Text(
                       subtitle,
-                      style: const TextStyle(
-                        color: AppColors.textTertiary,
-                        fontSize: 12,
-                      ),
+                      style: AppTextStyles.caption,
                     ),
                   ],
                 ),
@@ -115,7 +112,7 @@ class PlaylistTile extends StatelessWidget {
               const Icon(
                 Icons.chevron_right,
                 color: AppColors.textTertiary,
-                size: 20,
+                size: AppSizes.iconMd,
               ),
             ],
           ),

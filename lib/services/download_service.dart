@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
+import '../models/app_exception.dart';
 import 'youtube_service.dart';
 
 /// 오디오 스트림 다운로드를 수행하며 취소 기능을 제공하는 서비스.
@@ -77,7 +78,11 @@ class DownloadService {
           await file.delete();
         }
       } catch (_) {}
-      rethrow;
+      if (e is AppException) rethrow;
+      throw DownloadException(
+        message: 'Download failed for videoId=$videoId: $e',
+        cause: e,
+      );
     }
   }
 }

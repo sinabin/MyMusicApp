@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
+import '../models/app_exception.dart';
 import '../models/video_info.dart' as app;
 import 'auth_service.dart';
 
@@ -90,31 +91,47 @@ class YouTubeService {
 
   /// [query]로 YouTube 검색 수행.
   Future<VideoSearchList> searchVideos(String query) async {
-    final client = await _client;
-    return await client.search.search(query);
+    try {
+      final client = await _client;
+      return await client.search.search(query);
+    } catch (e) {
+      if (e is AppException) rethrow;
+      throw SearchException(
+        message: 'Search failed for query="$query": $e',
+        cause: e,
+      );
+    }
   }
 
   /// [videoId]의 가용 오디오 스트림 중 최고 비트레이트 스트림 반환.
   Future<StreamInfo> getBestAudioStream(String videoId) async {
-    final client = await _client;
-    final manifest = await client.videos.streams.getManifest(
-      videoId,
-      ytClients: [
-        YoutubeApiClient.safari,
-        YoutubeApiClient.androidVr,
-      ],
-    );
+    try {
+      final client = await _client;
+      final manifest = await client.videos.streams.getManifest(
+        videoId,
+        ytClients: [
+          YoutubeApiClient.safari,
+          YoutubeApiClient.androidVr,
+        ],
+      );
 
-    final audioStreams = manifest.audioOnly.sortByBitrate();
-    debugPrint('[YouTubeService] Available audio streams: ${audioStreams.length}');
-    for (final s in audioStreams) {
-      debugPrint('[YouTubeService]   - ${s.codec} ${s.bitrate} ${s.size}');
-    }
+      final audioStreams = manifest.audioOnly.sortByBitrate();
+      debugPrint('[YouTubeService] Available audio streams: ${audioStreams.length}');
+      for (final s in audioStreams) {
+        debugPrint('[YouTubeService]   - ${s.codec} ${s.bitrate} ${s.size}');
+      }
 
-    if (audioStreams.isEmpty) {
-      throw Exception('No audio streams available for videoId=$videoId');
+      if (audioStreams.isEmpty) {
+        throw StreamNotFoundException(videoId: videoId);
+      }
+      return audioStreams.first; // Highest bitrate (sortByBitrate는 내림차순)
+    } catch (e) {
+      if (e is AppException) rethrow;
+      throw NetworkException(
+        message: 'Failed to get audio stream for videoId=$videoId: $e',
+        cause: e,
+      );
     }
-    return audioStreams.first; // Highest bitrate (sortByBitrate는 내림차순)
   }
 
   /// [videoId]의 최고 비트레이트 오디오 스트림 URL 반환.

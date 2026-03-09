@@ -5,6 +5,10 @@ import '../models/recommendation.dart';
 import '../models/video_info.dart';
 import '../services/youtube_service.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_sizes.dart';
+import '../theme/app_spacing.dart';
+import '../theme/app_text_styles.dart';
+import '../theme/app_theme.dart';
 import '../utils/format_utils.dart';
 
 /// 추천 곡 상세 정보 바텀시트.
@@ -109,29 +113,30 @@ class _RecommendationDetailSheetState
       ),
       decoration: const BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppSpacing.xl)),
       ),
       child: SingleChildScrollView(
-        padding: EdgeInsets.fromLTRB(20, 12, 20, 20 + bottomPadding),
+        padding: EdgeInsets.fromLTRB(
+            AppSpacing.xl, AppSpacing.md, AppSpacing.xl, AppSpacing.xl + bottomPadding),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // 드래그 핸들
             Center(
               child: Container(
-                width: 40,
-                height: 4,
+                width: AppSizes.handleWidth,
+                height: AppSizes.handleHeight,
                 decoration: BoxDecoration(
                   color: AppColors.textTertiary.withValues(alpha: 0.5),
-                  borderRadius: BorderRadius.circular(2),
+                  borderRadius: BorderRadius.circular(AppSpacing.xxs),
                 ),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.lg),
 
             // 썸네일
             ClipRRect(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(AppTheme.radiusMd),
               child: AspectRatio(
                 aspectRatio: 16 / 9,
                 child: CachedNetworkImage(
@@ -141,49 +146,45 @@ class _RecommendationDetailSheetState
                     color: AppColors.surfaceVariant,
                     child: const Center(
                       child: Icon(Icons.music_note,
-                          color: AppColors.textTertiary, size: 48),
+                          color: AppColors.textTertiary, size: AppSizes.iconHero),
                     ),
                   ),
                   errorWidget: (_, _, _) => Container(
                     color: AppColors.surfaceVariant,
                     child: const Center(
                       child: Icon(Icons.music_note,
-                          color: AppColors.textTertiary, size: 48),
+                          color: AppColors.textTertiary, size: AppSizes.iconHero),
                     ),
                   ),
                 ),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.lg),
 
             // 제목
             Text(
               rec.title,
-              style: const TextStyle(
-                color: AppColors.textPrimary,
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-              ),
+              style: AppTextStyles.sectionHeader,
             ),
             const SizedBox(height: 10),
 
             // 채널명
             _infoRow(Icons.person_outline, rec.channelName),
-            const SizedBox(height: 4),
+            const SizedBox(height: AppSpacing.xs),
 
             // 재생 시간
             if (rec.duration != null) ...[
               _infoRow(Icons.access_time, FormatUtils.duration(rec.duration!)),
-              const SizedBox(height: 4),
+              const SizedBox(height: AppSpacing.xs),
             ],
 
             // 추천 소스
             _infoRow(Icons.auto_awesome, _sourceLabel(rec.source)),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.sm),
 
             // 추천 사유 배지
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
               decoration: BoxDecoration(
                 color: AppColors.primarySurface,
                 borderRadius: BorderRadius.circular(6),
@@ -192,26 +193,25 @@ class _RecommendationDetailSheetState
                 rec.reason,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
+                style: AppTextStyles.caption.copyWith(
                   color: AppColors.primaryLight,
-                  fontSize: 12,
                 ),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.lg),
             const Divider(color: AppColors.divider),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.md),
 
             // 추가 메타데이터 (비동기 로드)
             if (_isLoading)
-              const Center(
+              Center(
                 child: Padding(
-                  padding: EdgeInsets.symmetric(vertical: 16),
+                  padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
                   child: SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
+                    width: AppSizes.indicatorMd,
+                    height: AppSizes.indicatorMd,
+                    child: const CircularProgressIndicator(
+                      strokeWidth: AppSizes.strokeWidth,
                       color: AppColors.primary,
                     ),
                   ),
@@ -220,16 +220,16 @@ class _RecommendationDetailSheetState
             else if (_videoInfo != null) ...[
               if (_videoInfo!.artistName != null) ...[
                 _infoRow(Icons.mic_outlined, _videoInfo!.artistName!),
-                const SizedBox(height: 4),
+                const SizedBox(height: AppSpacing.xs),
               ],
               if (_videoInfo!.keywords != null &&
                   _videoInfo!.keywords!.isNotEmpty) ...[
-                const SizedBox(height: 8),
+                const SizedBox(height: AppSpacing.sm),
                 _buildTags(_videoInfo!.keywords!),
               ],
             ],
 
-            const SizedBox(height: 20),
+            const SizedBox(height: AppSpacing.xl),
 
             // 스트리밍 듣기 버튼
             if (widget.onStream != null)
@@ -240,11 +240,11 @@ class _RecommendationDetailSheetState
                   child: ElevatedButton.icon(
                     onPressed: _isStreaming ? null : _handleStream,
                     icon: _isStreaming
-                        ? const SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
+                        ? SizedBox(
+                            width: AppSizes.iconMsl,
+                            height: AppSizes.iconMsl,
+                            child: const CircularProgressIndicator(
+                              strokeWidth: AppSizes.strokeWidth,
                               color: Colors.white,
                             ),
                           )
@@ -259,7 +259,7 @@ class _RecommendationDetailSheetState
                       disabledForegroundColor: AppColors.textTertiary,
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                       ),
                       textStyle: const TextStyle(
                         fontSize: 16,
@@ -281,11 +281,11 @@ class _RecommendationDetailSheetState
                         widget.onDownload();
                       },
                 icon: widget.isDownloading
-                    ? const SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
+                    ? SizedBox(
+                        width: AppSizes.iconMsl,
+                        height: AppSizes.iconMsl,
+                        child: const CircularProgressIndicator(
+                          strokeWidth: AppSizes.strokeWidth,
                           color: Colors.white,
                         ),
                       )
@@ -300,7 +300,7 @@ class _RecommendationDetailSheetState
                   disabledForegroundColor: Colors.white70,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                   ),
                   textStyle: const TextStyle(
                     fontSize: 16,
@@ -319,14 +319,13 @@ class _RecommendationDetailSheetState
   Widget _infoRow(IconData icon, String text) {
     return Row(
       children: [
-        Icon(icon, color: AppColors.textTertiary, size: 16),
-        const SizedBox(width: 8),
+        Icon(icon, color: AppColors.textTertiary, size: AppSizes.iconSm),
+        const SizedBox(width: AppSpacing.sm),
         Expanded(
           child: Text(
             text,
-            style: const TextStyle(
+            style: AppTextStyles.body.copyWith(
               color: AppColors.textSecondary,
-              fontSize: 14,
             ),
           ),
         ),
@@ -340,13 +339,16 @@ class _RecommendationDetailSheetState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Row(
+        Row(
           children: [
-            Icon(Icons.tag, color: AppColors.textTertiary, size: 16),
-            SizedBox(width: 8),
+            const Icon(Icons.tag, color: AppColors.textTertiary, size: AppSizes.iconSm),
+            const SizedBox(width: AppSpacing.sm),
             Text(
               '태그',
-              style: TextStyle(color: AppColors.textTertiary, fontSize: 13),
+              style: AppTextStyles.bodySmall.copyWith(
+                color: AppColors.textTertiary,
+                fontWeight: FontWeight.w400,
+              ),
             ),
           ],
         ),
@@ -357,10 +359,10 @@ class _RecommendationDetailSheetState
           children: display
               .map((tag) => Container(
                     padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
                     decoration: BoxDecoration(
                       color: AppColors.surfaceVariant,
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                     ),
                     child: Text(
                       tag,
@@ -387,5 +389,4 @@ class _RecommendationDetailSheetState
         return '검색 기반 추천';
     }
   }
-
 }

@@ -1,9 +1,8 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:shimmer/shimmer.dart';
+import '../models/app_exception.dart';
 import '../models/download_item.dart';
 import '../models/video_info.dart';
 import '../providers/download_provider.dart';
@@ -14,8 +13,13 @@ import '../providers/search_provider.dart';
 import '../providers/settings_provider.dart';
 import '../services/youtube_service.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_durations.dart';
+import '../theme/app_sizes.dart';
+import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
+import '../theme/app_theme.dart';
 import '../widgets/add_to_playlist_sheet.dart';
+import '../widgets/download_confirm_sheet.dart';
 import '../widgets/download_history_tile.dart';
 import '../widgets/empty_state_widget.dart';
 import '../widgets/search_result_tile.dart';
@@ -118,8 +122,9 @@ class _HomeScreenState extends State<HomeScreen> {
       context.read<PlayerProvider>().playTrack(streamItem);
     } catch (e) {
       if (mounted) {
+        final msg = e is AppException ? e.userMessage : 'Streaming failed';
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Streaming failed: $e')),
+          SnackBar(content: Text(msg)),
         );
       }
     } finally {
@@ -175,31 +180,26 @@ class _HomeScreenState extends State<HomeScreen> {
       }
     } catch (e) {
       if (mounted) {
+        final msg = e is AppException ? e.userMessage : 'Download failed';
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Download failed: $e')),
+          SnackBar(content: Text(msg)),
         );
       }
     }
   }
 
   void _showDownloadSheet(VideoInfo info) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: AppColors.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (_) => _DownloadConfirmSheet(
-        videoInfo: info,
-        onDownload: () {
-          Navigator.of(context).pop();
-          _onDownloadTap(info);
-        },
-        onStream: () {
-          Navigator.of(context).pop();
-          _onStreamTap(info);
-        },
-      ),
+    DownloadConfirmSheet.show(
+      context,
+      videoInfo: info,
+      onDownload: () {
+        Navigator.of(context).pop();
+        _onDownloadTap(info);
+      },
+      onStream: () {
+        Navigator.of(context).pop();
+        _onStreamTap(info);
+      },
     );
   }
 
@@ -218,30 +218,27 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             // App bar
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 8, 0),
+              padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.sm, AppSpacing.sm, 0),
               child: Row(
                 children: [
                   Container(
-                    width: 32,
-                    height: 32,
+                    width: AppSizes.headerIconBox,
+                    height: AppSizes.headerIconBox,
                     decoration: BoxDecoration(
                       gradient: AppColors.primaryGradient,
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusSm),
                     ),
                     child: const Icon(Icons.music_note,
-                        color: Colors.white, size: 20),
+                        color: Colors.white, size: AppSizes.iconMd),
                   ),
                   const SizedBox(width: 10),
-                  const Text(
+                  Text(
                     'MyMusicApp',
-                    style: TextStyle(
-                      color: AppColors.textPrimary,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                    ),
+                    style: AppTextStyles.sectionHeader,
                   ),
                   const Spacer(),
                   IconButton(
+                    tooltip: '설정',
                     icon: const Icon(Icons.settings_outlined,
                         color: AppColors.textSecondary),
                     onPressed: () => SettingsBottomSheet.show(context),
@@ -252,7 +249,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
             // 검색바
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+              padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.sm),
               child: _buildSearchBar(),
             ),
 
@@ -275,16 +272,16 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildSearchBar() {
     return Container(
-      height: 52,
+      height: AppSizes.searchBarHeight,
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppTheme.radiusLg),
         border: Border.all(color: AppColors.border),
       ),
       child: Row(
         children: [
           const SizedBox(width: 14),
-          const Icon(Icons.search, color: AppColors.textTertiary, size: 22),
+          const Icon(Icons.search, color: AppColors.textTertiary, size: AppSizes.iconMl),
           const SizedBox(width: 10),
           Expanded(
             child: TextField(
@@ -310,7 +307,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   icon: const Icon(
                     Icons.close,
                     color: AppColors.textTertiary,
-                    size: 20,
+                    size: AppSizes.iconMd,
                   ),
                   onPressed: _onClearSearch,
                 );
@@ -333,15 +330,15 @@ class _HomeScreenState extends State<HomeScreen> {
     if (provider.error != null) {
       return Center(
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(AppSpacing.xxl),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               const Icon(Icons.error_outline,
-                  size: 48, color: AppColors.error),
-              const SizedBox(height: 12),
+                  size: AppSizes.iconHero, color: AppColors.error),
+              const SizedBox(height: AppSpacing.md),
               Text('Search failed', style: AppTextStyles.sectionHeader),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppSpacing.sm),
               Text(
                 provider.error!,
                 style: AppTextStyles.caption,
@@ -349,7 +346,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 maxLines: 3,
                 overflow: TextOverflow.ellipsis,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.lg),
               TextButton(onPressed: _onSearch, child: const Text('Retry')),
             ],
           ),
@@ -362,8 +359,8 @@ class _HomeScreenState extends State<HomeScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             const Icon(Icons.search_off,
-                size: 48, color: AppColors.textTertiary),
-            const SizedBox(height: 12),
+                size: AppSizes.iconHero, color: AppColors.textTertiary),
+            const SizedBox(height: AppSpacing.md),
             Text('No results found', style: AppTextStyles.subtitle),
           ],
         ),
@@ -373,24 +370,24 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildSearchResultsList(SearchProvider provider) {
-    return Consumer<DownloadProvider>(
-      builder: (context, downloadProv, _) {
-        final isActive = downloadProv.status.isActive;
-        final currentVideoId = downloadProv.currentVideoId;
+    return Selector<DownloadProvider, (bool, String?)>(
+      selector: (_, dp) => (dp.status.isActive, dp.currentVideoId),
+      builder: (context, data, _) {
+        final (isActive, currentVideoId) = data;
 
         return ListView.builder(
           controller: _searchScrollController,
-          padding: const EdgeInsets.symmetric(horizontal: 24),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
           itemCount:
               provider.results.length + (provider.isLoadingMore ? 1 : 0),
           itemBuilder: (context, index) {
             if (index == provider.results.length) {
               return const Padding(
-                padding: EdgeInsets.all(16),
+                padding: EdgeInsets.all(AppSpacing.lg),
                 child: Center(
                   child: CircularProgressIndicator(
                     color: AppColors.primary,
-                    strokeWidth: 2,
+                    strokeWidth: AppSizes.strokeWidth,
                   ),
                 ),
               );
@@ -408,9 +405,9 @@ class _HomeScreenState extends State<HomeScreen> {
               isStreamLoading: _streamingVideoId == result.videoId,
               downloadDisabled: isActive && !isThisDownloading,
             ).animate().fadeIn(
-                  duration: 200.ms,
+                  duration: AppDurations.fast,
                   delay: Duration(
-                      milliseconds: (index * 30).clamp(0, 300)),
+                      milliseconds: (index * AppDurations.staggerFastMs).clamp(0, AppDurations.staggerMaxMs)),
                 );
           },
         );
@@ -429,17 +426,17 @@ class _HomeScreenState extends State<HomeScreen> {
           slivers: [
             // 섹션 헤더
             SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
               sliver: SliverToBoxAdapter(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(height: 8),
+                    const SizedBox(height: AppSpacing.sm),
                     Text(
                       'Recent Downloads (${history.recentCount})',
                       style: AppTextStyles.sectionHeader,
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: AppSpacing.sm),
                   ],
                 ),
               ),
@@ -450,18 +447,19 @@ class _HomeScreenState extends State<HomeScreen> {
               const SliverToBoxAdapter(child: EmptyStateWidget()),
             if (recent.isNotEmpty)
               SliverPadding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
                 sliver: SliverList(
                   delegate: SliverChildBuilderDelegate(
                     (context, index) {
                       final item = recent[index];
                       return Padding(
-                        padding: const EdgeInsets.only(bottom: 8),
+                        padding: const EdgeInsets.only(bottom: AppSpacing.sm),
                         child: DownloadHistoryTile(
                           item: item,
                           onDelete: () => history.removeItem(index),
                           onTap: () => _playFromHistory(recent, index),
                           onAddToQueue: () {
+                            HapticFeedback.lightImpact();
                             context
                                 .read<PlayerProvider>()
                                 .addToQueue(item);
@@ -479,7 +477,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               context,
                               videoId: item.videoId),
                         ).animate().fadeIn(
-                            duration: 300.ms, delay: (index * 50).ms),
+                            duration: AppDurations.normal, delay: Duration(milliseconds: index * AppDurations.staggerMs)),
                       );
                     },
                     childCount: recent.length,
@@ -487,223 +485,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
 
-            const SliverToBoxAdapter(child: SizedBox(height: 32)),
+            const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.xxxl)),
           ],
         );
       },
-    );
-  }
-}
-
-/// 다운로드·스트리밍 확인 바텀 시트.
-///
-/// 검색 결과의 미리보기 정보와 다운로드·스트리밍 버튼을 표시.
-class _DownloadConfirmSheet extends StatelessWidget {
-  final VideoInfo videoInfo;
-  final VoidCallback onDownload;
-  final VoidCallback onStream;
-
-  const _DownloadConfirmSheet({
-    required this.videoInfo,
-    required this.onDownload,
-    required this.onStream,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.fromLTRB(
-        20,
-        12,
-        20,
-        20 + MediaQuery.of(context).padding.bottom,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // 핸들 바
-          Container(
-            width: 40,
-            height: 4,
-            decoration: BoxDecoration(
-              color: AppColors.textTertiary,
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-          const SizedBox(height: 20),
-
-          // 영상 정보
-          Row(
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: SizedBox(
-                  width: 120,
-                  height: 68,
-                  child: CachedNetworkImage(
-                    imageUrl: videoInfo.thumbnailUrl,
-                    fit: BoxFit.cover,
-                    placeholder: (context, url) => Shimmer.fromColors(
-                      baseColor: AppColors.surfaceVariant,
-                      highlightColor: AppColors.surfaceLight,
-                      child: Container(color: AppColors.surfaceVariant),
-                    ),
-                    errorWidget: (context, url, error) => Container(
-                      color: AppColors.surfaceVariant,
-                      child: const Icon(
-                        Icons.music_note,
-                        color: AppColors.textTertiary,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      videoInfo.title,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: AppColors.textPrimary,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      videoInfo.channelName,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: AppColors.textSecondary,
-                        fontSize: 12,
-                      ),
-                    ),
-                    if (videoInfo.duration != Duration.zero) ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        videoInfo.formattedDuration,
-                        style: const TextStyle(
-                          color: AppColors.textTertiary,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 24),
-
-          // 스트리밍 재생 버튼
-          SizedBox(
-            width: double.infinity,
-            height: 52,
-            child: Material(
-              borderRadius: BorderRadius.circular(26),
-              child: InkWell(
-                borderRadius: BorderRadius.circular(26),
-                onTap: () {
-                  HapticFeedback.mediumImpact();
-                  onStream();
-                },
-                child: Ink(
-                  decoration: BoxDecoration(
-                    gradient: AppColors.primaryGradient,
-                    borderRadius: BorderRadius.circular(26),
-                  ),
-                  child: const Center(
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.play_circle_outline,
-                          color: Colors.white,
-                          size: 22,
-                        ),
-                        SizedBox(width: 8),
-                        Text(
-                          'Stream',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 12),
-          // 다운로드 버튼
-          Consumer<DownloadProvider>(
-            builder: (context, provider, _) {
-              final isActive = provider.status.isActive;
-              return SizedBox(
-                width: double.infinity,
-                height: 52,
-                child: Material(
-                  borderRadius: BorderRadius.circular(26),
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(26),
-                    onTap: isActive
-                        ? null
-                        : () {
-                            HapticFeedback.mediumImpact();
-                            onDownload();
-                          },
-                    child: Ink(
-                      decoration: BoxDecoration(
-                        border: isActive
-                            ? null
-                            : Border.all(
-                                color: AppColors.primary, width: 1.5),
-                        color: isActive ? AppColors.surfaceVariant : null,
-                        borderRadius: BorderRadius.circular(26),
-                      ),
-                      child: Center(
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.download_rounded,
-                              color: isActive
-                                  ? AppColors.textTertiary
-                                  : AppColors.primary,
-                              size: 22,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              isActive
-                                  ? 'Download in progress...'
-                                  : 'Download Audio',
-                              style: TextStyle(
-                                color: isActive
-                                    ? AppColors.textTertiary
-                                    : AppColors.primary,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
-        ],
-      ),
     );
   }
 }

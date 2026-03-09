@@ -1,8 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 
+import '../l10n/app_localizations.dart';
 import '../providers/player_provider.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_durations.dart';
+import '../theme/app_sizes.dart';
+import '../theme/app_spacing.dart';
+import '../theme/app_text_styles.dart';
+import '../theme/app_theme.dart';
 import '../widgets/track_list_tile.dart';
 
 /// 현재 재생 큐를 표시하는 바텀시트.
@@ -31,37 +38,34 @@ class QueueScreen extends StatelessWidget {
       ),
       decoration: const BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppTheme.radiusXl)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           // 드래그 핸들
           Padding(
-            padding: const EdgeInsets.only(top: 12, bottom: 8),
+            padding: const EdgeInsets.only(top: AppSpacing.md, bottom: AppSpacing.sm),
             child: Container(
-              width: 40,
-              height: 4,
+              width: AppSizes.handleWidth,
+              height: AppSizes.handleHeight,
               decoration: BoxDecoration(
                 color: AppColors.textTertiary,
-                borderRadius: BorderRadius.circular(2),
+                borderRadius: BorderRadius.circular(AppSpacing.xxs),
               ),
             ),
           ),
           // 헤더
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl, vertical: AppSpacing.sm),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Consumer<PlayerProvider>(
-                  builder: (context, player, _) => Text(
-                    'Queue (${player.queue.length})',
-                    style: const TextStyle(
-                      color: AppColors.textPrimary,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                    ),
+                Selector<PlayerProvider, int>(
+                  selector: (_, p) => p.queue.length,
+                  builder: (context, count, _) => Text(
+                    L.of(context)!.queueCount(count),
+                    style: AppTextStyles.sectionHeader,
                   ),
                 ),
                 IconButton(
@@ -79,37 +83,38 @@ class QueueScreen extends StatelessWidget {
                 if (player.queue.isEmpty) {
                   return Padding(
                     padding: EdgeInsets.fromLTRB(
-                        32, 32, 32, 32 + bottomPadding),
+                        AppSpacing.xxxl, AppSpacing.xxxl, AppSpacing.xxxl,
+                        AppSpacing.xxxl + bottomPadding),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         const Icon(
                           Icons.queue_music,
-                          size: 48,
+                          size: AppSizes.iconHero,
                           color: AppColors.textTertiary,
                         ),
-                        const SizedBox(height: 12),
-                        const Text(
-                          'Queue is empty',
-                          style: TextStyle(
+                        const SizedBox(height: AppSpacing.md),
+                        Text(
+                          L.of(context)!.queueEmpty,
+                          style: const TextStyle(
                             color: AppColors.textTertiary,
                           ),
                         ),
-                        const SizedBox(height: 4),
-                        const Text(
-                          'Play a song to start your queue',
-                          style: TextStyle(
+                        const SizedBox(height: AppSpacing.xs),
+                        Text(
+                          L.of(context)!.queueEmptyHint,
+                          style: const TextStyle(
                             color: AppColors.textTertiary,
                             fontSize: 12,
                           ),
                         ),
                       ],
-                    ),
+                    ).animate().fadeIn(duration: AppDurations.normal),
                   );
                 }
                 return ReorderableListView.builder(
                   padding: EdgeInsets.fromLTRB(
-                      0, 8, 0, 8 + bottomPadding),
+                      0, AppSpacing.sm, 0, AppSpacing.sm + bottomPadding),
                   itemCount: player.queue.length,
                   onReorder: (oldIndex, newIndex) {
                     if (newIndex > oldIndex) newIndex--;
@@ -123,7 +128,7 @@ class QueueScreen extends StatelessWidget {
                       direction: DismissDirection.endToStart,
                       background: Container(
                         alignment: Alignment.centerRight,
-                        padding: const EdgeInsets.only(right: 20),
+                        padding: const EdgeInsets.only(right: AppSpacing.xl),
                         color: AppColors.error.withValues(alpha: 0.2),
                         child: const Icon(
                           Icons.delete,

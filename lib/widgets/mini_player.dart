@@ -8,6 +8,11 @@ import '../providers/player_provider.dart';
 import '../screens/full_player_screen.dart';
 import '../app.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_durations.dart';
+import '../theme/app_sizes.dart';
+import '../theme/app_spacing.dart';
+import '../theme/app_text_styles.dart';
+import '../theme/app_theme.dart';
 import 'add_to_playlist_sheet.dart';
 
 /// 하단 고정 미니 플레이어 위젯.
@@ -37,7 +42,7 @@ class MiniPlayer extends StatelessWidget {
             : 0.0;
 
         return AnimatedSize(
-          duration: const Duration(milliseconds: 300),
+          duration: AppDurations.normal,
           curve: Curves.easeInOut,
           child: Container(
           decoration: const BoxDecoration(
@@ -52,7 +57,7 @@ class MiniPlayer extends StatelessWidget {
               // 진행 바
               LinearProgressIndicator(
                 value: progress.clamp(0.0, 1.0),
-                minHeight: 2,
+                minHeight: AppSpacing.xxs,
                 backgroundColor: AppColors.border,
                 valueColor: const AlwaysStoppedAnimation<Color>(
                   AppColors.primary,
@@ -60,14 +65,17 @@ class MiniPlayer extends StatelessWidget {
               ),
               // 컨트롤 영역
               SizedBox(
-                height: 62,
+                height: AppSizes.miniPlayerHeight,
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
                   child: Row(
                     children: [
                       // 썸네일 + 곡 정보 (탭 → FullPlayerScreen)
                       Expanded(
-                        child: GestureDetector(
+                        child: Semantics(
+                          button: true,
+                          label: '전체 플레이어 열기: $title',
+                          child: GestureDetector(
                           behavior: HitTestBehavior.opaque,
                           onTap: () {
                             appNavigatorKey.currentState?.push(
@@ -79,10 +87,10 @@ class MiniPlayer extends StatelessWidget {
                           child: Row(
                             children: [
                               ClipRRect(
-                                borderRadius: BorderRadius.circular(8),
+                                borderRadius: BorderRadius.circular(AppTheme.radiusSm),
                                 child: SizedBox(
-                                  width: 42,
-                                  height: 42,
+                                  width: AppSizes.miniPlayerArt,
+                                  height: AppSizes.miniPlayerArt,
                                   child: track.thumbnailUrl != null
                                       ? CachedNetworkImage(
                                           imageUrl: track.thumbnailUrl!,
@@ -105,11 +113,7 @@ class MiniPlayer extends StatelessWidget {
                                       title,
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(
-                                        color: AppColors.textPrimary,
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w500,
-                                      ),
+                                      style: AppTextStyles.bodySmall,
                                     ),
                                     if (artist.isNotEmpty) ...[
                                       const SizedBox(height: 1),
@@ -129,6 +133,7 @@ class MiniPlayer extends StatelessWidget {
                             ],
                           ),
                         ),
+                        ),
                       ),
                       if (!track.isStreaming) ...[
                         // 즐겨찾기 토글
@@ -136,7 +141,7 @@ class MiniPlayer extends StatelessWidget {
                           icon: track.isFavorite
                               ? Icons.favorite
                               : Icons.favorite_border,
-                          size: 20,
+                          size: AppSizes.iconMd,
                           color: track.isFavorite
                               ? AppColors.error
                               : AppColors.textSecondary,
@@ -145,7 +150,7 @@ class MiniPlayer extends StatelessWidget {
                         // 플레이리스트에 추가
                         _controlButton(
                           icon: Icons.playlist_add,
-                          size: 22,
+                          size: AppSizes.iconMl,
                           color: AppColors.textSecondary,
                           onPressed: () {
                             final navContext =
@@ -160,18 +165,30 @@ class MiniPlayer extends StatelessWidget {
                         ),
                       ],
                       // 재생/일시정지
-                      _controlButton(
-                        icon: player.isPlaying
-                            ? Icons.pause
-                            : Icons.play_arrow,
-                        size: 28,
-                        color: AppColors.textPrimary,
-                        onPressed: () {
-                          HapticFeedback.lightImpact();
-                          player.isPlaying
-                              ? player.pause()
-                              : player.resume();
-                        },
+                      SizedBox(
+                        width: AppSizes.touchTarget,
+                        height: AppSizes.touchTarget,
+                        child: IconButton(
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                          icon: AnimatedSwitcher(
+                            duration: AppDurations.fast,
+                            child: Icon(
+                              player.isPlaying ? Icons.pause : Icons.play_arrow,
+                              key: ValueKey(player.isPlaying),
+                              size: AppSizes.iconXl,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                          onPressed: () {
+                            HapticFeedback.lightImpact();
+                            player.isPlaying
+                                ? player.pause()
+                                : player.resume();
+                          },
+                          disabledColor:
+                              AppColors.textTertiary.withValues(alpha: 0.3),
+                        ),
                       ),
                     ],
                   ),
@@ -192,8 +209,8 @@ class MiniPlayer extends StatelessWidget {
     VoidCallback? onPressed,
   }) {
     return SizedBox(
-      width: 48,
-      height: 48,
+      width: AppSizes.touchTarget,
+      height: AppSizes.touchTarget,
       child: IconButton(
         padding: EdgeInsets.zero,
         constraints: const BoxConstraints(),
@@ -210,7 +227,7 @@ class MiniPlayer extends StatelessWidget {
       child: const Icon(
         Icons.music_note,
         color: AppColors.primaryLight,
-        size: 22,
+        size: AppSizes.iconMl,
       ),
     );
   }

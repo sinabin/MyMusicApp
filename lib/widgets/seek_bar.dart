@@ -3,14 +3,21 @@ import 'package:provider/provider.dart';
 
 import '../providers/player_provider.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_sizes.dart';
+import '../theme/app_spacing.dart';
+import '../theme/app_text_styles.dart';
 import '../utils/format_utils.dart';
 
 /// 재생 위치 슬라이더 위젯.
 ///
 /// [PlayerProvider]를 구독하여 현재 위치·전체 길이를 실시간 표시.
 /// 드래그로 재생 위치 탐색 지원.
+/// [fullSize]가 true이면 전체 플레이어용 큰 터치 타겟 적용.
 class SeekBar extends StatefulWidget {
-  const SeekBar({super.key});
+  /// 전체 플레이어 모드 여부.
+  final bool fullSize;
+
+  const SeekBar({super.key, this.fullSize = false});
 
   @override
   State<SeekBar> createState() => _SeekBarState();
@@ -21,19 +28,31 @@ class _SeekBarState extends State<SeekBar> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<PlayerProvider>(
-      builder: (context, player, _) {
-        final position = _dragValue ?? player.position.inMilliseconds.toDouble();
-        final duration = player.duration.inMilliseconds.toDouble();
+    return Selector<PlayerProvider, (Duration, Duration)>(
+      selector: (_, p) => (p.position, p.duration),
+      builder: (context, data, _) {
+        final (playerPos, playerDur) = data;
+        final position = _dragValue ?? playerPos.inMilliseconds.toDouble();
+        final duration = playerDur.inMilliseconds.toDouble();
         final maxVal = duration > 0 ? duration : 1.0;
 
         return Column(
           children: [
             SliderTheme(
               data: SliderThemeData(
-                trackHeight: 4,
-                thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
-                overlayShape: const RoundSliderOverlayShape(overlayRadius: 14),
+                trackHeight: widget.fullSize
+                    ? AppSizes.seekBarFullTrackHeight
+                    : AppSizes.seekBarTrackHeight,
+                thumbShape: RoundSliderThumbShape(
+                  enabledThumbRadius: widget.fullSize
+                      ? AppSizes.seekBarFullThumbRadius
+                      : AppSizes.seekBarThumbRadius,
+                ),
+                overlayShape: RoundSliderOverlayShape(
+                  overlayRadius: widget.fullSize
+                      ? AppSizes.seekBarFullOverlayRadius
+                      : AppSizes.seekBarOverlayRadius,
+                ),
                 activeTrackColor: AppColors.primary,
                 inactiveTrackColor: AppColors.surfaceLight,
                 thumbColor: AppColors.primaryLight,
@@ -51,29 +70,25 @@ class _SeekBarState extends State<SeekBar> {
                   setState(() => _dragValue = value);
                 },
                 onChangeEnd: (value) {
-                  player.seekTo(Duration(milliseconds: value.toInt()));
+                  context.read<PlayerProvider>().seekTo(
+                    Duration(milliseconds: value.toInt()),
+                  );
                   setState(() => _dragValue = null);
                 },
               ),
             ),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    FormatUtils.duration(player.position),
-                    style: const TextStyle(
-                      color: AppColors.textTertiary,
-                      fontSize: 12,
-                    ),
+                    FormatUtils.duration(playerPos),
+                    style: AppTextStyles.caption,
                   ),
                   Text(
-                    FormatUtils.duration(player.duration),
-                    style: const TextStyle(
-                      color: AppColors.textTertiary,
-                      fontSize: 12,
-                    ),
+                    FormatUtils.duration(playerDur),
+                    style: AppTextStyles.caption,
                   ),
                 ],
               ),

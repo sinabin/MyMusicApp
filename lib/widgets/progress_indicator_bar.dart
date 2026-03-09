@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import '../models/download_state.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_durations.dart';
+import '../theme/app_spacing.dart';
+import '../theme/app_theme.dart';
 
 /// 다운로드 진행률 바와 상태 텍스트·취소 버튼을 표시하는 위젯.
 ///
@@ -22,20 +25,20 @@ class ProgressIndicatorBar extends StatelessWidget {
       children: [
         // Progress bar
         ClipRRect(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(AppTheme.radiusSm),
           child: Stack(
             children: [
               Container(
-                height: 8,
+                height: AppSpacing.sm,
                 width: double.infinity,
                 color: AppColors.surfaceVariant,
               ),
               AnimatedFractionallySizedBox(
-                duration: const Duration(milliseconds: 200),
+                duration: AppDurations.fast,
                 widthFactor: status.progress.clamp(0.0, 1.0),
                 alignment: Alignment.centerLeft,
                 child: Container(
-                  height: 8,
+                  height: AppSpacing.sm,
                   decoration: const BoxDecoration(
                     gradient: AppColors.progressGradient,
                   ),
@@ -44,7 +47,7 @@ class ProgressIndicatorBar extends StatelessWidget {
             ],
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: AppSpacing.sm),
         // Status text + cancel
         Row(
           children: [
@@ -62,7 +65,7 @@ class ProgressIndicatorBar extends StatelessWidget {
                 onPressed: onCancel,
                 style: TextButton.styleFrom(
                   foregroundColor: AppColors.error,
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
                   minimumSize: Size.zero,
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),

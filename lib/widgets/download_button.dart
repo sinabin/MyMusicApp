@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../models/download_state.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_durations.dart';
+import '../theme/app_sizes.dart';
+import '../theme/app_text_styles.dart';
 
 /// [DownloadPhase]에 따라 외형이 변화하는 다운로드 버튼 위젯.
 ///
@@ -29,6 +32,8 @@ class DownloadButton extends StatefulWidget {
 
 class _DownloadButtonState extends State<DownloadButton>
     with SingleTickerProviderStateMixin {
+  static const _pillRadius = AppSizes.buttonHeight / 2;
+
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
 
@@ -37,7 +42,7 @@ class _DownloadButtonState extends State<DownloadButton>
     super.initState();
     _pulseController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1200),
+      duration: AppDurations.pulse,
     );
     _pulseAnimation = Tween<double>(begin: 1.0, end: 1.05).animate(
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
@@ -64,9 +69,9 @@ class _DownloadButtonState extends State<DownloadButton>
   @override
   Widget build(BuildContext context) {
     return AnimatedContainer(
-      duration: const Duration(milliseconds: 400),
+      duration: AppDurations.slow,
       curve: Curves.easeInOut,
-      height: 56,
+      height: AppSizes.buttonHeight,
       width: double.infinity,
       child: _buildForPhase(),
     );
@@ -91,9 +96,9 @@ class _DownloadButtonState extends State<DownloadButton>
 
   Widget _buildIdleButton() {
     return Material(
-      borderRadius: BorderRadius.circular(28),
+      borderRadius: BorderRadius.circular(_pillRadius),
       child: InkWell(
-        borderRadius: BorderRadius.circular(28),
+        borderRadius: BorderRadius.circular(_pillRadius),
         onTap: widget.enabled
             ? () {
                 HapticFeedback.mediumImpact();
@@ -104,7 +109,7 @@ class _DownloadButtonState extends State<DownloadButton>
           decoration: BoxDecoration(
             gradient: widget.enabled ? AppColors.primaryGradient : null,
             color: widget.enabled ? null : AppColors.surfaceVariant,
-            borderRadius: BorderRadius.circular(28),
+            borderRadius: BorderRadius.circular(_pillRadius),
           ),
           child: Center(
             child: Row(
@@ -113,16 +118,13 @@ class _DownloadButtonState extends State<DownloadButton>
                 Icon(
                   Icons.download_rounded,
                   color: widget.enabled ? Colors.white : AppColors.textTertiary,
-                  size: 24,
+                  size: AppSizes.iconLg,
                 ),
                 const SizedBox(width: 10),
                 Text(
                   'Download Audio',
-                  style: TextStyle(
+                  style: AppTextStyles.buttonText.copyWith(
                     color: widget.enabled ? Colors.white : AppColors.textTertiary,
-                    fontSize: 17,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.5,
                   ),
                 ),
               ],
@@ -139,27 +141,26 @@ class _DownloadButtonState extends State<DownloadButton>
       child: Container(
         decoration: BoxDecoration(
           gradient: AppColors.primaryGradient,
-          borderRadius: BorderRadius.circular(28),
+          borderRadius: BorderRadius.circular(_pillRadius),
         ),
-        child: const Center(
+        child: Center(
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
+                width: AppSizes.indicatorSm,
+                height: AppSizes.indicatorSm,
+                child: const CircularProgressIndicator(
+                  strokeWidth: AppSizes.strokeWidth,
                   color: Colors.white,
                 ),
               ),
-              SizedBox(width: 10),
+              const SizedBox(width: 10),
               Text(
                 'Fetching...',
-                style: TextStyle(
+                style: AppTextStyles.buttonText.copyWith(
                   color: Colors.white,
-                  fontSize: 17,
-                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0,
                 ),
               ),
             ],
@@ -174,19 +175,19 @@ class _DownloadButtonState extends State<DownloadButton>
     return Container(
       decoration: BoxDecoration(
         color: AppColors.surfaceVariant,
-        borderRadius: BorderRadius.circular(28),
+        borderRadius: BorderRadius.circular(_pillRadius),
       ),
       child: Stack(
         children: [
           // Progress fill
           AnimatedFractionallySizedBox(
-            duration: const Duration(milliseconds: 200),
+            duration: AppDurations.fast,
             widthFactor: progress.clamp(0.0, 1.0),
             alignment: Alignment.centerLeft,
             child: Container(
               decoration: BoxDecoration(
                 gradient: AppColors.progressGradient,
-                borderRadius: BorderRadius.circular(28),
+                borderRadius: BorderRadius.circular(_pillRadius),
               ),
             ),
           ),
@@ -197,16 +198,19 @@ class _DownloadButtonState extends State<DownloadButton>
               children: [
                 Text(
                   '${(progress * 100).toInt()}%',
-                  style: const TextStyle(
+                  style: AppTextStyles.buttonText.copyWith(
                     color: Colors.white,
-                    fontSize: 17,
-                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0,
                   ),
                 ),
                 const SizedBox(width: 16),
-                GestureDetector(
-                  onTap: widget.onCancel,
-                  child: const Icon(Icons.close, color: Colors.white70, size: 20),
+                Semantics(
+                  button: true,
+                  label: '다운로드 취소',
+                  child: GestureDetector(
+                    onTap: widget.onCancel,
+                    child: const Icon(Icons.close, color: Colors.white70, size: AppSizes.iconMd),
+                  ),
                 ),
               ],
             ),
@@ -224,27 +228,26 @@ class _DownloadButtonState extends State<DownloadButton>
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,
         ),
-        borderRadius: BorderRadius.circular(28),
+        borderRadius: BorderRadius.circular(_pillRadius),
       ),
-      child: const Center(
+      child: Center(
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             SizedBox(
-              width: 20,
-              height: 20,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
+              width: AppSizes.indicatorSm,
+              height: AppSizes.indicatorSm,
+              child: const CircularProgressIndicator(
+                strokeWidth: AppSizes.strokeWidth,
                 color: Colors.white,
               ),
             ),
-            SizedBox(width: 10),
+            const SizedBox(width: 10),
             Text(
               'Saving audio...',
-              style: TextStyle(
+              style: AppTextStyles.buttonText.copyWith(
                 color: Colors.white,
-                fontSize: 17,
-                fontWeight: FontWeight.w700,
+                letterSpacing: 0,
               ),
             ),
           ],
@@ -256,7 +259,7 @@ class _DownloadButtonState extends State<DownloadButton>
   Widget _buildCompletedButton() {
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0.8, end: 1.0),
-      duration: const Duration(milliseconds: 400),
+      duration: AppDurations.slow,
       curve: Curves.elasticOut,
       builder: (context, scale, child) {
         return Transform.scale(
@@ -267,20 +270,19 @@ class _DownloadButtonState extends State<DownloadButton>
       child: Container(
         decoration: BoxDecoration(
           color: AppColors.success,
-          borderRadius: BorderRadius.circular(28),
+          borderRadius: BorderRadius.circular(_pillRadius),
         ),
-        child: const Center(
+        child: Center(
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.check_circle, color: Colors.white, size: 24),
-              SizedBox(width: 10),
+              const Icon(Icons.check_circle, color: Colors.white, size: AppSizes.iconLg),
+              const SizedBox(width: 10),
               Text(
                 'Download Complete!',
-                style: TextStyle(
+                style: AppTextStyles.buttonText.copyWith(
                   color: Colors.white,
-                  fontSize: 17,
-                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0,
                 ),
               ),
             ],
@@ -292,26 +294,25 @@ class _DownloadButtonState extends State<DownloadButton>
 
   Widget _buildErrorButton() {
     return Material(
-      borderRadius: BorderRadius.circular(28),
+      borderRadius: BorderRadius.circular(_pillRadius),
       color: AppColors.error,
       child: InkWell(
-        borderRadius: BorderRadius.circular(28),
+        borderRadius: BorderRadius.circular(_pillRadius),
         onTap: () {
           HapticFeedback.mediumImpact();
           widget.onRetry?.call();
         },
-        child: const Center(
+        child: Center(
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.warning_amber_rounded, color: Colors.white, size: 24),
-              SizedBox(width: 10),
+              const Icon(Icons.warning_amber_rounded, color: Colors.white, size: AppSizes.iconLg),
+              const SizedBox(width: 10),
               Text(
                 'Failed - Tap to Retry',
-                style: TextStyle(
+                style: AppTextStyles.buttonText.copyWith(
                   color: Colors.white,
-                  fontSize: 17,
-                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0,
                 ),
               ),
             ],

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
+import '../l10n/app_localizations.dart';
 import 'discover_screen.dart';
 import 'home_screen.dart';
 import 'library_screen.dart';
@@ -38,23 +40,26 @@ class _MainShellState extends State<MainShell> {
         bottomNavigationBar: NavigationBar(
           selectedIndex: _currentIndex,
           onDestinationSelected: (index) {
+            if (index != _currentIndex) {
+              HapticFeedback.selectionClick();
+            }
             setState(() => _currentIndex = index);
           },
-          destinations: const [
+          destinations: [
             NavigationDestination(
-              icon: Icon(Icons.home_outlined),
-              selectedIcon: Icon(Icons.home),
-              label: 'Home',
+              icon: const Icon(Icons.home_outlined),
+              selectedIcon: const Icon(Icons.home),
+              label: L.of(context)!.tabHome,
             ),
             NavigationDestination(
-              icon: Icon(Icons.explore_outlined),
-              selectedIcon: Icon(Icons.explore),
-              label: 'Discover',
+              icon: const Icon(Icons.explore_outlined),
+              selectedIcon: const Icon(Icons.explore),
+              label: L.of(context)!.tabDiscover,
             ),
             NavigationDestination(
-              icon: Icon(Icons.library_music_outlined),
-              selectedIcon: Icon(Icons.library_music),
-              label: 'Library',
+              icon: const Icon(Icons.library_music_outlined),
+              selectedIcon: const Icon(Icons.library_music),
+              label: L.of(context)!.tabLibrary,
             ),
           ],
         ),

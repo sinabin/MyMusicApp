@@ -13,9 +13,13 @@ class FileService {
 
   /// 기본 저장 디렉토리 경로 반환. 존재하지 않으면 자동 생성.
   ///
-  /// Android: [_androidDownloadPath] (파일 탐색기에서 접근 가능)
+  /// Android: [_androidDownloadPath] (파일 탐색기에서 접근 가능).
+  /// iOS: 앱 Documents 디렉토리 (iTunes 파일 공유 가능).
   /// 외부 저장소 접근 실패 시 앱 내부 디렉토리로 fallback.
   Future<String> getDefaultSavePath() async {
+    if (Platform.isIOS) {
+      return _getDocumentsSavePath();
+    }
     try {
       final downloadDir = Directory(_androidDownloadPath);
       if (!await downloadDir.exists()) {
@@ -23,13 +27,18 @@ class FileService {
       }
       return downloadDir.path;
     } catch (_) {
-      final dir = await getApplicationDocumentsDirectory();
-      final musicDir = Directory('${dir.path}/MyMusicApp');
-      if (!await musicDir.exists()) {
-        await musicDir.create(recursive: true);
-      }
-      return musicDir.path;
+      return _getDocumentsSavePath();
     }
+  }
+
+  /// 앱 Documents/MyMusicApp 경로 반환. 미존재 시 생성.
+  Future<String> _getDocumentsSavePath() async {
+    final dir = await getApplicationDocumentsDirectory();
+    final musicDir = Directory('${dir.path}/MyMusicApp');
+    if (!await musicDir.exists()) {
+      await musicDir.create(recursive: true);
+    }
+    return musicDir.path;
   }
 
   /// 임시 디렉토리 경로 반환.
@@ -110,7 +119,7 @@ class FileService {
         client.close();
       }
     } catch (e) {
-      debugPrint('[FileService] Thumbnail save failed: $e');
+      debugPrint('[FileService] Thumbnail save failed (StorageException): $e');
       return null;
     }
   }

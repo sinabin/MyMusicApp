@@ -12,7 +12,11 @@ import '../providers/recommendation_provider.dart';
 import '../providers/settings_provider.dart';
 import '../services/youtube_service.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_durations.dart';
+import '../theme/app_sizes.dart';
+import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
+import '../theme/app_theme.dart';
 import '../widgets/gradient_text.dart';
 import '../widgets/recommendation_card.dart';
 import '../widgets/recommendation_detail_sheet.dart';
@@ -96,7 +100,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
           SnackBar(
             content: Row(
               children: [
-                const Icon(Icons.check_circle, color: AppColors.success, size: 20),
+                const Icon(Icons.check_circle, color: AppColors.success, size: AppSizes.iconMd),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
@@ -126,22 +130,18 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
               title: Row(
                 children: [
                   Container(
-                    width: 32,
-                    height: 32,
+                    width: AppSizes.headerIconBox,
+                    height: AppSizes.headerIconBox,
                     decoration: BoxDecoration(
                       gradient: AppColors.primaryGradient,
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusSm),
                     ),
-                    child: const Icon(Icons.explore, color: Colors.white, size: 20),
+                    child: const Icon(Icons.explore, color: Colors.white, size: AppSizes.iconMd),
                   ),
                   const SizedBox(width: 10),
-                  const Text(
+                  Text(
                     'Discover',
-                    style: TextStyle(
-                      color: AppColors.textPrimary,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                    ),
+                    style: AppTextStyles.sectionHeader,
                   ),
                 ],
               ),
@@ -164,28 +164,28 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
 
             // Content
             SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
               sliver: SliverList(
                 delegate: SliverChildListDelegate([
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AppSpacing.lg),
                   GradientText(
                     text: 'For You',
                     style: AppTextStyles.heroTitle,
                     gradient: AppColors.headingGradient,
-                  ).animate().fadeIn(duration: 600.ms).slideY(begin: -0.2, end: 0),
+                  ).animate().fadeIn(duration: AppDurations.emphasis).slideY(begin: -0.2, end: 0),
                   const SizedBox(height: 6),
                   Text(
                     'Recommendations based on your downloads',
                     style: AppTextStyles.subtitle,
-                  ).animate().fadeIn(duration: 600.ms, delay: 100.ms),
-                  const SizedBox(height: 24),
+                  ).animate().fadeIn(duration: AppDurations.emphasis, delay: 100.ms),
+                  const SizedBox(height: AppSpacing.xxl),
                 ]),
               ),
             ),
 
             // 추천 목록
-            Consumer2<RecommendationProvider, DownloadProvider>(
-              builder: (context, recProvider, dlProvider, _) {
+            Consumer<RecommendationProvider>(
+              builder: (context, recProvider, _) {
                 // 로딩
                 if (recProvider.isLoading) {
                   return _buildShimmer();
@@ -203,42 +203,48 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
 
                 // 결과 목록
                 return SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  sliver: SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                        final rec = recProvider.items[index];
-                        final isThis = dlProvider.status.isActive &&
-                            dlProvider.currentVideoId == rec.videoId;
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 8),
-                          child: RecommendationCard(
-                            recommendation: rec,
-                            isDownloading: isThis,
-                            onDownload: () => _onDownload(rec),
-                            onDismiss: () => recProvider.dismiss(rec.videoId),
-                            onTap: () => RecommendationDetailSheet.show(
-                              context,
-                              recommendation: rec,
-                              onDownload: () => _onDownload(rec),
-                              onStream: () => _onStream(rec),
-                              isDownloading: isThis,
-                            ),
-                          ).animate().fadeIn(
-                            duration: 300.ms,
-                            delay: (index * 50).clamp(0, 500).ms,
-                          ),
-                        );
-                      },
-                      childCount: recProvider.items.length,
-                    ),
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
+                  sliver: Selector<DownloadProvider, (bool, String?)>(
+                    selector: (_, dp) => (dp.status.isActive, dp.currentVideoId),
+                    builder: (context, dlData, _) {
+                      final (isActive, currentVideoId) = dlData;
+                      return SliverList(
+                        delegate: SliverChildBuilderDelegate(
+                          (context, index) {
+                            final rec = recProvider.items[index];
+                            final isThis = isActive &&
+                                currentVideoId == rec.videoId;
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                              child: RecommendationCard(
+                                recommendation: rec,
+                                isDownloading: isThis,
+                                onDownload: () => _onDownload(rec),
+                                onDismiss: () => recProvider.dismiss(rec.videoId),
+                                onTap: () => RecommendationDetailSheet.show(
+                                  context,
+                                  recommendation: rec,
+                                  onDownload: () => _onDownload(rec),
+                                  onStream: () => _onStream(rec),
+                                  isDownloading: isThis,
+                                ),
+                              ).animate().fadeIn(
+                                duration: AppDurations.normal,
+                                delay: Duration(milliseconds: (index * AppDurations.staggerMs).clamp(0, AppDurations.staggerMaxLongMs)),
+                              ),
+                            );
+                          },
+                          childCount: recProvider.items.length,
+                        ),
+                      );
+                    },
                   ),
                 );
               },
             ),
 
             // Bottom padding
-            const SliverToBoxAdapter(child: SizedBox(height: 32)),
+            const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.xxxl)),
           ],
         ),
       ),
@@ -248,20 +254,20 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
   /// 로딩 shimmer 위젯.
   Widget _buildShimmer() {
     return SliverPadding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
       sliver: SliverList(
         delegate: SliverChildBuilderDelegate(
           (context, index) {
             return Padding(
-              padding: const EdgeInsets.only(bottom: 8),
+              padding: const EdgeInsets.only(bottom: AppSpacing.sm),
               child: Shimmer.fromColors(
                 baseColor: AppColors.surface,
                 highlightColor: AppColors.surfaceVariant,
                 child: Container(
-                  height: 80,
+                  height: AppSizes.thumbnailXl,
                   decoration: BoxDecoration(
                     color: AppColors.surface,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                   ),
                 ),
               ),
@@ -276,13 +282,13 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
   /// 에러 상태 위젯.
   Widget _buildError(RecommendationProvider provider) {
     return SliverPadding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
       sliver: SliverToBoxAdapter(
         child: Container(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(AppSpacing.xxl),
           decoration: BoxDecoration(
             color: AppColors.surface,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(AppTheme.radiusLg),
             border: Border.all(color: AppColors.border),
           ),
           child: Column(
@@ -290,21 +296,18 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
               const Icon(
                 Icons.cloud_off,
                 color: AppColors.textTertiary,
-                size: 48,
+                size: AppSizes.iconHero,
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.md),
               Text(
                 provider.error!,
-                style: const TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 14,
-                ),
+                style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.lg),
               TextButton.icon(
                 onPressed: () => provider.loadRecommendations(force: true),
-                icon: const Icon(Icons.refresh, size: 18),
+                icon: const Icon(Icons.refresh, size: AppSizes.iconMsl),
                 label: const Text('다시 시도'),
               ),
             ],
@@ -317,38 +320,32 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
   /// 빈 결과 상태 위젯.
   Widget _buildEmpty() {
     return SliverPadding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
       sliver: SliverToBoxAdapter(
         child: Container(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(AppSpacing.xxl),
           decoration: BoxDecoration(
             color: AppColors.surface,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(AppTheme.radiusLg),
             border: Border.all(color: AppColors.border),
           ),
-          child: const Column(
+          child: Column(
             children: [
-              Icon(
+              const Icon(
                 Icons.music_note_outlined,
                 color: AppColors.textTertiary,
-                size: 48,
+                size: AppSizes.iconHero,
               ),
-              SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.md),
               Text(
                 '새로운 추천을 준비 중입니다',
-                style: TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 14,
-                ),
+                style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
                 textAlign: TextAlign.center,
               ),
-              SizedBox(height: 4),
+              const SizedBox(height: AppSpacing.xs),
               Text(
                 '더 많은 곡을 다운로드하면 정확한 추천이 가능해요',
-                style: TextStyle(
-                  color: AppColors.textTertiary,
-                  fontSize: 12,
-                ),
+                style: AppTextStyles.caption,
                 textAlign: TextAlign.center,
               ),
             ],

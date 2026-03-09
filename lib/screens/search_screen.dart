@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
+import '../models/app_exception.dart';
 import '../models/video_info.dart';
 import '../providers/download_provider.dart';
 import '../providers/history_provider.dart';
@@ -10,7 +10,12 @@ import '../providers/search_provider.dart';
 import '../providers/settings_provider.dart';
 import '../services/youtube_service.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_durations.dart';
+import '../theme/app_sizes.dart';
+import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
+import '../theme/app_theme.dart';
+import '../widgets/download_confirm_sheet.dart';
 import '../widgets/search_result_tile.dart';
 
 /// YouTube 검색 화면.
@@ -113,27 +118,22 @@ class _SearchScreenState extends State<SearchScreen> {
       }
     } catch (e) {
       if (mounted) {
+        final msg = e is AppException ? e.userMessage : 'Download failed';
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Download failed: $e')),
+          SnackBar(content: Text(msg)),
         );
       }
     }
   }
 
   void _showDownloadSheet(VideoInfo info) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: AppColors.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (_) => _DownloadConfirmSheet(
-        videoInfo: info,
-        onDownload: () {
-          Navigator.of(context).pop();
-          _onDownloadTap(info);
-        },
-      ),
+    DownloadConfirmSheet.show(
+      context,
+      videoInfo: info,
+      onDownload: () {
+        Navigator.of(context).pop();
+        _onDownloadTap(info);
+      },
     );
   }
 
@@ -145,7 +145,7 @@ class _SearchScreenState extends State<SearchScreen> {
           children: [
             // 상단 여백 + 검색바
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+              padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.sm),
               child: _buildSearchBar(),
             ),
             // 결과 영역
@@ -176,16 +176,16 @@ class _SearchScreenState extends State<SearchScreen> {
 
   Widget _buildSearchBar() {
     return Container(
-      height: 52,
+      height: AppSizes.searchBarHeight,
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppTheme.radiusLg),
         border: Border.all(color: AppColors.border),
       ),
       child: Row(
         children: [
           const SizedBox(width: 14),
-          const Icon(Icons.search, color: AppColors.textTertiary, size: 22),
+          const Icon(Icons.search, color: AppColors.textTertiary, size: AppSizes.iconMl),
           const SizedBox(width: 10),
           Expanded(
             child: TextField(
@@ -211,7 +211,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   icon: const Icon(
                     Icons.close,
                     color: AppColors.textTertiary,
-                    size: 20,
+                    size: AppSizes.iconMd,
                   ),
                   onPressed: _onClear,
                 );
@@ -231,10 +231,10 @@ class _SearchScreenState extends State<SearchScreen> {
         children: [
           Icon(
             Icons.search,
-            size: 64,
+            size: AppSizes.iconJumbo,
             color: AppColors.textTertiary.withValues(alpha: 0.5),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.lg),
           Text(
             'Search for music to download',
             style: AppTextStyles.subtitle,
@@ -253,14 +253,14 @@ class _SearchScreenState extends State<SearchScreen> {
   Widget _buildErrorState(String error) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(AppSpacing.xxl),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.error_outline, size: 48, color: AppColors.error),
-            const SizedBox(height: 12),
+            const Icon(Icons.error_outline, size: AppSizes.iconHero, color: AppColors.error),
+            const SizedBox(height: AppSpacing.md),
             Text('Search failed', style: AppTextStyles.sectionHeader),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.sm),
             Text(
               error,
               style: AppTextStyles.caption,
@@ -268,7 +268,7 @@ class _SearchScreenState extends State<SearchScreen> {
               maxLines: 3,
               overflow: TextOverflow.ellipsis,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.lg),
             TextButton(
               onPressed: _onSearch,
               child: const Text('Retry'),
@@ -286,10 +286,10 @@ class _SearchScreenState extends State<SearchScreen> {
         children: [
           const Icon(
             Icons.search_off,
-            size: 48,
+            size: AppSizes.iconHero,
             color: AppColors.textTertiary,
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppSpacing.md),
           Text('No results found', style: AppTextStyles.subtitle),
         ],
       ),
@@ -304,17 +304,17 @@ class _SearchScreenState extends State<SearchScreen> {
 
         return ListView.builder(
           controller: _scrollController,
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
           itemCount:
               provider.results.length + (provider.isLoadingMore ? 1 : 0),
           itemBuilder: (context, index) {
             if (index == provider.results.length) {
               return const Padding(
-                padding: EdgeInsets.all(16),
+                padding: EdgeInsets.all(AppSpacing.lg),
                 child: Center(
                   child: CircularProgressIndicator(
                     color: AppColors.primary,
-                    strokeWidth: 2,
+                    strokeWidth: AppSizes.strokeWidth,
                   ),
                 ),
               );
@@ -330,173 +330,12 @@ class _SearchScreenState extends State<SearchScreen> {
               isDownloading: isThisDownloading,
               downloadDisabled: isActive && !isThisDownloading,
             ).animate().fadeIn(
-                  duration: 200.ms,
-                  delay: Duration(milliseconds: (index * 30).clamp(0, 300)),
+                  duration: AppDurations.fast,
+                  delay: Duration(milliseconds: (index * AppDurations.staggerFastMs).clamp(0, AppDurations.staggerMaxMs)),
                 );
           },
         );
       },
-    );
-  }
-}
-
-/// 다운로드 확인 바텀 시트.
-///
-/// 검색 결과의 미리보기 정보와 다운로드 버튼을 표시.
-class _DownloadConfirmSheet extends StatelessWidget {
-  final VideoInfo videoInfo;
-  final VoidCallback onDownload;
-
-  const _DownloadConfirmSheet({
-    required this.videoInfo,
-    required this.onDownload,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.fromLTRB(
-        20,
-        12,
-        20,
-        20 + MediaQuery.of(context).padding.bottom,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // 핸들 바
-          Container(
-            width: 40,
-            height: 4,
-            decoration: BoxDecoration(
-              color: AppColors.textTertiary,
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-          const SizedBox(height: 20),
-
-          // 영상 정보
-          Row(
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Image.network(
-                  videoInfo.thumbnailUrl,
-                  width: 120,
-                  height: 68,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) => Container(
-                    width: 120,
-                    height: 68,
-                    color: AppColors.surfaceVariant,
-                    child: const Icon(
-                      Icons.music_note,
-                      color: AppColors.textTertiary,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      videoInfo.title,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: AppColors.textPrimary,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      videoInfo.channelName,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: AppColors.textSecondary,
-                        fontSize: 12,
-                      ),
-                    ),
-                    if (videoInfo.duration != Duration.zero) ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        videoInfo.formattedDuration,
-                        style: const TextStyle(
-                          color: AppColors.textTertiary,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 24),
-
-          // 다운로드 버튼
-          Consumer<DownloadProvider>(
-            builder: (context, provider, _) {
-              final isActive = provider.status.isActive;
-              return SizedBox(
-                width: double.infinity,
-                height: 52,
-                child: Material(
-                  borderRadius: BorderRadius.circular(26),
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(26),
-                    onTap: isActive
-                        ? null
-                        : () {
-                            HapticFeedback.mediumImpact();
-                            onDownload();
-                          },
-                    child: Ink(
-                      decoration: BoxDecoration(
-                        gradient:
-                            isActive ? null : AppColors.primaryGradient,
-                        color: isActive ? AppColors.surfaceVariant : null,
-                        borderRadius: BorderRadius.circular(26),
-                      ),
-                      child: Center(
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.download_rounded,
-                              color: isActive
-                                  ? AppColors.textTertiary
-                                  : Colors.white,
-                              size: 22,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              isActive
-                                  ? 'Download in progress...'
-                                  : 'Download Audio',
-                              style: TextStyle(
-                                color: isActive
-                                    ? AppColors.textTertiary
-                                    : Colors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
-        ],
-      ),
     );
   }
 }

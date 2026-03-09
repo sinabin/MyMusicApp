@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import '../models/app_exception.dart';
 import '../models/video_info.dart';
 import '../services/youtube_service.dart';
 
@@ -45,7 +46,7 @@ class VideoInfoProvider extends ChangeNotifier {
       _error = null;
     } catch (e) {
       if (_pendingVideoId != videoId) return;
-      _error = e.toString();
+      _error = e is AppException ? e.userMessage : e.toString();
       _videoInfo = null;
     } finally {
       if (_pendingVideoId == videoId) {

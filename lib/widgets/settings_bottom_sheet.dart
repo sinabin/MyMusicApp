@@ -4,6 +4,10 @@ import 'package:file_picker/file_picker.dart';
 import '../providers/settings_provider.dart';
 import '../screens/login_webview_screen.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_sizes.dart';
+import '../theme/app_spacing.dart';
+import '../theme/app_text_styles.dart';
+import '../theme/app_theme.dart';
 
 /// 앱 설정(오디오 품질·저장 경로·YouTube 로그인)을 표시하는 바텀시트 위젯.
 ///
@@ -30,12 +34,13 @@ class SettingsBottomSheet extends StatelessWidget {
       ),
       decoration: const BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppTheme.radiusXl)),
       ),
       child: SingleChildScrollView(
         child: Padding(
           padding: EdgeInsets.fromLTRB(
-              24, 12, 24, 32 + MediaQuery.of(context).viewPadding.bottom),
+              AppSpacing.xxl, AppSpacing.md, AppSpacing.xxl,
+              AppSpacing.xxxl + MediaQuery.of(context).viewPadding.bottom),
           child: Consumer<SettingsProvider>(
             builder: (context, settings, _) {
               return Column(
@@ -43,25 +48,21 @@ class SettingsBottomSheet extends StatelessWidget {
                 children: [
                   // Drag handle
                   Container(
-                    width: 40,
-                    height: 4,
+                    width: AppSizes.handleWidth,
+                    height: AppSizes.handleHeight,
                     decoration: BoxDecoration(
                       color: AppColors.textTertiary,
-                      borderRadius: BorderRadius.circular(2),
+                      borderRadius: BorderRadius.circular(AppSpacing.xxs),
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: AppSpacing.xl),
                   // Header
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
+                      Text(
                         '설정',
-                        style: TextStyle(
-                          color: AppColors.textPrimary,
-                          fontSize: 20,
-                          fontWeight: FontWeight.w700,
-                        ),
+                        style: AppTextStyles.titleLarge,
                       ),
                       IconButton(
                         icon: const Icon(Icons.close, color: AppColors.textSecondary),
@@ -69,34 +70,29 @@ class SettingsBottomSheet extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: AppSpacing.xl),
 
                   // Save location
                   Row(
                     children: [
-                      const Icon(Icons.folder_outlined, color: AppColors.textSecondary, size: 20),
+                      const Icon(Icons.folder_outlined, color: AppColors.textSecondary, size: AppSizes.iconMd),
                       const SizedBox(width: 10),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
+                            Text(
                               '저장 위치',
-                              style: TextStyle(
-                                color: AppColors.textPrimary,
-                                fontSize: 14,
+                              style: AppTextStyles.tileTitle.copyWith(
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
-                            const SizedBox(height: 2),
+                            const SizedBox(height: AppSpacing.xxs),
                             Text(
                               settings.settings.savePath.isEmpty
                                   ? '설정되지 않음'
                                   : settings.settings.savePath,
-                              style: const TextStyle(
-                                color: AppColors.textTertiary,
-                                fontSize: 12,
-                              ),
+                              style: AppTextStyles.caption,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -114,35 +110,30 @@ class SettingsBottomSheet extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AppSpacing.lg),
                   const Divider(color: AppColors.divider),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AppSpacing.lg),
 
                   // Tap play mode
                   Row(
                     children: [
                       const Icon(Icons.play_circle_outline,
-                          color: AppColors.textSecondary, size: 20),
+                          color: AppColors.textSecondary, size: AppSizes.iconMd),
                       const SizedBox(width: 10),
-                      const Expanded(
+                      Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
                               '탭하여 전체 재생',
-                              style: TextStyle(
-                                color: AppColors.textPrimary,
-                                fontSize: 14,
+                              style: AppTextStyles.tileTitle.copyWith(
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
-                            SizedBox(height: 2),
+                            const SizedBox(height: AppSpacing.xxs),
                             Text(
                               '선택한 곡부터 목록 전체를 이어서 재생',
-                              style: TextStyle(
-                                color: AppColors.textTertiary,
-                                fontSize: 12,
-                              ),
+                              style: AppTextStyles.caption,
                             ),
                           ],
                         ),
@@ -155,9 +146,63 @@ class SettingsBottomSheet extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AppSpacing.lg),
                   const Divider(color: AppColors.divider),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AppSpacing.lg),
+
+                  // Theme mode
+                  Row(
+                    children: [
+                      const Icon(Icons.palette_outlined,
+                          color: AppColors.textSecondary, size: AppSizes.iconMd),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '테마',
+                              style: AppTextStyles.tileTitle.copyWith(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(height: AppSpacing.xxs),
+                            Text(
+                              _themeModeLabel(settings.settings.themeMode),
+                              style: AppTextStyles.caption,
+                            ),
+                          ],
+                        ),
+                      ),
+                      SegmentedButton<ThemeMode>(
+                        segments: const [
+                          ButtonSegment(
+                            value: ThemeMode.system,
+                            icon: Icon(Icons.brightness_auto, size: AppSizes.iconSm),
+                          ),
+                          ButtonSegment(
+                            value: ThemeMode.light,
+                            icon: Icon(Icons.light_mode, size: AppSizes.iconSm),
+                          ),
+                          ButtonSegment(
+                            value: ThemeMode.dark,
+                            icon: Icon(Icons.dark_mode, size: AppSizes.iconSm),
+                          ),
+                        ],
+                        selected: {settings.settings.themeMode},
+                        onSelectionChanged: (modes) =>
+                            settings.setThemeMode(modes.first),
+                        showSelectedIcon: false,
+                        style: ButtonStyle(
+                          visualDensity: VisualDensity.compact,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+                  const Divider(color: AppColors.divider),
+                  const SizedBox(height: AppSpacing.lg),
 
                   // YouTube Login
                   _buildLoginSection(context, settings),
@@ -168,6 +213,14 @@ class SettingsBottomSheet extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String _themeModeLabel(ThemeMode mode) {
+    return switch (mode) {
+      ThemeMode.system => '시스템 설정에 따름',
+      ThemeMode.light => '라이트 모드',
+      ThemeMode.dark => '다크 모드',
+    };
   }
 
   Widget _buildLoginSection(BuildContext context, SettingsProvider settings) {
@@ -181,51 +234,46 @@ class SettingsBottomSheet extends StatelessWidget {
             Icon(
               isLoggedIn ? Icons.check_circle : Icons.account_circle_outlined,
               color: isLoggedIn ? AppColors.success : AppColors.textSecondary,
-              size: 20,
+              size: AppSizes.iconMd,
             ),
             const SizedBox(width: 10),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'YouTube 로그인',
-                    style: TextStyle(
-                      color: AppColors.textPrimary,
-                      fontSize: 14,
+                    style: AppTextStyles.tileTitle.copyWith(
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  const SizedBox(height: 2),
+                  const SizedBox(height: AppSpacing.xxs),
                   Text(
                     isLoggedIn
                         ? settings.settings.userEmail ?? '로그인됨'
                         : '연령 제한 콘텐츠 재생 시 필요',
-                    style: const TextStyle(
-                      color: AppColors.textTertiary,
-                      fontSize: 12,
-                    ),
+                    style: AppTextStyles.caption,
                   ),
                 ],
               ),
             ),
           ],
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: AppSpacing.md),
         SizedBox(
           width: double.infinity,
           child: isLoggedIn
               ? OutlinedButton.icon(
                   onPressed: () => settings.logout(),
-                  icon: const Icon(Icons.logout, size: 18),
+                  icon: const Icon(Icons.logout, size: AppSizes.iconMsl),
                   label: const Text('로그아웃'),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppColors.error,
                     side: const BorderSide(color: AppColors.error),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                     ),
-                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
                   ),
                 )
               : ElevatedButton.icon(
@@ -241,15 +289,15 @@ class SettingsBottomSheet extends StatelessWidget {
                       settings.setLoggedIn(true, email: result['email'] as String?);
                     }
                   },
-                  icon: const Icon(Icons.login, size: 18),
+                  icon: const Icon(Icons.login, size: AppSizes.iconMsl),
                   label: const Text('YouTube 로그인'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                     ),
-                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
                   ),
                 ),
         ),

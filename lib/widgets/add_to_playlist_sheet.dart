@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/playlist_provider.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_sizes.dart';
+import '../theme/app_spacing.dart';
+import '../theme/app_text_styles.dart';
+import '../theme/app_theme.dart';
 import '../utils/format_utils.dart';
 import 'playlist_mosaic_art.dart';
 
@@ -79,36 +84,32 @@ class _AddToPlaylistSheetState extends State<AddToPlaylistSheet> {
       ),
       decoration: const BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppTheme.radiusXl)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           // 드래그 핸들
           Padding(
-            padding: const EdgeInsets.only(top: 12, bottom: 8),
+            padding: const EdgeInsets.only(top: AppSpacing.md, bottom: AppSpacing.sm),
             child: Container(
-              width: 40,
-              height: 4,
+              width: AppSizes.handleWidth,
+              height: AppSizes.handleHeight,
               decoration: BoxDecoration(
                 color: AppColors.textTertiary,
-                borderRadius: BorderRadius.circular(2),
+                borderRadius: BorderRadius.circular(AppSpacing.xxs),
               ),
             ),
           ),
           // 헤더
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl, vertical: AppSpacing.sm),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
+                Text(
                   'Add to Playlist',
-                  style: TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: AppTextStyles.sectionHeader,
                 ),
                 IconButton(
                   icon: const Icon(Icons.close, color: AppColors.textSecondary),
@@ -119,37 +120,34 @@ class _AddToPlaylistSheetState extends State<AddToPlaylistSheet> {
           ),
           // 인라인 새 플레이리스트 생성
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
             child: Row(
               children: [
                 Expanded(
                   child: TextField(
                     controller: _newNameController,
-                    style: const TextStyle(
-                      color: AppColors.textPrimary,
-                      fontSize: 14,
-                    ),
+                    style: AppTextStyles.body,
                     decoration: InputDecoration(
                       hintText: 'New playlist name',
-                      hintStyle: const TextStyle(
+                      hintStyle: TextStyle(
                         color: AppColors.textTertiary,
                         fontSize: 14,
                       ),
                       filled: true,
                       fillColor: AppColors.surfaceVariant,
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                         borderSide: BorderSide.none,
                       ),
                       contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 12,
+                        horizontal: AppSpacing.md,
                         vertical: 10,
                       ),
                       isDense: true,
                     ),
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: AppSpacing.sm),
                 IconButton(
                   icon: const Icon(
                     Icons.add_circle,
@@ -161,7 +159,7 @@ class _AddToPlaylistSheetState extends State<AddToPlaylistSheet> {
             ),
           ),
           const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+            padding: EdgeInsets.symmetric(horizontal: AppSpacing.xxl, vertical: AppSpacing.sm),
             child: Divider(color: AppColors.divider, height: 1),
           ),
           // 기존 플레이리스트 목록
@@ -171,7 +169,7 @@ class _AddToPlaylistSheetState extends State<AddToPlaylistSheet> {
                 if (provider.playlists.isEmpty) {
                   return Padding(
                     padding: EdgeInsets.fromLTRB(
-                        32, 32, 32, 32 + bottomPadding),
+                        AppSpacing.xxxl, AppSpacing.xxxl, AppSpacing.xxxl, AppSpacing.xxxl + bottomPadding),
                     child: const Text(
                       'No playlists yet',
                       style: TextStyle(color: AppColors.textTertiary),
@@ -181,7 +179,7 @@ class _AddToPlaylistSheetState extends State<AddToPlaylistSheet> {
                 return ListView.builder(
                   shrinkWrap: true,
                   padding: EdgeInsets.fromLTRB(
-                      24, 8, 24, 8 + bottomPadding),
+                      AppSpacing.xxl, AppSpacing.sm, AppSpacing.xxl, AppSpacing.sm + bottomPadding),
                   itemCount: provider.playlists.length,
                   itemBuilder: (context, index) {
                     final playlist = provider.playlists[index];
@@ -195,25 +193,20 @@ class _AddToPlaylistSheetState extends State<AddToPlaylistSheet> {
                       contentPadding: EdgeInsets.zero,
                       leading: PlaylistMosaicArt(
                         thumbnailUrls: urls,
-                        size: 40,
+                        size: AppSizes.thumbnailSm,
                       ),
                       title: Text(
                         playlist.name,
-                        style: const TextStyle(
-                          color: AppColors.textPrimary,
-                          fontSize: 14,
-                        ),
+                        style: AppTextStyles.body,
                       ),
                       subtitle: Text(
                         FormatUtils.trackCount(
                           playlist.trackVideoIds.length,
                         ),
-                        style: const TextStyle(
-                          color: AppColors.textTertiary,
-                          fontSize: 12,
-                        ),
+                        style: AppTextStyles.caption,
                       ),
                       onTap: () async {
+                        HapticFeedback.lightImpact();
                         try {
                           await provider.addTrackToPlaylist(
                             playlist,

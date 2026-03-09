@@ -2,6 +2,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
+import '../theme/app_sizes.dart';
+import '../theme/app_theme.dart';
 
 /// 플레이리스트 대표 이미지 2x2 모자이크 위젯.
 ///
@@ -20,8 +22,8 @@ class PlaylistMosaicArt extends StatelessWidget {
   const PlaylistMosaicArt({
     super.key,
     required this.thumbnailUrls,
-    this.size = 56,
-    this.borderRadius = 8,
+    this.size = AppSizes.thumbnailLg,
+    this.borderRadius = AppTheme.radiusSm,
   });
 
   @override

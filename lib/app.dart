@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'l10n/app_localizations.dart';
+import 'providers/settings_provider.dart';
 import 'screens/main_shell.dart';
-import 'theme/app_colors.dart';
+import 'theme/app_color_scheme.dart';
 import 'theme/app_theme.dart';
 import 'widgets/mini_player.dart';
 
@@ -20,24 +23,35 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'MyMusicApp',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.darkTheme,
-      navigatorKey: appNavigatorKey,
-      home: const MainShell(),
-      builder: (context, child) {
-        return ColoredBox(
-          color: AppColors.scaffoldBackground,
-          child: SafeArea(
-            top: false,
-            child: Column(
-              children: [
-                Expanded(child: child!),
-                const MiniPlayer(),
-              ],
-            ),
-          ),
+    return Selector<SettingsProvider, ThemeMode>(
+      selector: (_, p) => p.settings.themeMode,
+      builder: (context, themeMode, _) {
+        return MaterialApp(
+          title: 'MyMusicApp',
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          themeMode: themeMode,
+          localizationsDelegates: L.localizationsDelegates,
+          supportedLocales: L.supportedLocales,
+          locale: const Locale('ko'),
+          navigatorKey: appNavigatorKey,
+          home: const MainShell(),
+          builder: (context, child) {
+            final cs = AppColorScheme.of(context);
+            return ColoredBox(
+              color: cs.scaffoldBackground,
+              child: SafeArea(
+                top: false,
+                child: Column(
+                  children: [
+                    Expanded(child: child!),
+                    const MiniPlayer(),
+                  ],
+                ),
+              ),
+            );
+          },
         );
       },
     );

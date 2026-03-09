@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
+import '../models/app_exception.dart';
 import '../models/download_item.dart';
 import '../models/download_state.dart';
 import '../models/video_info.dart';
@@ -97,9 +98,10 @@ class DownloadProvider extends ChangeNotifier {
       debugPrint('[DownloadProvider] Error (videoId=${videoInfo.videoId}): $e');
       debugPrint('[DownloadProvider] StackTrace: $st');
       await _cleanupTempFile(tempFile);
+      final userMsg = e is AppException ? e.userMessage : 'Download failed';
       _status = DownloadStatus(
         phase: DownloadPhase.error,
-        errorMessage: e.toString(),
+        errorMessage: userMsg,
         statusText: 'Failed - Tap to Retry',
       );
       notifyListeners();

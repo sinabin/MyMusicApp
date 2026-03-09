@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
+import '../models/app_exception.dart';
 import '../models/video_info.dart';
 import '../services/youtube_service.dart';
 
@@ -61,7 +62,7 @@ class SearchProvider extends ChangeNotifier {
       _results = searchList.map<VideoInfo>(_toVideoInfo).toList();
     } catch (e) {
       if (session != _searchSession) return;
-      _error = e.toString();
+      _error = e is AppException ? e.userMessage : e.toString();
     } finally {
       if (session == _searchSession) {
         _isLoading = false;
@@ -87,6 +88,7 @@ class SearchProvider extends ChangeNotifier {
       }
     } catch (e) {
       debugPrint('[SearchProvider] loadMore error: $e');
+      _error = e is AppException ? e.userMessage : null;
     } finally {
       _isLoadingMore = false;
       notifyListeners();

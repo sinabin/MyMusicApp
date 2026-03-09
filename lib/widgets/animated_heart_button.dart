@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../theme/app_colors.dart';
+import '../theme/app_durations.dart';
+import '../theme/app_sizes.dart';
 
 /// 즐겨찾기 토글용 애니메이션 하트 버튼.
 ///
@@ -21,7 +23,7 @@ class AnimatedHeartButton extends StatefulWidget {
     super.key,
     required this.isFavorite,
     required this.onToggle,
-    this.size = 20,
+    this.size = AppSizes.iconMd,
   });
 
   @override
@@ -37,7 +39,7 @@ class _AnimatedHeartButtonState extends State<AnimatedHeartButton>
   void initState() {
     super.initState();
     _controller = AnimationController(
-      duration: const Duration(milliseconds: 200),
+      duration: AppDurations.fast,
       vsync: this,
     );
     _scaleAnimation = TweenSequence<double>([
@@ -61,12 +63,15 @@ class _AnimatedHeartButtonState extends State<AnimatedHeartButton>
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: _handleTap,
-      child: SizedBox(
-        width: 48,
-        height: 48,
+    return Semantics(
+      button: true,
+      label: widget.isFavorite ? '좋아요 해제' : '좋아요',
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: _handleTap,
+        child: SizedBox(
+        width: AppSizes.touchTarget,
+        height: AppSizes.touchTarget,
         child: Center(
           child: AnimatedBuilder(
             animation: _scaleAnimation,
@@ -84,6 +89,7 @@ class _AnimatedHeartButtonState extends State<AnimatedHeartButton>
             },
           ),
         ),
+      ),
       ),
     );
   }

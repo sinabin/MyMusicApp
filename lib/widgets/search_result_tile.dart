@@ -3,6 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 import '../models/video_info.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_sizes.dart';
+import '../theme/app_spacing.dart';
+import '../theme/app_text_styles.dart';
+import '../theme/app_theme.dart';
 
 /// 검색 결과 항목을 표시하는 타일 위젯.
 ///
@@ -44,10 +48,10 @@ class SearchResultTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 4),
+      margin: const EdgeInsets.only(bottom: AppSpacing.xs),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppTheme.radiusMd),
       ),
       child: Row(
         children: [
@@ -61,7 +65,7 @@ class SearchResultTile extends StatelessWidget {
                 child: Row(
                   children: [
                     _buildThumbnail(),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: AppSpacing.md),
                     Expanded(child: _buildInfo()),
                   ],
                 ),
@@ -72,7 +76,7 @@ class SearchResultTile extends StatelessWidget {
           _buildStreamButton(),
           // 다운로드 버튼
           _buildDownloadButton(),
-          const SizedBox(width: 4),
+          const SizedBox(width: AppSpacing.xs),
         ],
       ),
     );
@@ -80,10 +84,10 @@ class SearchResultTile extends StatelessWidget {
 
   Widget _buildThumbnail() {
     return ClipRRect(
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: BorderRadius.circular(AppTheme.radiusSm),
       child: SizedBox(
-        width: 100,
-        height: 56,
+        width: AppSizes.searchThumbWidth,
+        height: AppSizes.searchThumbHeight,
         child: Stack(
           fit: StackFit.expand,
           children: [
@@ -100,23 +104,23 @@ class SearchResultTile extends StatelessWidget {
                 child: const Icon(
                   Icons.music_note,
                   color: AppColors.textTertiary,
-                  size: 20,
+                  size: AppSizes.iconMd,
                 ),
               ),
             ),
             // 재생 시간 배지
             if (videoInfo.duration != Duration.zero)
               Positioned(
-                right: 4,
-                bottom: 4,
+                right: AppSpacing.xs,
+                bottom: AppSpacing.xs,
                 child: Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 4,
-                    vertical: 2,
+                    horizontal: AppSpacing.xs,
+                    vertical: AppSpacing.xxs,
                   ),
                   decoration: BoxDecoration(
                     color: Colors.black.withValues(alpha: 0.75),
-                    borderRadius: BorderRadius.circular(4),
+                    borderRadius: BorderRadius.circular(AppSpacing.xs),
                   ),
                   child: Text(
                     videoInfo.formattedDuration,
@@ -143,12 +147,7 @@ class SearchResultTile extends StatelessWidget {
           videoInfo.title,
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
-            color: AppColors.textPrimary,
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
-            height: 1.3,
-          ),
+          style: AppTextStyles.bodySmall.copyWith(height: 1.3),
         ),
         const SizedBox(height: 3),
         Text(
@@ -166,13 +165,13 @@ class SearchResultTile extends StatelessWidget {
 
   Widget _buildStreamButton() {
     if (isStreamLoading) {
-      return const Padding(
-        padding: EdgeInsets.all(12),
+      return Padding(
+        padding: const EdgeInsets.all(AppSpacing.md),
         child: SizedBox(
-          width: 20,
-          height: 20,
-          child: CircularProgressIndicator(
-            strokeWidth: 2,
+          width: AppSizes.indicatorSm,
+          height: AppSizes.indicatorSm,
+          child: const CircularProgressIndicator(
+            strokeWidth: AppSizes.strokeWidth,
             color: AppColors.primaryLight,
           ),
         ),
@@ -183,23 +182,23 @@ class SearchResultTile extends StatelessWidget {
       icon: const Icon(
         Icons.play_circle_outline,
         color: AppColors.primaryLight,
-        size: 22,
+        size: AppSizes.iconMl,
       ),
       onPressed: onStream,
-      splashRadius: 20,
+      splashRadius: AppSpacing.xl,
       tooltip: 'Stream',
     );
   }
 
   Widget _buildDownloadButton() {
     if (isDownloading) {
-      return const Padding(
-        padding: EdgeInsets.all(12),
+      return Padding(
+        padding: const EdgeInsets.all(AppSpacing.md),
         child: SizedBox(
-          width: 20,
-          height: 20,
-          child: CircularProgressIndicator(
-            strokeWidth: 2,
+          width: AppSizes.indicatorSm,
+          height: AppSizes.indicatorSm,
+          child: const CircularProgressIndicator(
+            strokeWidth: AppSizes.strokeWidth,
             color: AppColors.primary,
           ),
         ),
@@ -212,10 +211,10 @@ class SearchResultTile extends StatelessWidget {
         color: downloadDisabled
             ? AppColors.textTertiary.withValues(alpha: 0.4)
             : AppColors.primaryLight,
-        size: 22,
+        size: AppSizes.iconMl,
       ),
       onPressed: downloadDisabled ? null : onDownload,
-      splashRadius: 20,
+      splashRadius: AppSpacing.xl,
     );
   }
 }

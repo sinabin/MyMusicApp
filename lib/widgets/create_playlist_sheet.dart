@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/playlist_provider.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_sizes.dart';
+import '../theme/app_spacing.dart';
+import '../theme/app_text_styles.dart';
+import '../theme/app_theme.dart';
 
 /// 새 플레이리스트 생성 바텀시트.
 ///
@@ -39,6 +44,7 @@ class _CreatePlaylistSheetState extends State<CreatePlaylistSheet> {
   Future<void> _create() async {
     final name = _nameController.text.trim();
     if (name.isEmpty) return;
+    HapticFeedback.lightImpact();
     final desc = _descController.text.trim();
 
     try {
@@ -71,35 +77,32 @@ class _CreatePlaylistSheetState extends State<CreatePlaylistSheet> {
       child: Container(
         decoration: const BoxDecoration(
           color: AppColors.surface,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(AppTheme.radiusXl)),
         ),
         child: Padding(
           padding: EdgeInsets.fromLTRB(
-              24, 12, 24, 32 + MediaQuery.of(context).viewPadding.bottom),
+              AppSpacing.xxl, AppSpacing.md, AppSpacing.xxl,
+              AppSpacing.xxxl + MediaQuery.of(context).viewPadding.bottom),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               // 드래그 핸들
               Container(
-                width: 40,
-                height: 4,
+                width: AppSizes.handleWidth,
+                height: AppSizes.handleHeight,
                 decoration: BoxDecoration(
                   color: AppColors.textTertiary,
-                  borderRadius: BorderRadius.circular(2),
+                  borderRadius: BorderRadius.circular(AppSpacing.xxs),
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: AppSpacing.xl),
               // 헤더
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
+                  Text(
                     'New Playlist',
-                    style: TextStyle(
-                      color: AppColors.textPrimary,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w700,
-                    ),
+                    style: AppTextStyles.titleLarge,
                   ),
                   IconButton(
                     icon: const Icon(Icons.close, color: AppColors.textSecondary),
@@ -107,7 +110,7 @@ class _CreatePlaylistSheetState extends State<CreatePlaylistSheet> {
                   ),
                 ],
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: AppSpacing.xl),
               // 이름 입력
               TextField(
                 controller: _nameController,
@@ -119,17 +122,17 @@ class _CreatePlaylistSheetState extends State<CreatePlaylistSheet> {
                   filled: true,
                   fillColor: AppColors.surfaceVariant,
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                     borderSide: BorderSide.none,
                   ),
                   contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
+                    horizontal: AppSpacing.lg,
                     vertical: 14,
                   ),
                 ),
                 onChanged: (_) => setState(() {}),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.md),
               // 설명 입력
               TextField(
                 controller: _descController,
@@ -141,16 +144,16 @@ class _CreatePlaylistSheetState extends State<CreatePlaylistSheet> {
                   filled: true,
                   fillColor: AppColors.surfaceVariant,
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                     borderSide: BorderSide.none,
                   ),
                   contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
+                    horizontal: AppSpacing.lg,
                     vertical: 14,
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: AppSpacing.xl),
               // 생성 버튼
               SizedBox(
                 width: double.infinity,
@@ -162,7 +165,7 @@ class _CreatePlaylistSheetState extends State<CreatePlaylistSheet> {
                     color: _nameController.text.trim().isEmpty
                         ? AppColors.surfaceVariant
                         : null,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                   ),
                   child: ElevatedButton(
                     onPressed: _nameController.text.trim().isNotEmpty
@@ -174,7 +177,7 @@ class _CreatePlaylistSheetState extends State<CreatePlaylistSheet> {
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                       ),
                     ),
                     child: const Text(

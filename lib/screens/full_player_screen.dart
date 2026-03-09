@@ -4,9 +4,15 @@ import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
 
+import '../models/download_item.dart';
 import '../providers/history_provider.dart';
 import '../providers/player_provider.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_durations.dart';
+import '../theme/app_sizes.dart';
+import '../theme/app_spacing.dart';
+import '../theme/app_text_styles.dart';
+import '../theme/app_theme.dart';
 import '../widgets/add_to_playlist_sheet.dart';
 import '../widgets/seek_bar.dart';
 import 'queue_screen.dart';
@@ -55,36 +61,43 @@ class _FullPlayerScreenState extends State<FullPlayerScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         leading: IconButton(
-          icon: const Icon(Icons.keyboard_arrow_down, size: 28),
+          tooltip: '플레이어 닫기',
+          icon: const Icon(Icons.keyboard_arrow_down, size: AppSizes.iconXl),
           onPressed: () => Navigator.pop(context),
         ),
         actions: [
-          Consumer2<PlayerProvider, HistoryProvider>(
-            builder: (context, player, history, _) {
-              final track = player.currentTrack;
+          Selector<PlayerProvider, DownloadItem?>(
+            selector: (_, p) => p.currentTrack,
+            builder: (context, track, _) {
               if (track == null || track.isStreaming) {
                 return const SizedBox.shrink();
               }
               return IconButton(
                 tooltip: 'Favorite',
-                onPressed: () => history.toggleFavorite(track),
-                icon: Icon(
-                  track.isFavorite ? Icons.favorite : Icons.favorite_border,
-                  color: track.isFavorite
-                      ? AppColors.error
-                      : AppColors.textSecondary,
-                  size: 24,
+                onPressed: () =>
+                    context.read<HistoryProvider>().toggleFavorite(track),
+                icon: AnimatedSwitcher(
+                  duration: AppDurations.fast,
+                  child: Icon(
+                    track.isFavorite ? Icons.favorite : Icons.favorite_border,
+                    key: ValueKey(track.isFavorite),
+                    color: track.isFavorite
+                        ? AppColors.error
+                        : AppColors.textSecondary,
+                    size: AppSizes.iconLg,
+                  ),
                 ),
               );
             },
           ),
-          Consumer<PlayerProvider>(
-            builder: (context, player, _) {
-              final track = player.currentTrack;
+          Selector<PlayerProvider, DownloadItem?>(
+            selector: (_, p) => p.currentTrack,
+            builder: (context, track, _) {
               if (track == null || track.isStreaming) {
                 return const SizedBox.shrink();
               }
               return IconButton(
+                tooltip: '플레이리스트에 추가',
                 icon: const Icon(
                   Icons.playlist_add,
                   color: AppColors.textSecondary,
@@ -97,14 +110,15 @@ class _FullPlayerScreenState extends State<FullPlayerScreen> {
             },
           ),
           IconButton(
+            tooltip: '재생 큐',
             icon: const Icon(Icons.queue_music, color: AppColors.textSecondary),
             onPressed: () => QueueScreen.show(context),
           ),
         ],
       ),
-      body: Consumer<PlayerProvider>(
-        builder: (context, player, _) {
-          final track = player.currentTrack;
+      body: Selector<PlayerProvider, DownloadItem?>(
+        selector: (_, p) => p.currentTrack,
+        builder: (context, track, _) {
           if (track == null) {
             return const Center(
               child: Text(
@@ -119,16 +133,19 @@ class _FullPlayerScreenState extends State<FullPlayerScreen> {
               : track.fileName;
           final artist = track.artistName ?? track.channelName ?? '';
 
+          final screenWidth = MediaQuery.of(context).size.width;
+          final artPadding = screenWidth > 400 ? AppSpacing.hero : AppSpacing.xxl;
+
           return Column(
             children: [
               const Spacer(),
               // 앨범아트
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 48),
+                padding: EdgeInsets.symmetric(horizontal: artPadding),
                 child: AspectRatio(
                   aspectRatio: 1,
                   child: ClipRRect(
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusLg),
                     child: track.thumbnailUrl != null
                         ? CachedNetworkImage(
                             imageUrl: track.thumbnailUrl!,
@@ -140,10 +157,10 @@ class _FullPlayerScreenState extends State<FullPlayerScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: AppSpacing.xxxl),
               // 곡 정보
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 32),
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxxl),
                 child: Column(
                   children: [
                     Text(
@@ -151,33 +168,26 @@ class _FullPlayerScreenState extends State<FullPlayerScreen> {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        color: AppColors.textPrimary,
-                        fontSize: 20,
-                        fontWeight: FontWeight.w700,
-                      ),
+                      style: AppTextStyles.titleLarge,
                     ),
                     if (artist.isNotEmpty) ...[
-                      const SizedBox(height: 8),
+                      const SizedBox(height: AppSpacing.sm),
                       Text(
                         artist,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: AppColors.textSecondary,
-                          fontSize: 14,
-                        ),
+                        style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
                       ),
                     ],
                   ],
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: AppSpacing.xxl),
               // 시크바
-              const SeekBar(),
-              const SizedBox(height: 16),
+              const SeekBar(fullSize: true),
+              const SizedBox(height: AppSpacing.lg),
               // 컨트롤
-              _buildControls(context, player),
+              _buildControls(context),
               const Spacer(flex: 2),
             ],
           );
@@ -189,8 +199,8 @@ class _FullPlayerScreenState extends State<FullPlayerScreen> {
   /// 셔플·반복 활성 시 아이콘 아래 표시하는 점 인디케이터.
   Widget _activeDot() {
     return Container(
-      width: 4,
-      height: 4,
+      width: AppSpacing.xs,
+      height: AppSpacing.xs,
       decoration: const BoxDecoration(
         shape: BoxShape.circle,
         color: AppColors.primaryLight,
@@ -198,92 +208,110 @@ class _FullPlayerScreenState extends State<FullPlayerScreen> {
     );
   }
 
-  Widget _buildControls(BuildContext context, PlayerProvider player) {
-    final isShuffleActive = player.isShuffleEnabled;
-    final isRepeatActive = player.loopMode != LoopMode.off;
+  Widget _buildControls(BuildContext context) {
+    return Selector<PlayerProvider, (bool, bool, LoopMode)>(
+      selector: (_, p) => (p.isPlaying, p.isShuffleEnabled, p.loopMode),
+      builder: (context, data, _) {
+        final (isPlaying, isShuffleActive, loopMode) = data;
+        final isRepeatActive = loopMode != LoopMode.off;
+        final player = context.read<PlayerProvider>();
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 32),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          // 셔플
-          Column(
-            mainAxisSize: MainAxisSize.min,
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxxl),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              IconButton(
-                tooltip: 'Shuffle',
-                icon: Icon(
-                  Icons.shuffle,
-                  color: isShuffleActive
-                      ? AppColors.primary
-                      : AppColors.textTertiary,
-                ),
-                onPressed: () {
-                  HapticFeedback.lightImpact();
-                  player.toggleShuffle();
-                },
+              // 셔플
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    tooltip: 'Shuffle',
+                    icon: AnimatedSwitcher(
+                      duration: AppDurations.fast,
+                      child: Icon(
+                        Icons.shuffle,
+                        key: ValueKey(isShuffleActive),
+                        color: isShuffleActive
+                            ? AppColors.primary
+                            : AppColors.textTertiary,
+                      ),
+                    ),
+                    onPressed: () {
+                      HapticFeedback.lightImpact();
+                      player.toggleShuffle();
+                    },
+                  ),
+                  if (isShuffleActive) _activeDot() else const SizedBox(height: AppSpacing.xs),
+                ],
               ),
-              if (isShuffleActive) _activeDot() else const SizedBox(height: 4),
+              // 이전
+              IconButton(
+                tooltip: 'Previous',
+                icon: const Icon(Icons.skip_previous, size: AppSizes.iconXxxl),
+                color: AppColors.textPrimary,
+                onPressed: () => player.skipPrevious(),
+              ),
+              // 재생/일시정지
+              Container(
+                width: AppSizes.playButtonSize,
+                height: AppSizes.playButtonSize,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: AppColors.primaryGradient,
+                ),
+                child: IconButton(
+                  tooltip: isPlaying ? 'Pause' : 'Play',
+                  icon: AnimatedSwitcher(
+                    duration: AppDurations.fast,
+                    child: Icon(
+                      isPlaying ? Icons.pause : Icons.play_arrow,
+                      key: ValueKey(isPlaying),
+                      size: AppSizes.iconXxl,
+                      color: Colors.white,
+                    ),
+                  ),
+                  onPressed: () {
+                    HapticFeedback.lightImpact();
+                    isPlaying ? player.pause() : player.resume();
+                  },
+                ),
+              ),
+              // 다음
+              IconButton(
+                tooltip: 'Next',
+                icon: const Icon(Icons.skip_next, size: AppSizes.iconXxxl),
+                color: AppColors.textPrimary,
+                onPressed: () => player.skipNext(),
+              ),
+              // 반복
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    tooltip: 'Repeat',
+                    icon: AnimatedSwitcher(
+                      duration: AppDurations.fast,
+                      child: Icon(
+                        _loopModeIcon(loopMode),
+                        key: ValueKey(loopMode),
+                        color: isRepeatActive
+                            ? AppColors.primary
+                            : AppColors.textTertiary,
+                      ),
+                    ),
+                    onPressed: () {
+                      HapticFeedback.lightImpact();
+                      player.cycleLoopMode();
+                    },
+                  ),
+                  if (isRepeatActive) _activeDot() else const SizedBox(height: AppSpacing.xs),
+                ],
+              ),
             ],
           ),
-          // 이전
-          IconButton(
-            tooltip: 'Previous',
-            icon: const Icon(Icons.skip_previous, size: 36),
-            color: AppColors.textPrimary,
-            onPressed: () => player.skipPrevious(),
-          ),
-          // 재생/일시정지
-          Container(
-            width: 64,
-            height: 64,
-            decoration: const BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: AppColors.primaryGradient,
-            ),
-            child: IconButton(
-              tooltip: player.isPlaying ? 'Pause' : 'Play',
-              icon: Icon(
-                player.isPlaying ? Icons.pause : Icons.play_arrow,
-                size: 32,
-                color: Colors.white,
-              ),
-              onPressed: () {
-                HapticFeedback.lightImpact();
-                player.isPlaying ? player.pause() : player.resume();
-              },
-            ),
-          ),
-          // 다음
-          IconButton(
-            tooltip: 'Next',
-            icon: const Icon(Icons.skip_next, size: 36),
-            color: AppColors.textPrimary,
-            onPressed: () => player.skipNext(),
-          ),
-          // 반복
-          Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              IconButton(
-                tooltip: 'Repeat',
-                icon: Icon(
-                  _loopModeIcon(player.loopMode),
-                  color: isRepeatActive
-                      ? AppColors.primary
-                      : AppColors.textTertiary,
-                ),
-                onPressed: () {
-                  HapticFeedback.lightImpact();
-                  player.cycleLoopMode();
-                },
-              ),
-              if (isRepeatActive) _activeDot() else const SizedBox(height: 4),
-            ],
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -300,7 +328,7 @@ class _FullPlayerScreenState extends State<FullPlayerScreen> {
       child: const Icon(
         Icons.music_note,
         color: AppColors.primaryLight,
-        size: 80,
+        size: AppSizes.iconMega,
       ),
     );
   }

@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import '../data/local_storage.dart';
 import '../models/app_settings.dart';
 import '../services/auth_service.dart';
@@ -36,12 +36,14 @@ class SettingsProvider extends ChangeNotifier {
     final isLoggedIn = await _authService.isLoggedIn();
     final email = await _authService.loadEmail();
     final playAllOnTap = await _localStorage.getPlayAllOnTap();
+    final themeMode = await _localStorage.getThemeMode();
 
     _settings = AppSettings(
       savePath: savePath,
       isLoggedIn: isLoggedIn,
       userEmail: email,
       playAllOnTap: playAllOnTap,
+      themeMode: themeMode,
     );
     notifyListeners();
   }
@@ -70,6 +72,14 @@ class SettingsProvider extends ChangeNotifier {
     if (_settings.playAllOnTap == value) return;
     _settings = _settings.copyWith(playAllOnTap: value);
     await _localStorage.setPlayAllOnTap(value);
+    notifyListeners();
+  }
+
+  /// 테마 모드 [mode] 변경 및 영속 저장.
+  Future<void> setThemeMode(ThemeMode mode) async {
+    if (_settings.themeMode == mode) return;
+    _settings = _settings.copyWith(themeMode: mode);
+    await _localStorage.setThemeMode(mode);
     notifyListeners();
   }
 

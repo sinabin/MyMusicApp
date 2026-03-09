@@ -2,15 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 
+import '../models/download_item.dart';
 import '../providers/history_provider.dart';
 import '../providers/playback_history_provider.dart';
 import '../providers/player_provider.dart';
 import '../providers/playlist_provider.dart';
 import '../providers/settings_provider.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_durations.dart';
+import '../theme/app_sizes.dart';
+import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
+import '../theme/app_theme.dart';
 import '../utils/format_utils.dart';
 import '../widgets/create_playlist_sheet.dart';
+import '../widgets/empty_state_widget.dart';
 import '../widgets/gradient_text.dart';
 import '../widgets/library_quick_card.dart';
 import '../widgets/playlist_tile.dart';
@@ -53,26 +59,22 @@ class _LibraryScreenState extends State<LibraryScreen> {
               title: Row(
                 children: [
                   Container(
-                    width: 32,
-                    height: 32,
+                    width: AppSizes.headerIconBox,
+                    height: AppSizes.headerIconBox,
                     decoration: BoxDecoration(
                       gradient: AppColors.primaryGradient,
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusSm),
                     ),
                     child: const Icon(
                       Icons.library_music,
                       color: Colors.white,
-                      size: 20,
+                      size: AppSizes.iconMd,
                     ),
                   ),
                   const SizedBox(width: 10),
-                  const Text(
+                  Text(
                     'My Library',
-                    style: TextStyle(
-                      color: AppColors.textPrimary,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                    ),
+                    style: AppTextStyles.sectionHeader,
                   ),
                 ],
               ),
@@ -80,15 +82,15 @@ class _LibraryScreenState extends State<LibraryScreen> {
 
             // Hero section
             SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
               sliver: SliverList(
                 delegate: SliverChildListDelegate([
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AppSpacing.lg),
                   GradientText(
                     text: 'My Library',
                     style: AppTextStyles.heroTitle,
                     gradient: AppColors.headingGradient,
-                  ).animate().fadeIn(duration: 600.ms).slideY(
+                  ).animate().fadeIn(duration: AppDurations.emphasis).slideY(
                         begin: -0.2,
                         end: 0,
                       ),
@@ -96,8 +98,8 @@ class _LibraryScreenState extends State<LibraryScreen> {
                   Text(
                     'Your music collection',
                     style: AppTextStyles.subtitle,
-                  ).animate().fadeIn(duration: 600.ms, delay: 100.ms),
-                  const SizedBox(height: 24),
+                  ).animate().fadeIn(duration: AppDurations.emphasis, delay: 100.ms),
+                  const SizedBox(height: AppSpacing.xxl),
                 ]),
               ),
             ),
@@ -105,7 +107,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
             // Quick Access Cards
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
                 child: Consumer2<HistoryProvider, PlaybackHistoryProvider>(
                   builder: (context, history, playback, _) {
                     return Row(
@@ -122,7 +124,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                             ),
                           ),
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: AppSpacing.sm),
                         LibraryQuickCard(
                           icon: Icons.history,
                           label: 'Recent',
@@ -135,7 +137,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                             ),
                           ),
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: AppSpacing.sm),
                         LibraryQuickCard(
                           icon: Icons.music_note,
                           label: 'All Songs',
@@ -156,8 +158,8 @@ class _LibraryScreenState extends State<LibraryScreen> {
             ),
 
             // Recently Played
-            Consumer2<PlaybackHistoryProvider, PlayerProvider>(
-              builder: (context, playback, player, _) {
+            Consumer<PlaybackHistoryProvider>(
+              builder: (context, playback, _) {
                 final recentTracks = playback.getRecentTracks(10);
                 if (recentTracks.isEmpty) {
                   return const SliverToBoxAdapter(child: SizedBox.shrink());
@@ -166,9 +168,9 @@ class _LibraryScreenState extends State<LibraryScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const SizedBox(height: 24),
+                      const SizedBox(height: AppSpacing.xxl),
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -194,21 +196,27 @@ class _LibraryScreenState extends State<LibraryScreen> {
                           ],
                         ),
                       ),
-                      const SizedBox(height: 8),
-                      RecentPlayHorizontalList(
-                        tracks: recentTracks,
-                        currentTrack: player.currentTrack,
-                        onTap: (item) {
-                          final playAll = context
-                              .read<SettingsProvider>()
-                              .settings
-                              .playAllOnTap;
-                          if (playAll) {
-                            final idx = recentTracks.indexOf(item);
-                            player.playAll(recentTracks, startIndex: idx);
-                          } else {
-                            player.playTrack(item);
-                          }
+                      const SizedBox(height: AppSpacing.sm),
+                      Selector<PlayerProvider, DownloadItem?>(
+                        selector: (_, p) => p.currentTrack,
+                        builder: (context, currentTrack, _) {
+                          return RecentPlayHorizontalList(
+                            tracks: recentTracks,
+                            currentTrack: currentTrack,
+                            onTap: (item) {
+                              final player = context.read<PlayerProvider>();
+                              final playAll = context
+                                  .read<SettingsProvider>()
+                                  .settings
+                                  .playAllOnTap;
+                              if (playAll) {
+                                final idx = recentTracks.indexOf(item);
+                                player.playAll(recentTracks, startIndex: idx);
+                              } else {
+                                player.playTrack(item);
+                              }
+                            },
+                          );
                         },
                       ),
                     ],
@@ -220,7 +228,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
             // Divider
             const SliverToBoxAdapter(
               child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                padding: EdgeInsets.symmetric(horizontal: AppSpacing.xxl, vertical: AppSpacing.lg),
                 child: Divider(color: AppColors.divider),
               ),
             ),
@@ -228,7 +236,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
             // Playlists header
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
                 child: Consumer<PlaylistProvider>(
                   builder: (context, provider, _) {
                     return Row(
@@ -241,7 +249,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                         TextButton.icon(
                           onPressed: () =>
                               CreatePlaylistSheet.show(context),
-                          icon: const Icon(Icons.add, size: 18),
+                          icon: const Icon(Icons.add, size: AppSizes.iconMsl),
                           label: const Text('Create'),
                           style: TextButton.styleFrom(
                             foregroundColor: AppColors.primary,
@@ -259,38 +267,15 @@ class _LibraryScreenState extends State<LibraryScreen> {
               builder: (context, provider, _) {
                 if (provider.playlists.isEmpty) {
                   return SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.all(32),
-                      child: Column(
-                        children: [
-                          const Icon(
-                            Icons.queue_music,
-                            color: AppColors.textTertiary,
-                            size: 48,
-                          ),
-                          const SizedBox(height: 12),
-                          const Text(
-                            'No playlists yet',
-                            style: TextStyle(
-                              color: AppColors.textSecondary,
-                              fontSize: 14,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          const Text(
-                            'Tap "+ Create" to make your first playlist',
-                            style: TextStyle(
-                              color: AppColors.textTertiary,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
+                    child: EmptyStateWidget(
+                      icon: Icons.queue_music,
+                      title: 'No playlists yet',
+                      description: 'Tap "+ Create" to make your first playlist',
                     ),
                   );
                 }
                 return SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
                   sliver: SliverList(
                     delegate: SliverChildBuilderDelegate(
                       (context, index) {
@@ -302,7 +287,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                             .map((t) => t.thumbnailUrl)
                             .toList();
                         return Padding(
-                          padding: const EdgeInsets.only(bottom: 8),
+                          padding: const EdgeInsets.only(bottom: AppSpacing.sm),
                           child: PlaylistTile(
                             playlist: playlist,
                             thumbnailUrls: urls,
@@ -320,8 +305,8 @@ class _LibraryScreenState extends State<LibraryScreen> {
                             onDelete: () =>
                                 provider.deletePlaylist(playlist),
                           ).animate().fadeIn(
-                                duration: 300.ms,
-                                delay: (index * 50).clamp(0, 500).ms,
+                                duration: AppDurations.normal,
+                                delay: Duration(milliseconds: (index * AppDurations.staggerMs).clamp(0, AppDurations.staggerMaxLongMs)),
                               ),
                         );
                       },
@@ -333,7 +318,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
             ),
 
             // Bottom padding
-            const SliverToBoxAdapter(child: SizedBox(height: 32)),
+            const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.xxxl)),
           ],
         ),
       ),

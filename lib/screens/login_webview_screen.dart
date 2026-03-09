@@ -3,6 +3,9 @@ import 'package:provider/provider.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import '../services/auth_service.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_sizes.dart';
+import '../theme/app_spacing.dart';
+import '../theme/app_text_styles.dart';
 
 /// Google 계정을 통한 YouTube 로그인을 WebView로 처리하는 화면.
 ///
@@ -130,9 +133,9 @@ class _LoginWebviewScreenState extends State<LoginWebviewScreen> {
     return Scaffold(
       backgroundColor: AppColors.scaffoldBackground,
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'YouTube Login',
-          style: TextStyle(color: AppColors.textPrimary, fontSize: 18),
+          style: AppTextStyles.sectionHeader,
         ),
         leading: IconButton(
           icon: const Icon(Icons.close, color: AppColors.textPrimary),
@@ -141,11 +144,11 @@ class _LoginWebviewScreenState extends State<LoginWebviewScreen> {
         actions: [
           if (_isLoading)
             const Padding(
-              padding: EdgeInsets.only(right: 16),
+              padding: EdgeInsets.only(right: AppSpacing.lg),
               child: SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary),
+                width: AppSizes.indicatorSm,
+                height: AppSizes.indicatorSm,
+                child: CircularProgressIndicator(strokeWidth: AppSizes.strokeWidth, color: AppColors.primary),
               ),
             ),
         ],

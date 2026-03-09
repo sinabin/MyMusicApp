@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 
+import '../theme/app_sizes.dart';
+import '../theme/app_spacing.dart';
+import '../theme/app_text_styles.dart';
+import '../theme/app_theme.dart';
+
 /// Library 탭 상단의 빠른 접근 카드 위젯.
 ///
 /// Favorites·Recent·All Songs 3가지 variant로 사용.
@@ -34,28 +39,31 @@ class LibraryQuickCard extends StatelessWidget {
     return Expanded(
       child: Material(
         color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(16),
+        child: Semantics(
+          button: true,
+          label: '$label $count곡',
+          child: InkWell(
+          borderRadius: BorderRadius.circular(AppTheme.radiusLg),
           onTap: onTap,
           child: Container(
-            height: 80,
+            height: AppSizes.quickCardHeight,
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(AppTheme.radiusMd),
             ),
             child: Stack(
               children: [
                 Positioned(
-                  top: 8,
-                  right: 8,
+                  top: AppSpacing.sm,
+                  right: AppSpacing.sm,
                   child: Icon(
                     icon,
-                    size: 32,
+                    size: AppSizes.iconXxl,
                     color: color.withValues(alpha: 0.2),
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(AppSpacing.md),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.end,
@@ -64,17 +72,15 @@ class LibraryQuickCard extends StatelessWidget {
                         '$count',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
+                        style: AppTextStyles.screenTitle.copyWith(
                           color: color,
-                          fontSize: 24,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       Text(
                         label,
-                        style: TextStyle(
+                        style: AppTextStyles.caption.copyWith(
                           color: color,
-                          fontSize: 12,
                         ),
                       ),
                     ],
@@ -83,6 +89,7 @@ class LibraryQuickCard extends StatelessWidget {
               ],
             ),
           ),
+        ),
         ),
       ),
     );

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../models/download_item.dart';
@@ -7,7 +8,10 @@ import '../providers/playback_history_provider.dart';
 import '../providers/player_provider.dart';
 import '../providers/settings_provider.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_spacing.dart';
+import '../theme/app_text_styles.dart';
 import '../widgets/add_to_playlist_sheet.dart';
+import '../widgets/empty_state_widget.dart';
 import '../widgets/track_list_tile.dart';
 
 /// 최근 재생 기록 화면.
@@ -23,13 +27,9 @@ class RecentPlaysScreen extends StatelessWidget {
       backgroundColor: AppColors.scaffoldBackground,
       appBar: AppBar(
         backgroundColor: AppColors.scaffoldBackground,
-        title: const Text(
+        title: Text(
           'Recent Plays',
-          style: TextStyle(
-            color: AppColors.textPrimary,
-            fontSize: 18,
-            fontWeight: FontWeight.w700,
-          ),
+          style: AppTextStyles.sectionHeader,
         ),
         actions: [
           Consumer<PlaybackHistoryProvider>(
@@ -47,38 +47,14 @@ class RecentPlaysScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: Consumer2<PlaybackHistoryProvider, PlayerProvider>(
-        builder: (context, playback, player, _) {
+      body: Consumer<PlaybackHistoryProvider>(
+        builder: (context, playback, _) {
           final grouped = playback.getGroupedRecentTracks();
           if (grouped.isEmpty) {
-            return const Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.history,
-                    color: AppColors.textTertiary,
-                    size: 64,
-                  ),
-                  SizedBox(height: 16),
-                  Text(
-                    'No plays yet',
-                    style: TextStyle(
-                      color: AppColors.textSecondary,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    'Songs you play will appear here',
-                    style: TextStyle(
-                      color: AppColors.textTertiary,
-                      fontSize: 13,
-                    ),
-                  ),
-                ],
-              ),
+            return const EmptyStateWidget(
+              icon: Icons.history,
+              title: 'No plays yet',
+              description: 'Songs you play will appear here',
             );
           }
 
@@ -94,69 +70,72 @@ class RecentPlaysScreen extends StatelessWidget {
             }
           }
 
-          return ListView.builder(
-            padding: const EdgeInsets.only(
-              left: 16,
-              right: 16,
-              bottom: 16,
-            ),
-            itemCount: flatEntries.length,
-            itemBuilder: (context, index) {
-              final entry = flatEntries[index];
-              if (entry.isHeader) {
-                return Padding(
-                  padding: const EdgeInsets.only(top: 16, bottom: 8),
-                  child: Text(
-                    entry.headerLabel!.toUpperCase(),
-                    style: const TextStyle(
-                      color: AppColors.textTertiary,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                );
-              }
-              final item = entry.item!;
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 4),
-                child: TrackListTile(
-                  item: item,
-                  isCurrentTrack:
-                      player.currentTrack?.videoId == item.videoId,
-                  onTap: () {
-                    final playAll = context
-                        .read<SettingsProvider>()
-                        .settings
-                        .playAllOnTap;
-                    if (playAll) {
-                      final idx = allTracks.indexOf(item);
-                      context
-                          .read<PlayerProvider>()
-                          .playAll(allTracks, startIndex: idx);
-                    } else {
-                      context.read<PlayerProvider>().playTrack(item);
-                    }
-                  },
-                  onAddToQueue: () {
-                    context.read<PlayerProvider>().addToQueue(item);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Added to queue')),
-                    );
-                  },
-                  isFavorite: item.isFavorite,
-                  onToggleFavorite: () {
-                    context
-                        .read<HistoryProvider>()
-                        .toggleFavorite(item);
-                  },
-                  onAddToPlaylist: () {
-                    AddToPlaylistSheet.show(
-                      context,
-                      videoId: item.videoId,
-                    );
-                  },
+          return Selector<PlayerProvider, String?>(
+            selector: (_, p) => p.currentTrack?.videoId,
+            builder: (context, currentVideoId, _) {
+              return ListView.builder(
+                padding: const EdgeInsets.only(
+                  left: AppSpacing.lg,
+                  right: AppSpacing.lg,
+                  bottom: AppSpacing.lg,
                 ),
+                itemCount: flatEntries.length,
+                itemBuilder: (context, index) {
+                  final entry = flatEntries[index];
+                  if (entry.isHeader) {
+                    return Padding(
+                      padding: const EdgeInsets.only(top: AppSpacing.lg, bottom: AppSpacing.sm),
+                      child: Text(
+                        entry.headerLabel!.toUpperCase(),
+                        style: AppTextStyles.caption.copyWith(
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    );
+                  }
+                  final item = entry.item!;
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: AppSpacing.xs),
+                    child: TrackListTile(
+                      item: item,
+                      isCurrentTrack: currentVideoId == item.videoId,
+                      onTap: () {
+                        final playAll = context
+                            .read<SettingsProvider>()
+                            .settings
+                            .playAllOnTap;
+                        if (playAll) {
+                          final idx = allTracks.indexOf(item);
+                          context
+                              .read<PlayerProvider>()
+                              .playAll(allTracks, startIndex: idx);
+                        } else {
+                          context.read<PlayerProvider>().playTrack(item);
+                        }
+                      },
+                      onAddToQueue: () {
+                        HapticFeedback.lightImpact();
+                        context.read<PlayerProvider>().addToQueue(item);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Added to queue')),
+                        );
+                      },
+                      isFavorite: item.isFavorite,
+                      onToggleFavorite: () {
+                        context
+                            .read<HistoryProvider>()
+                            .toggleFavorite(item);
+                      },
+                      onAddToPlaylist: () {
+                        AddToPlaylistSheet.show(
+                          context,
+                          videoId: item.videoId,
+                        );
+                      },
+                    ),
+                  );
+                },
               );
             },
           );

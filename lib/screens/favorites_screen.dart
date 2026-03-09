@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/history_provider.dart';
@@ -6,6 +7,7 @@ import '../providers/player_provider.dart';
 import '../providers/settings_provider.dart';
 import '../theme/app_colors.dart';
 import '../widgets/add_to_playlist_sheet.dart';
+import '../widgets/empty_state_widget.dart';
 import '../widgets/song_list_screen.dart';
 
 /// 즐겨찾기 곡 목록 화면.
@@ -38,33 +40,10 @@ class FavoritesScreen extends StatelessWidget {
                     },
             ),
           ],
-          emptyState: const Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Icons.favorite_border,
-                color: AppColors.textTertiary,
-                size: 64,
-              ),
-              SizedBox(height: 16),
-              Text(
-                'No favorites yet',
-                style: TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              SizedBox(height: 8),
-              Text(
-                'Tap the heart icon on any song\nto add it to your favorites',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: AppColors.textTertiary,
-                  fontSize: 13,
-                ),
-              ),
-            ],
+          emptyState: const EmptyStateWidget(
+            icon: Icons.favorite_border,
+            title: 'No favorites yet',
+            description: 'Tap the heart icon on any song\nto add it to your favorites',
           ),
           onTap: (item) {
             final player = context.read<PlayerProvider>();
@@ -78,6 +57,7 @@ class FavoritesScreen extends StatelessWidget {
             }
           },
           onAddToQueue: (item) {
+            HapticFeedback.lightImpact();
             context.read<PlayerProvider>().addToQueue(item);
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('Added to queue')),

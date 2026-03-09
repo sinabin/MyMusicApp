@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../utils/constants.dart';
 
@@ -48,5 +49,18 @@ class LocalStorage {
   Future<void> setHistoryClearedAt(int millis) async {
     final p = await prefs;
     await p.setInt(AppConstants.settingsKeyHistoryClearedAt, millis);
+  }
+
+  /// 저장된 테마 모드 반환. 미설정 시 [ThemeMode.dark].
+  Future<ThemeMode> getThemeMode() async {
+    final p = await prefs;
+    final index = p.getInt(AppConstants.settingsKeyThemeMode) ?? 2;
+    return ThemeMode.values[index.clamp(0, ThemeMode.values.length - 1)];
+  }
+
+  /// 테마 모드 [mode] 저장.
+  Future<void> setThemeMode(ThemeMode mode) async {
+    final p = await prefs;
+    await p.setInt(AppConstants.settingsKeyThemeMode, mode.index);
   }
 }

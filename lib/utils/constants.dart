@@ -23,6 +23,9 @@ class AppConstants {
   /// SharedPreferences 다운로드 기록 숨김 기준 타임스탬프 키.
   static const String settingsKeyHistoryClearedAt = 'history_cleared_at';
 
+  /// SharedPreferences 테마 모드 키 (0=system, 1=light, 2=dark).
+  static const String settingsKeyThemeMode = 'theme_mode';
+
   /// Hive 플레이리스트 Box 이름.
   static const String hivePlaylistBox = 'playlists';
 

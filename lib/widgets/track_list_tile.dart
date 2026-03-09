@@ -4,14 +4,19 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../l10n/app_localizations.dart';
 import '../models/download_item.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_sizes.dart';
+import '../theme/app_spacing.dart';
+import '../theme/app_text_styles.dart';
+import '../theme/app_theme.dart';
 import '../utils/format_utils.dart';
 
 /// 곡 목록 공통 타일 위젯.
 ///
-/// 썸네일·제목·아티스트·길이를 표시하며, 탭→재생, 점 메뉴→큐 추가 지원.
-/// 큐 화면 등에서 재활용.
+/// 썸네일·제목·아티스트·길이를 표시하며, 탭→재생, 점 메뉴/롱프레스→컨텍스트 메뉴 지원.
+/// 큐·즐겨찾기·플레이리스트 화면 등에서 재활용.
 class TrackListTile extends StatelessWidget {
   final DownloadItem item;
   final VoidCallback? onTap;
@@ -32,6 +37,10 @@ class TrackListTile extends StatelessWidget {
     this.onAddToPlaylist,
   });
 
+  /// 컨텍스트 메뉴 항목 유무.
+  bool get _hasMenuItems =>
+      onAddToQueue != null || onAddToPlaylist != null || onToggleFavorite != null;
+
   @override
   Widget build(BuildContext context) {
     final title = item.fileName.endsWith('.m4a')
@@ -43,27 +52,28 @@ class TrackListTile extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
+        onLongPress: _hasMenuItems ? () => _showContextMenu(context) : null,
+        borderRadius: BorderRadius.circular(AppTheme.radiusMd),
         child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 10),
         decoration: BoxDecoration(
           color: isCurrentTrack
               ? AppColors.primarySurface
               : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppTheme.radiusMd),
         ),
         child: Row(
           children: [
             // 썸네일
             ClipRRect(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(AppTheme.radiusSm),
               child: SizedBox(
-                width: 44,
-                height: 44,
+                width: AppSizes.thumbnailMd,
+                height: AppSizes.thumbnailMd,
                 child: _buildThumbnail(),
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: AppSpacing.md),
             // 곡 정보
             Expanded(
               child: Column(
@@ -73,15 +83,13 @@ class TrackListTile extends StatelessWidget {
                     title,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
+                    style: AppTextStyles.tileTitle.copyWith(
                       color: isCurrentTrack
                           ? AppColors.primaryLight
                           : AppColors.textPrimary,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
                     ),
                   ),
-                  const SizedBox(height: 2),
+                  const SizedBox(height: AppSpacing.xxs),
                   Text(
                     [
                       if (artist.isNotEmpty) artist,
@@ -90,10 +98,7 @@ class TrackListTile extends StatelessWidget {
                     ].join(' · '),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: AppColors.textTertiary,
-                      fontSize: 12,
-                    ),
+                    style: AppTextStyles.caption,
                   ),
                 ],
               ),
@@ -106,14 +111,17 @@ class TrackListTile extends StatelessWidget {
                   color: isFavorite
                       ? AppColors.error
                       : AppColors.textSecondary,
-                  size: 20,
+                  size: AppSizes.iconMd,
                 ),
                 onPressed: () {
                   HapticFeedback.lightImpact();
                   onToggleFavorite?.call();
                 },
                 tooltip: '좋아요',
-                constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+                constraints: const BoxConstraints(
+                  minWidth: AppSizes.touchTarget,
+                  minHeight: AppSizes.touchTarget,
+                ),
                 padding: EdgeInsets.zero,
               ),
             // 점 메뉴
@@ -122,56 +130,115 @@ class TrackListTile extends StatelessWidget {
                 icon: const Icon(
                   Icons.more_vert,
                   color: AppColors.textSecondary,
-                  size: 20,
+                  size: AppSizes.iconMd,
                 ),
                 padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+                constraints: const BoxConstraints(
+                  minWidth: AppSizes.touchTarget,
+                  minHeight: AppSizes.touchTarget,
+                ),
                 color: AppColors.surfaceVariant,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                 ),
-                onSelected: (value) {
-                  switch (value) {
-                    case 'add_to_queue':
-                      onAddToQueue?.call();
-                    case 'add_to_playlist':
-                      onAddToPlaylist?.call();
-                  }
-                },
-                itemBuilder: (context) => [
-                  if (onAddToQueue != null)
-                    const PopupMenuItem(
-                      value: 'add_to_queue',
-                      child: Row(
-                        children: [
-                          Icon(Icons.queue_music, size: 20,
-                              color: AppColors.textSecondary),
-                          SizedBox(width: 12),
-                          Text('바로 다음에 재생',
-                              style: TextStyle(color: AppColors.textPrimary)),
-                        ],
-                      ),
-                    ),
-                  if (onAddToPlaylist != null)
-                    const PopupMenuItem(
-                      value: 'add_to_playlist',
-                      child: Row(
-                        children: [
-                          Icon(Icons.playlist_add, size: 20,
-                              color: AppColors.textSecondary),
-                          SizedBox(width: 12),
-                          Text('플레이리스트에 추가',
-                              style: TextStyle(color: AppColors.textPrimary)),
-                        ],
-                      ),
-                    ),
-                ],
+                onSelected: _onMenuSelected,
+                itemBuilder: (ctx) => _buildMenuItems(ctx),
               ),
           ],
         ),
       ),
       ),
     );
+  }
+
+  /// 롱프레스 시 컨텍스트 메뉴 표시.
+  void _showContextMenu(BuildContext context) {
+    HapticFeedback.mediumImpact();
+    final box = context.findRenderObject() as RenderBox;
+    final offset = box.localToGlobal(Offset.zero);
+
+    showMenu<String>(
+      context: context,
+      position: RelativeRect.fromLTRB(
+        offset.dx + box.size.width * 0.5,
+        offset.dy,
+        offset.dx + box.size.width,
+        offset.dy + box.size.height,
+      ),
+      color: AppColors.surfaceVariant,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+      ),
+      items: _buildMenuItems(context, includeFavorite: true),
+    ).then((value) {
+      if (value != null) _onMenuSelected(value);
+    });
+  }
+
+  /// 메뉴 항목 선택 처리.
+  void _onMenuSelected(String value) {
+    switch (value) {
+      case 'add_to_queue':
+        onAddToQueue?.call();
+      case 'add_to_playlist':
+        onAddToPlaylist?.call();
+      case 'toggle_favorite':
+        HapticFeedback.lightImpact();
+        onToggleFavorite?.call();
+    }
+  }
+
+  /// 팝업 메뉴 항목 빌드.
+  ///
+  /// [includeFavorite]가 true이면 즐겨찾기 토글 항목도 포함 (롱프레스 메뉴용).
+  List<PopupMenuEntry<String>> _buildMenuItems(BuildContext context, {bool includeFavorite = false}) {
+    final l = L.of(context)!;
+    return [
+      if (onAddToQueue != null)
+        PopupMenuItem(
+          value: 'add_to_queue',
+          child: Row(
+            children: [
+              const Icon(Icons.queue_music, size: AppSizes.iconMd,
+                  color: AppColors.textSecondary),
+              const SizedBox(width: AppSpacing.md),
+              Text(l.addToQueue,
+                  style: AppTextStyles.body),
+            ],
+          ),
+        ),
+      if (onAddToPlaylist != null)
+        PopupMenuItem(
+          value: 'add_to_playlist',
+          child: Row(
+            children: [
+              const Icon(Icons.playlist_add, size: AppSizes.iconMd,
+                  color: AppColors.textSecondary),
+              const SizedBox(width: AppSpacing.md),
+              Text(l.addToPlaylist,
+                  style: AppTextStyles.body),
+            ],
+          ),
+        ),
+      if (includeFavorite && onToggleFavorite != null)
+        PopupMenuItem(
+          value: 'toggle_favorite',
+          child: Row(
+            children: [
+              Icon(
+                isFavorite ? Icons.favorite : Icons.favorite_border,
+                size: AppSizes.iconMd,
+                color: isFavorite ? AppColors.error : AppColors.textSecondary,
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Text(
+                isFavorite ? l.unfavorite : l.favorite,
+                style: AppTextStyles.body,
+              ),
+            ],
+          ),
+        ),
+    ];
   }
 
   /// 로컬 파일 경로면 [Image.file], URL이면 [CachedNetworkImage] 반환.
@@ -199,7 +266,7 @@ class TrackListTile extends StatelessWidget {
       child: const Icon(
         Icons.music_note,
         color: AppColors.primaryLight,
-        size: 22,
+        size: AppSizes.iconMl,
       ),
     );
   }

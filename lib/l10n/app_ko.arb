@@ -1,0 +1,123 @@
+{
+  "@@locale": "ko",
+
+  "appTitle": "MyMusicApp",
+
+  "tabHome": "Home",
+  "tabDiscover": "Discover",
+  "tabLibrary": "Library",
+
+  "searchHint": "Search music...",
+  "searchFailed": "검색 실패",
+  "noResults": "결과 없음",
+  "retry": "다시 시도",
+
+  "recentDownloads": "Recent Downloads",
+  "recentDownloadsCount": "Recent Downloads ({count})",
+  "@recentDownloadsCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "recentlyPlayed": "Recently Played",
+  "seeAll": "See All >",
+
+  "download": "Download Audio",
+  "downloadInProgress": "다운로드가 이미 진행 중입니다",
+  "downloadPreparing": "Preparing download...",
+  "downloadComplete": "Download Complete!",
+  "downloadFailed": "Download failed",
+  "downloadSaved": "Saved: {fileName}",
+  "@downloadSaved": {
+    "placeholders": {
+      "fileName": { "type": "String" }
+    }
+  },
+
+  "stream": "Stream",
+  "streamFailed": "Streaming failed",
+
+  "play": "Play",
+  "pause": "Pause",
+  "previous": "Previous",
+  "next": "Next",
+  "shuffle": "Shuffle",
+  "repeat": "Repeat",
+
+  "addToQueue": "바로 다음에 재생",
+  "addedToQueue": "Added to queue",
+  "addToPlaylist": "플레이리스트에 추가",
+  "favorite": "좋아요",
+  "unfavorite": "좋아요 해제",
+
+  "queueTitle": "Queue",
+  "queueCount": "Queue ({count})",
+  "@queueCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "queueEmpty": "Queue is empty",
+  "queueEmptyHint": "Play a song to start your queue",
+
+  "libraryTitle": "My Library",
+  "librarySubtitle": "Your music collection",
+  "favorites": "Favorites",
+  "recent": "Recent",
+  "allSongs": "All Songs",
+  "playlists": "Playlists",
+  "playlistsCount": "Playlists ({count})",
+  "@playlistsCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "createPlaylist": "Create",
+  "noPlaylists": "No playlists yet",
+  "noPlaylistsHint": "Tap \"+ Create\" to make your first playlist",
+
+  "discoverTitle": "Discover",
+  "discoverSubtitle": "Recommendations based on your downloads",
+  "forYou": "For You",
+  "notInterested": "관심 없음",
+  "preparingRecommendations": "새로운 추천을 준비 중입니다",
+  "downloadMoreHint": "더 많은 곡을 다운로드하면 정확한 추천이 가능해요",
+
+  "noDownloads": "No downloads yet",
+  "noDownloadsHint": "Your downloaded audio files will appear here",
+  "noPlays": "No plays yet",
+  "noPlaysHint": "Songs you play will appear here",
+  "noFavorites": "No favorites yet",
+  "noFavoritesHint": "Tap the heart icon to add favorites",
+  "noSongs": "No songs yet",
+  "noSongsHint": "Download songs to build your collection",
+  "noTrackPlaying": "No track playing",
+
+  "delete": "Delete",
+  "deleteConfirm": "Remove this download?",
+  "cancel": "Cancel",
+  "clear": "Clear",
+  "clearHistory": "Clear History",
+  "clearHistoryConfirm": "Are you sure you want to clear all play history?",
+
+  "settings": "설정",
+  "closePlayer": "플레이어 닫기",
+  "openFullPlayer": "전체 플레이어 열기",
+  "cancelDownload": "다운로드 취소",
+  "playQueue": "재생 큐",
+
+  "downloadCompleteNotification": "{title} 다운로드 완료",
+  "@downloadCompleteNotification": {
+    "placeholders": {
+      "title": { "type": "String" }
+    }
+  },
+
+  "trackCount": "{count}곡",
+  "@trackCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  }
+}

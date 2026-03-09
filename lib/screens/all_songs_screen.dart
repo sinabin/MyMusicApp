@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/history_provider.dart';
 import '../providers/player_provider.dart';
 import '../providers/settings_provider.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_sizes.dart';
+import '../theme/app_spacing.dart';
+import '../theme/app_theme.dart';
 import '../widgets/add_to_playlist_sheet.dart';
+import '../widgets/empty_state_widget.dart';
 import '../widgets/song_list_screen.dart';
 
 /// 전체 곡 목록 화면.
@@ -25,29 +30,10 @@ class AllSongsScreen extends StatelessWidget {
           showSortOptions: true,
           showFavoriteButton: true,
           headerWidget: _buildHeaderButtons(context),
-          emptyState: const Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.music_off, size: 48, color: AppColors.textTertiary),
-                SizedBox(height: 12),
-                Text(
-                  'No songs yet',
-                  style: TextStyle(
-                    color: AppColors.textSecondary,
-                    fontSize: 14,
-                  ),
-                ),
-                SizedBox(height: 4),
-                Text(
-                  'Download music to see it here',
-                  style: TextStyle(
-                    color: AppColors.textTertiary,
-                    fontSize: 12,
-                  ),
-                ),
-              ],
-            ),
+          emptyState: const EmptyStateWidget(
+            icon: Icons.music_off,
+            title: 'No songs yet',
+            description: 'Download music to see it here',
           ),
           onTap: (item) {
             final player = context.read<PlayerProvider>();
@@ -61,6 +47,7 @@ class AllSongsScreen extends StatelessWidget {
             }
           },
           onAddToQueue: (item) {
+            HapticFeedback.lightImpact();
             context.read<PlayerProvider>().addToQueue(item);
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('Added to queue')),
@@ -86,7 +73,7 @@ class AllSongsScreen extends StatelessWidget {
               return Container(
                 decoration: BoxDecoration(
                   gradient: AppColors.primaryGradient,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                 ),
                 child: ElevatedButton.icon(
                   onPressed: history.items.isEmpty
@@ -96,15 +83,15 @@ class AllSongsScreen extends StatelessWidget {
                               .read<PlayerProvider>()
                               .playAll(history.items);
                         },
-                  icon: const Icon(Icons.play_arrow, size: 20),
+                  icon: const Icon(Icons.play_arrow, size: AppSizes.iconMd),
                   label: const Text('Play All'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.transparent,
                     shadowColor: Colors.transparent,
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                     ),
                   ),
                 ),
@@ -112,7 +99,7 @@ class AllSongsScreen extends StatelessWidget {
             },
           ),
         ),
-        const SizedBox(width: 12),
+        const SizedBox(width: AppSpacing.md),
         Expanded(
           child: Consumer<HistoryProvider>(
             builder: (context, history, _) {
@@ -124,14 +111,14 @@ class AllSongsScreen extends StatelessWidget {
                         await player.playAll(history.items);
                         await player.toggleShuffle();
                       },
-                icon: const Icon(Icons.shuffle, size: 20),
+                icon: const Icon(Icons.shuffle, size: AppSizes.iconMd),
                 label: const Text('Shuffle'),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppColors.primary,
                   side: const BorderSide(color: AppColors.primary),
-                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                   ),
                 ),
               );

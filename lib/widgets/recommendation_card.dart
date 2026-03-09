@@ -2,6 +2,10 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import '../models/recommendation.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_sizes.dart';
+import '../theme/app_spacing.dart';
+import '../theme/app_text_styles.dart';
+import '../theme/app_theme.dart';
 import '../utils/format_utils.dart';
 
 /// 추천 곡 카드 위젯.
@@ -40,16 +44,16 @@ class RecommendationCard extends StatelessWidget {
       direction: DismissDirection.endToStart,
       background: Container(
         alignment: Alignment.centerRight,
-        padding: const EdgeInsets.only(right: 20),
+        padding: const EdgeInsets.only(right: AppSpacing.xl),
         decoration: BoxDecoration(
           color: AppColors.error.withValues(alpha: 0.2),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppTheme.radiusMd),
         ),
         child: const Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(Icons.not_interested, color: AppColors.error),
-            SizedBox(height: 4),
+            SizedBox(height: AppSpacing.xs),
             Text(
               '관심 없음',
               style: TextStyle(color: AppColors.error, fontSize: 11),
@@ -59,27 +63,30 @@ class RecommendationCard extends StatelessWidget {
       ),
       onDismissed: (_) => onDismiss?.call(),
       child: Container(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
           color: AppColors.surface,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppTheme.radiusMd),
           border: Border.all(color: AppColors.border, width: 1),
         ),
         child: Row(
           children: [
             // 탭 영역: 썸네일 + 정보
             Expanded(
-              child: GestureDetector(
+              child: Semantics(
+                button: true,
+                label: '${recommendation.title}, ${recommendation.channelName}',
+                child: GestureDetector(
                 behavior: HitTestBehavior.opaque,
                 onTap: onTap,
                 child: Row(
                   children: [
                     // 썸네일
                     ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusSm),
                       child: SizedBox(
-                        width: 80,
-                        height: 56,
+                        width: AppSizes.thumbnailXl,
+                        height: AppSizes.searchThumbHeight,
                         child: Stack(
                           fit: StackFit.expand,
                           children: [
@@ -91,7 +98,7 @@ class RecommendationCard extends StatelessWidget {
                                 child: const Icon(
                                   Icons.music_note,
                                   color: AppColors.textTertiary,
-                                  size: 24,
+                                  size: AppSizes.iconLg,
                                 ),
                               ),
                               errorWidget: (_, _, _) => Container(
@@ -99,23 +106,23 @@ class RecommendationCard extends StatelessWidget {
                                 child: const Icon(
                                   Icons.music_note,
                                   color: AppColors.textTertiary,
-                                  size: 24,
+                                  size: AppSizes.iconLg,
                                 ),
                               ),
                             ),
                             // 재생 시간 오버레이
                             if (recommendation.duration != null)
                               Positioned(
-                                right: 4,
-                                bottom: 4,
+                                right: AppSpacing.xs,
+                                bottom: AppSpacing.xs,
                                 child: Container(
                                   padding: const EdgeInsets.symmetric(
-                                    horizontal: 4,
-                                    vertical: 2,
+                                    horizontal: AppSpacing.xs,
+                                    vertical: AppSpacing.xxs,
                                   ),
                                   decoration: BoxDecoration(
                                     color: Colors.black.withValues(alpha: 0.7),
-                                    borderRadius: BorderRadius.circular(4),
+                                    borderRadius: BorderRadius.circular(AppSpacing.xs),
                                   ),
                                   child: Text(
                                     FormatUtils.duration(recommendation.duration!),
@@ -131,7 +138,7 @@ class RecommendationCard extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: AppSpacing.md),
                     // 정보
                     Expanded(
                       child: Column(
@@ -141,13 +148,9 @@ class RecommendationCard extends StatelessWidget {
                             recommendation.title,
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              color: AppColors.textPrimary,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w500,
-                            ),
+                            style: AppTextStyles.bodySmall,
                           ),
-                          const SizedBox(height: 2),
+                          const SizedBox(height: AppSpacing.xxs),
                           Text(
                             recommendation.channelName,
                             maxLines: 1,
@@ -157,15 +160,15 @@ class RecommendationCard extends StatelessWidget {
                               fontSize: 11,
                             ),
                           ),
-                          const SizedBox(height: 4),
+                          const SizedBox(height: AppSpacing.xs),
                           Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 6,
-                              vertical: 2,
+                              vertical: AppSpacing.xxs,
                             ),
                             decoration: BoxDecoration(
                               color: AppColors.primarySurface,
-                              borderRadius: BorderRadius.circular(4),
+                              borderRadius: BorderRadius.circular(AppSpacing.xs),
                             ),
                             child: Text(
                               recommendation.reason,
@@ -183,32 +186,36 @@ class RecommendationCard extends StatelessWidget {
                   ],
                 ),
               ),
+              ),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: AppSpacing.sm),
             // 다운로드 버튼
             IconButton(
+              tooltip: isDownloading ? '다운로드 중' : '다운로드',
               icon: isDownloading
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
+                  ? SizedBox(
+                      width: AppSizes.indicatorSm,
+                      height: AppSizes.indicatorSm,
+                      child: const CircularProgressIndicator(
+                        strokeWidth: AppSizes.strokeWidth,
                         color: AppColors.primary,
                       ),
                     )
                   : const Icon(
                       Icons.download_rounded,
                       color: AppColors.primary,
-                      size: 24,
+                      size: AppSizes.iconLg,
                     ),
               onPressed: isDownloading ? null : onDownload,
               padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+              constraints: const BoxConstraints(
+                minWidth: AppSizes.touchTarget,
+                minHeight: AppSizes.touchTarget,
+              ),
             ),
           ],
         ),
       ),
     );
   }
-
 }

@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 
 import '../models/download_item.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_sizes.dart';
+import '../theme/app_spacing.dart';
+import '../theme/app_theme.dart';
 
 /// 최근 재생 곡을 가로 스크롤로 표시하는 위젯.
 ///
@@ -29,10 +32,10 @@ class RecentPlayHorizontalList extends StatelessWidget {
   Widget build(BuildContext context) {
     final items = tracks.take(10).toList();
     return SizedBox(
-      height: 160,
+      height: AppSizes.recentPlayListHeight,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 24),
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
         itemCount: items.length,
         itemBuilder: (context, index) {
           final item = items[index];
@@ -45,27 +48,27 @@ class RecentPlayHorizontalList extends StatelessWidget {
           return Material(
             color: Colors.transparent,
             child: InkWell(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(AppTheme.radiusMd),
               onTap: () => onTap(item),
               child: Padding(
                 padding: EdgeInsets.only(right: index < items.length - 1 ? 10 : 0),
                 child: SizedBox(
-                  width: 110,
+                  width: AppSizes.recentPlayCardWidth,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Container(
-                        width: 100,
-                        height: 100,
+                        width: AppSizes.thumbnailXxl,
+                        height: AppSizes.thumbnailXxl,
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                           border: isCurrent
                               ? Border.all(color: AppColors.primary, width: 2)
                               : null,
                         ),
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(
-                            isCurrent ? 10 : 12,
+                            isCurrent ? 10 : AppTheme.radiusMd,
                           ),
                           child: item.thumbnailUrl != null
                               ? CachedNetworkImage(
@@ -117,7 +120,7 @@ class RecentPlayHorizontalList extends StatelessWidget {
       child: const Icon(
         Icons.music_note,
         color: AppColors.primaryLight,
-        size: 32,
+        size: AppSizes.iconXxl,
       ),
     );
   }

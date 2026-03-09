@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_durations.dart';
+import '../theme/app_sizes.dart';
+import '../theme/app_spacing.dart';
+import '../theme/app_theme.dart';
 import '../utils/url_validator.dart';
 
 /// YouTube URL 입력 필드 위젯.
@@ -74,9 +78,9 @@ class _UrlInputFieldState extends State<UrlInputField> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
+          duration: AppDurations.normal,
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(AppTheme.radiusLg),
             boxShadow: _isFocused
                 ? [
                     BoxShadow(
@@ -97,7 +101,7 @@ class _UrlInputFieldState extends State<UrlInputField> {
               prefixIcon: const Icon(
                 Icons.play_circle_fill,
                 color: Color(0xFFFF0000),
-                size: 28,
+                size: AppSizes.iconXl,
               ),
               suffixIcon: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -119,12 +123,12 @@ class _UrlInputFieldState extends State<UrlInputField> {
           ),
         ),
         if (_controller.text.isNotEmpty) ...[
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.sm),
           Row(
             children: [
               Icon(
                 _isValid ? Icons.check_circle : Icons.error_outline,
-                size: 16,
+                size: AppSizes.iconSm,
                 color: _isValid ? AppColors.success : AppColors.error,
               ),
               const SizedBox(width: 6),

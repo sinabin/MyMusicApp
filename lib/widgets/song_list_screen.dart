@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import '../models/download_item.dart';
 import '../providers/player_provider.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_spacing.dart';
+import '../theme/app_text_styles.dart';
 import 'empty_state_widget.dart';
 import 'track_list_tile.dart';
 
@@ -102,11 +104,7 @@ class _SongListScreenState extends State<SongListScreen> {
         backgroundColor: AppColors.scaffoldBackground,
         title: Text(
           '${widget.title} (${widget.items.length})',
-          style: const TextStyle(
-            color: AppColors.textPrimary,
-            fontSize: 18,
-            fontWeight: FontWeight.w700,
-          ),
+          style: AppTextStyles.sectionHeader,
         ),
         actions: widget.actions,
       ),
@@ -117,10 +115,10 @@ class _SongListScreenState extends State<SongListScreen> {
                 final sorted = _sortedItems;
                 return ListView.builder(
                   padding: const EdgeInsets.only(
-                    left: 16,
-                    right: 16,
-                    top: 8,
-                    bottom: 16,
+                    left: AppSpacing.lg,
+                    right: AppSpacing.lg,
+                    top: AppSpacing.sm,
+                    bottom: AppSpacing.lg,
                   ),
                   itemCount: sorted.length +
                       (widget.headerWidget != null ? 1 : 0) +
@@ -131,7 +129,7 @@ class _SongListScreenState extends State<SongListScreen> {
                     if (widget.headerWidget != null) {
                       if (index == 0) {
                         return Padding(
-                          padding: const EdgeInsets.only(bottom: 8),
+                          padding: const EdgeInsets.only(bottom: AppSpacing.sm),
                           child: widget.headerWidget,
                         );
                       }
@@ -148,7 +146,7 @@ class _SongListScreenState extends State<SongListScreen> {
                     final itemIndex = index - offset;
                     final item = sorted[itemIndex];
                     return Padding(
-                      padding: const EdgeInsets.only(bottom: 4),
+                      padding: const EdgeInsets.only(bottom: AppSpacing.xs),
                       child: TrackListTile(
                         item: item,
                         isCurrentTrack:
@@ -175,13 +173,13 @@ class _SongListScreenState extends State<SongListScreen> {
 
   Widget _buildSortChips() {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
       child: Row(
         children: [
           _sortChip('Recent', _SortOption.recent),
-          const SizedBox(width: 8),
+          const SizedBox(width: AppSpacing.sm),
           _sortChip('Name', _SortOption.name),
-          const SizedBox(width: 8),
+          const SizedBox(width: AppSpacing.sm),
           _sortChip('Duration', _SortOption.duration),
         ],
       ),

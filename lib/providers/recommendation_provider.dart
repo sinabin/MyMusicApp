@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import '../data/dismissed_recommendation_db.dart';
+import '../models/app_exception.dart';
 import '../models/recommendation.dart';
 import '../services/recommendation/recommendation_service.dart';
 
@@ -49,7 +50,7 @@ class RecommendationProvider extends ChangeNotifier {
       _cachedAt = DateTime.now();
     } catch (e) {
       debugPrint('[RecommendationProvider] Error: $e');
-      _error = '추천을 불러올 수 없습니다';
+      _error = e is AppException ? e.userMessage : '추천을 불러올 수 없습니다';
     } finally {
       _isLoading = false;
       notifyListeners();

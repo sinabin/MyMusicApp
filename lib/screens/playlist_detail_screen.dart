@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
@@ -14,8 +15,13 @@ import '../providers/playlist_provider.dart';
 import '../providers/settings_provider.dart';
 import '../services/file_service.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_sizes.dart';
+import '../theme/app_spacing.dart';
+import '../theme/app_text_styles.dart';
+import '../theme/app_theme.dart';
 import '../utils/format_utils.dart';
 import '../widgets/add_to_playlist_sheet.dart';
+import '../widgets/empty_state_widget.dart';
 import '../widgets/playlist_mosaic_art.dart';
 import '../widgets/track_list_tile.dart';
 
@@ -60,11 +66,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                     widget.playlist.name,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: AppColors.textPrimary,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                    ),
+                    style: AppTextStyles.sectionHeader.copyWith(fontSize: 16),
                   ),
                   background: Container(
                     decoration: const BoxDecoration(
@@ -84,16 +86,13 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                           const SizedBox(height: 60),
                           PlaylistMosaicArt(
                             thumbnailUrls: urls,
-                            size: 160,
-                            borderRadius: 16,
+                            size: AppSizes.thumbnailHero,
+                            borderRadius: AppTheme.radiusLg,
                           ),
-                          const SizedBox(height: 16),
+                          const SizedBox(height: AppSpacing.lg),
                           Text(
                             meta,
-                            style: const TextStyle(
-                              color: AppColors.textSecondary,
-                              fontSize: 13,
-                            ),
+                            style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
                           ),
                         ],
                       ),
@@ -108,7 +107,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                     ),
                     color: AppColors.surfaceVariant,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                     ),
                     onSelected: (value) {
                       switch (value) {
@@ -119,26 +118,26 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                       }
                     },
                     itemBuilder: (context) => [
-                      const PopupMenuItem(
+                      PopupMenuItem(
                         value: 'rename',
                         child: Row(
                           children: [
-                            Icon(Icons.edit, size: 20,
+                            Icon(Icons.edit, size: AppSizes.iconMd,
                                 color: AppColors.textSecondary),
-                            SizedBox(width: 12),
+                            SizedBox(width: AppSpacing.md),
                             Text('Rename',
                                 style: TextStyle(
                                     color: AppColors.textPrimary)),
                           ],
                         ),
                       ),
-                      const PopupMenuItem(
+                      PopupMenuItem(
                         value: 'delete',
                         child: Row(
                           children: [
-                            Icon(Icons.delete, size: 20,
+                            Icon(Icons.delete, size: AppSizes.iconMd,
                                 color: AppColors.error),
-                            SizedBox(width: 12),
+                            SizedBox(width: AppSpacing.md),
                             Text('Delete',
                                 style: TextStyle(color: AppColors.error)),
                           ],
@@ -152,14 +151,14 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
               // Play All / Shuffle
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
+                  padding: const EdgeInsets.fromLTRB(AppSpacing.xxl, AppSpacing.sm, AppSpacing.xxl, AppSpacing.lg),
                   child: Row(
                     children: [
                       Expanded(
                         child: Container(
                           decoration: BoxDecoration(
                             gradient: AppColors.primaryGradient,
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                           ),
                           child: ElevatedButton.icon(
                             onPressed: tracks.isEmpty
@@ -169,23 +168,23 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                                         .read<PlayerProvider>()
                                         .playAll(tracks);
                                   },
-                            icon: const Icon(Icons.play_arrow, size: 20),
+                            icon: const Icon(Icons.play_arrow, size: AppSizes.iconMd),
                             label: const Text('Play All'),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.transparent,
                               shadowColor: Colors.transparent,
                               foregroundColor: Colors.white,
                               padding: const EdgeInsets.symmetric(
-                                vertical: 12,
+                                vertical: AppSpacing.md,
                               ),
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                               ),
                             ),
                           ),
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: AppSpacing.md),
                       Expanded(
                         child: OutlinedButton.icon(
                           onPressed: tracks.isEmpty
@@ -196,17 +195,17 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                                   await player.playAll(tracks);
                                   await player.toggleShuffle();
                                 },
-                          icon: const Icon(Icons.shuffle, size: 20),
+                          icon: const Icon(Icons.shuffle, size: AppSizes.iconMd),
                           label: const Text('Shuffle'),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: AppColors.primary,
                             side:
                                 const BorderSide(color: AppColors.primary),
                             padding: const EdgeInsets.symmetric(
-                              vertical: 12,
+                              vertical: AppSpacing.md,
                             ),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                             ),
                           ),
                         ),
@@ -221,15 +220,12 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                 SliverToBoxAdapter(
                   child: Padding(
                     padding:
-                        const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
+                        const EdgeInsets.symmetric(horizontal: AppSpacing.xxl, vertical: AppSpacing.xs),
                     child: Row(
                       children: [
                         Text(
                           '${tracks.length} tracks',
-                          style: const TextStyle(
-                            color: AppColors.textTertiary,
-                            fontSize: 13,
-                          ),
+                          style: AppTextStyles.bodySmall.copyWith(color: AppColors.textTertiary),
                         ),
                         const Spacer(),
                         TextButton.icon(
@@ -237,7 +233,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                               setState(() => _isEditing = !_isEditing),
                           icon: Icon(
                             _isEditing ? Icons.check : Icons.swap_vert,
-                            size: 18,
+                            size: AppSizes.iconMsl,
                           ),
                           label: Text(_isEditing ? 'Done' : 'Reorder'),
                           style: TextButton.styleFrom(
@@ -245,7 +241,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                                 ? AppColors.primary
                                 : AppColors.textSecondary,
                             padding:
-                                const EdgeInsets.symmetric(horizontal: 8),
+                                const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
                           ),
                         ),
                       ],
@@ -256,40 +252,18 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
               // Track list
               if (tracks.isEmpty)
                 SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.all(32),
-                    child: Column(
-                      children: [
-                        const Icon(
-                          Icons.music_off,
-                          color: AppColors.textTertiary,
-                          size: 48,
-                        ),
-                        const SizedBox(height: 12),
-                        const Text(
-                          'This playlist is empty',
-                          style: TextStyle(
-                            color: AppColors.textSecondary,
-                            fontSize: 14,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        TextButton.icon(
-                          onPressed: () =>
-                              _showAddSongsSheet(context, provider),
-                          icon: const Icon(Icons.add, size: 18),
-                          label: const Text('Add Songs'),
-                          style: TextButton.styleFrom(
-                            foregroundColor: AppColors.primary,
-                          ),
-                        ),
-                      ],
-                    ),
+                  child: EmptyStateWidget(
+                    icon: Icons.music_off,
+                    title: 'This playlist is empty',
+                    description: null,
+                    actionLabel: 'Add Songs',
+                    actionIcon: Icons.add,
+                    onAction: () => _showAddSongsSheet(context, provider),
                   ),
                 )
               else if (_isEditing)
                 SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
                   sliver: SliverReorderableList(
                     itemCount: tracks.length,
                     onReorder: (oldIndex, newIndex) {
@@ -306,7 +280,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                             'reorder_${widget.playlist.id}_${item.videoId}'),
                         index: index,
                         child: Padding(
-                          padding: const EdgeInsets.only(bottom: 4),
+                          padding: const EdgeInsets.only(bottom: AppSpacing.xs),
                           child: Consumer<PlayerProvider>(
                             builder: (context, player, _) {
                               return Row(
@@ -326,6 +300,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                                             );
                                       },
                                       onAddToQueue: () {
+                                        HapticFeedback.lightImpact();
                                         context
                                             .read<PlayerProvider>()
                                             .addToQueue(item);
@@ -354,7 +329,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                                   const Icon(
                                     Icons.drag_handle,
                                     color: AppColors.textTertiary,
-                                    size: 20,
+                                    size: AppSizes.iconMd,
                                   ),
                                 ],
                               );
@@ -367,7 +342,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                 )
               else
                 SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
                   sliver: SliverList(
                     delegate: SliverChildBuilderDelegate(
                       (context, index) {
@@ -378,11 +353,11 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                           direction: DismissDirection.endToStart,
                           background: Container(
                             alignment: Alignment.centerRight,
-                            padding: const EdgeInsets.only(right: 20),
+                            padding: const EdgeInsets.only(right: AppSpacing.xl),
                             decoration: BoxDecoration(
                               color:
                                   AppColors.error.withValues(alpha: 0.2),
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                             ),
                             child: const Icon(
                               Icons.delete,
@@ -427,7 +402,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                           child: Consumer<PlayerProvider>(
                             builder: (context, player, _) {
                               return Padding(
-                                padding: const EdgeInsets.only(bottom: 4),
+                                padding: const EdgeInsets.only(bottom: AppSpacing.xs),
                                 child: TrackListTile(
                                   item: item,
                                   isCurrentTrack:
@@ -442,6 +417,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                                         );
                                   },
                                   onAddToQueue: () {
+                                    HapticFeedback.lightImpact();
                                     context
                                         .read<PlayerProvider>()
                                         .addToQueue(item);
@@ -481,13 +457,13 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 8,
+                      horizontal: AppSpacing.xxl,
+                      vertical: AppSpacing.sm,
                     ),
                     child: TextButton.icon(
                       onPressed: () =>
                           _showAddSongsSheet(context, provider),
-                      icon: const Icon(Icons.add, size: 18),
+                      icon: const Icon(Icons.add, size: AppSizes.iconMsl),
                       label: const Text('Add Songs'),
                       style: TextButton.styleFrom(
                         foregroundColor: AppColors.primary,
@@ -498,7 +474,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
 
               // Bottom padding
               const SliverToBoxAdapter(
-                child: SizedBox(height: 32),
+                child: SizedBox(height: AppSpacing.xxxl),
               ),
             ],
           );
@@ -525,7 +501,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
             filled: true,
             fillColor: AppColors.surfaceVariant,
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(AppTheme.radiusMd),
               borderSide: BorderSide.none,
             ),
           ),
@@ -539,6 +515,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
             onPressed: () {
               final name = controller.text.trim();
               if (name.isNotEmpty) {
+                HapticFeedback.lightImpact();
                 provider.renamePlaylist(widget.playlist, name);
                 Navigator.pop(ctx);
               }
@@ -570,6 +547,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
           ),
           TextButton(
             onPressed: () {
+              HapticFeedback.mediumImpact();
               provider.deletePlaylist(widget.playlist);
               Navigator.pop(ctx);
               Navigator.pop(context);
@@ -758,36 +736,32 @@ class _AddSongsSheetState extends State<_AddSongsSheet> {
       ),
       decoration: const BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppTheme.radiusXl)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           // 드래그 핸들
           Padding(
-            padding: const EdgeInsets.only(top: 12, bottom: 8),
+            padding: const EdgeInsets.only(top: AppSpacing.md, bottom: AppSpacing.sm),
             child: Container(
-              width: 40,
-              height: 4,
+              width: AppSizes.handleWidth,
+              height: AppSizes.handleHeight,
               decoration: BoxDecoration(
                 color: AppColors.textTertiary,
-                borderRadius: BorderRadius.circular(2),
+                borderRadius: BorderRadius.circular(AppSpacing.xxs),
               ),
             ),
           ),
           // 헤더
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl, vertical: AppSpacing.sm),
             child: Row(
               children: [
-                const Expanded(
+                Expanded(
                   child: Text(
                     'Add Songs',
-                    style: TextStyle(
-                      color: AppColors.textPrimary,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                    ),
+                    style: AppTextStyles.sectionHeader,
                   ),
                 ),
                 if (!_loading && _available.isNotEmpty)
@@ -795,11 +769,11 @@ class _AddSongsSheetState extends State<_AddSongsSheet> {
                     onPressed: _toggleAll,
                     style: TextButton.styleFrom(
                       foregroundColor: AppColors.primary,
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
                     ),
                     child: Text(_allSelected ? 'Deselect All' : 'Select All'),
                   ),
-                const SizedBox(width: 4),
+                const SizedBox(width: AppSpacing.xs),
                 IconButton(
                   icon: const Icon(
                     Icons.close,
@@ -812,7 +786,7 @@ class _AddSongsSheetState extends State<_AddSongsSheet> {
           ),
           // 경로 표시
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
             child: Row(
               children: [
                 const Icon(
@@ -835,19 +809,19 @@ class _AddSongsSheetState extends State<_AddSongsSheet> {
               ],
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.sm),
           const Divider(color: AppColors.divider, height: 1),
           // 곡 목록
           Flexible(
             child: _loading
                 ? const Padding(
-                    padding: EdgeInsets.all(32),
+                    padding: EdgeInsets.all(AppSpacing.xxxl),
                     child: Center(
                       child: SizedBox(
-                        width: 24,
-                        height: 24,
+                        width: AppSizes.indicatorMd,
+                        height: AppSizes.indicatorMd,
                         child: CircularProgressIndicator(
-                          strokeWidth: 2,
+                          strokeWidth: AppSizes.strokeWidth,
                           color: AppColors.primary,
                         ),
                       ),
@@ -856,14 +830,14 @@ class _AddSongsSheetState extends State<_AddSongsSheet> {
                 : _available.isEmpty
                     ? Padding(
                         padding: EdgeInsets.fromLTRB(
-                            32, 32, 32, 32 + bottomPadding),
+                            AppSpacing.xxxl, AppSpacing.xxxl, AppSpacing.xxxl, AppSpacing.xxxl + bottomPadding),
                         child: const Text(
                           'No songs available to add',
                           style: TextStyle(color: AppColors.textTertiary),
                         ),
                       )
                     : ListView.builder(
-                        padding: const EdgeInsets.symmetric(vertical: 4),
+                        padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
                         itemCount: _available.length,
                         itemBuilder: (context, index) {
                           final item = _available[index];
@@ -880,7 +854,7 @@ class _AddSongsSheetState extends State<_AddSongsSheet> {
           // 추가 버튼
           if (!_loading && _available.isNotEmpty)
             Container(
-              padding: EdgeInsets.fromLTRB(24, 12, 24, 12 + bottomPadding),
+              padding: EdgeInsets.fromLTRB(AppSpacing.xxl, AppSpacing.md, AppSpacing.xxl, AppSpacing.md + bottomPadding),
               decoration: const BoxDecoration(
                 border: Border(
                   top: BorderSide(color: AppColors.divider),
@@ -899,7 +873,7 @@ class _AddSongsSheetState extends State<_AddSongsSheet> {
                       color: _selectedIds.isEmpty
                           ? AppColors.surfaceVariant
                           : null,
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                     ),
                     child: ElevatedButton(
                       onPressed:
@@ -913,7 +887,7 @@ class _AddSongsSheetState extends State<_AddSongsSheet> {
                         padding:
                             const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                         ),
                       ),
                       child: Text(
@@ -958,7 +932,7 @@ class _SelectableTrackTile extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: 10),
         color: selected
             ? AppColors.primarySurface.withValues(alpha: 0.3)
             : Colors.transparent,
@@ -970,15 +944,15 @@ class _SelectableTrackTile extends StatelessWidget {
                   ? Icons.check_circle_rounded
                   : Icons.radio_button_unchecked,
               color: selected ? AppColors.primary : AppColors.textTertiary,
-              size: 22,
+              size: AppSizes.iconMl,
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: AppSpacing.md),
             // 썸네일
             ClipRRect(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(AppTheme.radiusSm),
               child: SizedBox(
-                width: 44,
-                height: 44,
+                width: AppSizes.thumbnailMd,
+                height: AppSizes.thumbnailMd,
                 child: item.thumbnailUrl != null
                     ? CachedNetworkImage(
                         imageUrl: item.thumbnailUrl!,
@@ -993,7 +967,7 @@ class _SelectableTrackTile extends StatelessWidget {
                     : _placeholder(),
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: AppSpacing.md),
             // 곡 정보
             Expanded(
               child: Column(
@@ -1012,15 +986,12 @@ class _SelectableTrackTile extends StatelessWidget {
                     ),
                   ),
                   if (artist.isNotEmpty) ...[
-                    const SizedBox(height: 2),
+                    const SizedBox(height: AppSpacing.xxs),
                     Text(
                       artist,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: AppColors.textTertiary,
-                        fontSize: 12,
-                      ),
+                      style: AppTextStyles.caption,
                     ),
                   ],
                 ],
@@ -1038,7 +1009,7 @@ class _SelectableTrackTile extends StatelessWidget {
       child: const Icon(
         Icons.music_note,
         color: AppColors.primaryLight,
-        size: 22,
+        size: AppSizes.iconMl,
       ),
     );
   }

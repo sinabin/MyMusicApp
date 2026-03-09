@@ -1,0 +1,93 @@
+{
+  "@@locale": "en",
+
+  "appTitle": "MyMusicApp",
+
+  "tabHome": "Home",
+  "tabDiscover": "Discover",
+  "tabLibrary": "Library",
+
+  "searchHint": "Search music...",
+  "searchFailed": "Search failed",
+  "noResults": "No results found",
+  "retry": "Retry",
+
+  "recentDownloads": "Recent Downloads",
+  "recentDownloadsCount": "Recent Downloads ({count})",
+
+  "recentlyPlayed": "Recently Played",
+  "seeAll": "See All >",
+
+  "download": "Download Audio",
+  "downloadInProgress": "A download is already in progress",
+  "downloadPreparing": "Preparing download...",
+  "downloadComplete": "Download Complete!",
+  "downloadFailed": "Download failed",
+  "downloadSaved": "Saved: {fileName}",
+
+  "stream": "Stream",
+  "streamFailed": "Streaming failed",
+
+  "play": "Play",
+  "pause": "Pause",
+  "previous": "Previous",
+  "next": "Next",
+  "shuffle": "Shuffle",
+  "repeat": "Repeat",
+
+  "addToQueue": "Play next",
+  "addedToQueue": "Added to queue",
+  "addToPlaylist": "Add to playlist",
+  "favorite": "Favorite",
+  "unfavorite": "Remove favorite",
+
+  "queueTitle": "Queue",
+  "queueCount": "Queue ({count})",
+  "queueEmpty": "Queue is empty",
+  "queueEmptyHint": "Play a song to start your queue",
+
+  "libraryTitle": "My Library",
+  "librarySubtitle": "Your music collection",
+  "favorites": "Favorites",
+  "recent": "Recent",
+  "allSongs": "All Songs",
+  "playlists": "Playlists",
+  "playlistsCount": "Playlists ({count})",
+  "createPlaylist": "Create",
+  "noPlaylists": "No playlists yet",
+  "noPlaylistsHint": "Tap \"+ Create\" to make your first playlist",
+
+  "discoverTitle": "Discover",
+  "discoverSubtitle": "Recommendations based on your downloads",
+  "forYou": "For You",
+  "notInterested": "Not interested",
+  "preparingRecommendations": "Preparing new recommendations",
+  "downloadMoreHint": "Download more songs for better recommendations",
+
+  "noDownloads": "No downloads yet",
+  "noDownloadsHint": "Your downloaded audio files will appear here",
+  "noPlays": "No plays yet",
+  "noPlaysHint": "Songs you play will appear here",
+  "noFavorites": "No favorites yet",
+  "noFavoritesHint": "Tap the heart icon to add favorites",
+  "noSongs": "No songs yet",
+  "noSongsHint": "Download songs to build your collection",
+  "noTrackPlaying": "No track playing",
+
+  "delete": "Delete",
+  "deleteConfirm": "Remove this download?",
+  "cancel": "Cancel",
+  "clear": "Clear",
+  "clearHistory": "Clear History",
+  "clearHistoryConfirm": "Are you sure you want to clear all play history?",
+
+  "settings": "Settings",
+  "closePlayer": "Close player",
+  "openFullPlayer": "Open full player",
+  "cancelDownload": "Cancel download",
+  "playQueue": "Play queue",
+
+  "downloadCompleteNotification": "{title} downloaded",
+
+  "trackCount": "{count} songs"
+}

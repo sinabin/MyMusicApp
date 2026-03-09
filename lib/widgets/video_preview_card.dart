@@ -3,6 +3,10 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:shimmer/shimmer.dart';
 import '../models/video_info.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_sizes.dart';
+import '../theme/app_spacing.dart';
+import '../theme/app_text_styles.dart';
+import '../theme/app_theme.dart';
 
 /// 조회된 YouTube 영상의 썸네일·제목·채널·재생 시간을 미리보기로 표시하는 카드 위젯.
 ///
@@ -16,35 +20,35 @@ class VideoPreviewCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(AppSpacing.md),
         child: Row(
           children: [
             // Thumbnail
             ClipRRect(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(AppTheme.radiusMd),
               child: CachedNetworkImage(
                 imageUrl: videoInfo.thumbnailUrl,
-                width: 120,
-                height: 68,
+                width: AppSizes.videoPreviewWidth,
+                height: AppSizes.videoPreviewHeight,
                 fit: BoxFit.cover,
                 placeholder: (context, url) => Shimmer.fromColors(
                   baseColor: AppColors.surfaceVariant,
                   highlightColor: AppColors.surfaceLight,
                   child: Container(
-                    width: 120,
-                    height: 68,
+                    width: AppSizes.videoPreviewWidth,
+                    height: AppSizes.videoPreviewHeight,
                     color: AppColors.surfaceVariant,
                   ),
                 ),
                 errorWidget: (context, url, error) => Container(
-                  width: 120,
-                  height: 68,
+                  width: AppSizes.videoPreviewWidth,
+                  height: AppSizes.videoPreviewHeight,
                   color: AppColors.surfaceVariant,
                   child: const Icon(Icons.music_note, color: AppColors.textTertiary),
                 ),
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: AppSpacing.md),
             // Info
             Expanded(
               child: Column(
@@ -54,27 +58,24 @@ class VideoPreviewCard extends StatelessWidget {
                     videoInfo.title,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: AppColors.textPrimary,
-                      fontSize: 14,
+                    style: AppTextStyles.tileTitle.copyWith(
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: AppSpacing.xs),
                   Text(
                     videoInfo.channelName,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
+                    style: AppTextStyles.caption.copyWith(
                       color: AppColors.textSecondary,
-                      fontSize: 12,
                     ),
                   ),
                   const SizedBox(height: 6),
                   Row(
                     children: [
                       _chip(Icons.access_time, videoInfo.formattedDuration),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: AppSpacing.sm),
                       _chip(Icons.audiotrack, 'Audio'),
                     ],
                   ),
@@ -89,16 +90,16 @@ class VideoPreviewCard extends StatelessWidget {
 
   Widget _chip(IconData icon, String label) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: 3),
       decoration: BoxDecoration(
         color: AppColors.primarySurface,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(AppTheme.radiusSm),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 12, color: AppColors.primaryLight),
-          const SizedBox(width: 4),
+          Icon(icon, size: AppSizes.iconXxs, color: AppColors.primaryLight),
+          const SizedBox(width: AppSpacing.xs),
           Text(
             label,
             style: const TextStyle(
@@ -121,30 +122,30 @@ class VideoPreviewShimmer extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(AppSpacing.md),
         child: Shimmer.fromColors(
           baseColor: AppColors.surfaceVariant,
           highlightColor: AppColors.surfaceLight,
           child: Row(
             children: [
               Container(
-                width: 120,
-                height: 68,
+                width: AppSizes.videoPreviewWidth,
+                height: AppSizes.videoPreviewHeight,
                 decoration: BoxDecoration(
                   color: AppColors.surfaceVariant,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: AppSpacing.md),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Container(height: 14, color: AppColors.surfaceVariant),
                     const SizedBox(height: 6),
-                    Container(height: 14, width: 120, color: AppColors.surfaceVariant),
+                    Container(height: 14, width: AppSizes.videoPreviewWidth, color: AppColors.surfaceVariant),
                     const SizedBox(height: 6),
-                    Container(height: 12, width: 80, color: AppColors.surfaceVariant),
+                    Container(height: 12, width: AppSizes.thumbnailXl, color: AppColors.surfaceVariant),
                   ],
                 ),
               ),
