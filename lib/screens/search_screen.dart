@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 import '../models/app_exception.dart';
+import '../models/download_item.dart';
 import '../models/video_info.dart';
 import '../providers/download_provider.dart';
 import '../providers/history_provider.dart';
+import '../providers/player_provider.dart';
 import '../providers/recommendation_provider.dart';
 import '../providers/search_provider.dart';
 import '../providers/settings_provider.dart';
@@ -35,10 +37,16 @@ class _SearchScreenState extends State<SearchScreen> {
   final _focusNode = FocusNode();
   final _scrollController = ScrollController();
 
+  /// 스트리밍 준비 중인 영상 ID.
+  String? _streamingVideoId;
+
   @override
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _focusNode.requestFocus();
+    });
   }
 
   @override
@@ -126,6 +134,41 @@ class _SearchScreenState extends State<SearchScreen> {
     }
   }
 
+  Future<void> _onStreamTap(VideoInfo info) async {
+    if (_streamingVideoId != null) return;
+    setState(() => _streamingVideoId = info.videoId);
+
+    try {
+      final youtubeService = context.read<YouTubeService>();
+      final streamUrl = await youtubeService.getAudioStreamUrl(info.videoId);
+
+      if (!mounted) return;
+
+      final streamItem = DownloadItem.streaming(
+        videoId: info.videoId,
+        title: info.title,
+        streamUrl: streamUrl.toString(),
+        thumbnailUrl: info.thumbnailUrl,
+        channelName: info.channelName,
+        channelId: info.channelId,
+        artistName: info.artistName,
+        keywords: info.keywords,
+        durationInMs: info.duration.inMilliseconds,
+      );
+
+      context.read<PlayerProvider>().playTrack(streamItem);
+    } catch (e) {
+      if (mounted) {
+        final msg = e is AppException ? e.userMessage : 'Streaming failed';
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(msg)),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _streamingVideoId = null);
+    }
+  }
+
   void _showDownloadSheet(VideoInfo info) {
     DownloadConfirmSheet.show(
       context,
@@ -134,18 +177,33 @@ class _SearchScreenState extends State<SearchScreen> {
         Navigator.of(context).pop();
         _onDownloadTap(info);
       },
+      onStream: () {
+        Navigator.of(context).pop();
+        _onStreamTap(info);
+      },
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            context.read<SearchProvider>().clear();
+            Navigator.pop(context);
+          },
+        ),
+        title: const Text('검색'),
+      ),
       body: SafeArea(
         child: Column(
           children: [
-            // 상단 여백 + 검색바
+            // 검색바
             Padding(
-              padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.sm),
+              padding: const EdgeInsets.fromLTRB(AppSpacing.lg, 0, AppSpacing.lg, AppSpacing.sm),
               child: _buildSearchBar(),
             ),
             // 결과 영역
@@ -327,7 +385,9 @@ class _SearchScreenState extends State<SearchScreen> {
               videoInfo: result,
               onTap: () => _onResultTap(result),
               onDownload: () => _onDownloadTap(result),
+              onStream: () => _onStreamTap(result),
               isDownloading: isThisDownloading,
+              isStreamLoading: _streamingVideoId == result.videoId,
               downloadDisabled: isActive && !isThisDownloading,
             ).animate().fadeIn(
                   duration: AppDurations.fast,
