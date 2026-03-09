@@ -52,8 +52,11 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
       body: Consumer<PlaylistProvider>(
         builder: (context, provider, _) {
           final tracks = provider.getTracksForPlaylist(widget.playlist);
-          final urls =
-              tracks.take(4).map((t) => t.thumbnailUrl).toList();
+          final fileService = context.read<FileService>();
+          final urls = tracks
+              .take(4)
+              .map((t) => _resolveThumbUrl(t, fileService))
+              .toList();
           final meta =
               '${FormatUtils.trackCount(tracks.length)} · ${FormatUtils.totalDuration(tracks)}';
 
@@ -596,6 +599,14 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
       ),
     );
   }
+
+  /// 로컬 썸네일 경로 우선 해결. 네트워크 URL 폴백.
+  String? _resolveThumbUrl(DownloadItem t, FileService fileService) {
+    final url = t.thumbnailUrl;
+    if (url == null) return null;
+    if (url.startsWith('/')) return url;
+    return fileService.getLocalThumbnailPathSync(t.fileName) ?? url;
+  }
 }
 
 /// DB 조회 및 디렉토리 스캔으로 추가 가능한 곡을 표시하는 바텀시트.
@@ -1034,4 +1045,5 @@ class _SelectableTrackTile extends StatelessWidget {
       ),
     );
   }
+
 }

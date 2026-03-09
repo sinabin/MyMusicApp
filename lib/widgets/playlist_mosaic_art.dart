@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
@@ -65,8 +67,16 @@ class PlaylistMosaicArt extends StatelessWidget {
     return Wrap(children: cells);
   }
 
+  /// 로컬 파일 우선, 네트워크 URL 폴백으로 썸네일 반환.
   Widget _imageOrPlaceholder(BuildContext context, String? url) {
     if (url == null) return _placeholder(context);
+    if (url.startsWith('/')) {
+      return Image.file(
+        File(url),
+        fit: BoxFit.cover,
+        errorBuilder: (_, _, _) => _placeholder(context),
+      );
+    }
     return CachedNetworkImage(
       imageUrl: url,
       fit: BoxFit.cover,

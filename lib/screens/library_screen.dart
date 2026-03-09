@@ -372,9 +372,10 @@ class _LibraryScreenState extends State<LibraryScreen> {
                         final playlist = provider.playlists[index];
                         final tracks =
                             provider.getTracksForPlaylist(playlist);
+                        final fileService = context.read<FileService>();
                         final urls = tracks
                             .take(4)
-                            .map((t) => t.thumbnailUrl)
+                            .map((t) => _resolveThumbUrl(t, fileService))
                             .toList();
                         return Padding(
                           padding: const EdgeInsets.only(bottom: AppSpacing.sm),
@@ -413,5 +414,13 @@ class _LibraryScreenState extends State<LibraryScreen> {
         ),
       ),
     );
+  }
+
+  /// 로컬 썸네일 경로 우선 해결. 네트워크 URL 폴백.
+  String? _resolveThumbUrl(DownloadItem t, FileService fileService) {
+    final url = t.thumbnailUrl;
+    if (url == null) return null;
+    if (url.startsWith('/')) return url;
+    return fileService.getLocalThumbnailPathSync(t.fileName) ?? url;
   }
 }
