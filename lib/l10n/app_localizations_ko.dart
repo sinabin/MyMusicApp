@@ -15,7 +15,7 @@ class LKo extends L {
   String get tabHome => '홈';
 
   @override
-  String get tabDiscover => '발견';
+  String get tabDiscover => '추천';
 
   @override
   String get tabLibrary => '보관함';
@@ -152,7 +152,7 @@ class LKo extends L {
   String get noPlaylistsHint => '\"+ 만들기\"를 눌러 첫 플레이리스트를 만들어보세요';
 
   @override
-  String get discoverTitle => '발견';
+  String get discoverTitle => '추천';
 
   @override
   String get discoverSubtitle => '다운로드한 곡 기반 추천';

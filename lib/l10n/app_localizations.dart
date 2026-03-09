@@ -112,7 +112,7 @@ abstract class L {
   /// No description provided for @tabDiscover.
   ///
   /// In ko, this message translates to:
-  /// **'발견'**
+  /// **'추천'**
   String get tabDiscover;
 
   /// No description provided for @tabLibrary.
@@ -370,7 +370,7 @@ abstract class L {
   /// No description provided for @discoverTitle.
   ///
   /// In ko, this message translates to:
-  /// **'발견'**
+  /// **'추천'**
   String get discoverTitle;
 
   /// No description provided for @discoverSubtitle.

@@ -52,8 +52,8 @@ class _MainShellState extends State<MainShell> {
               label: L.of(context)!.tabHome,
             ),
             NavigationDestination(
-              icon: const Icon(Icons.explore_outlined),
-              selectedIcon: const Icon(Icons.explore),
+              icon: const Icon(Icons.auto_awesome_outlined),
+              selectedIcon: const Icon(Icons.auto_awesome),
               label: L.of(context)!.tabDiscover,
             ),
             NavigationDestination(

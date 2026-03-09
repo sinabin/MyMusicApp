@@ -4,7 +4,7 @@
   "appTitle": "MyMusicApp",
 
   "tabHome": "홈",
-  "tabDiscover": "발견",
+  "tabDiscover": "추천",
   "tabLibrary": "보관함",
 
   "searchHint": "음악 검색...",
@@ -77,7 +77,7 @@
   "noPlaylists": "플레이리스트가 없어요",
   "noPlaylistsHint": "\"+ 만들기\"를 눌러 첫 플레이리스트를 만들어보세요",
 
-  "discoverTitle": "발견",
+  "discoverTitle": "추천",
   "discoverSubtitle": "다운로드한 곡 기반 추천",
   "forYou": "맞춤 추천",
   "notInterested": "관심 없음",
