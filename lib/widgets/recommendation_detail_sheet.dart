@@ -390,6 +390,8 @@ class _RecommendationDetailSheetState
         return '채널 기반 추천';
       case RecommendationSource.search:
         return '검색 기반 추천';
+      case RecommendationSource.trending:
+        return '트렌딩 기반 추천';
     }
   }
 }

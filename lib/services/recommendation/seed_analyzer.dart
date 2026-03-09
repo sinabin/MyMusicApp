@@ -1,4 +1,5 @@
 import '../../models/download_item.dart';
+import '../../models/playback_record.dart';
 
 /// 시드 추출 결과 데이터.
 class SeedData {
@@ -30,6 +31,64 @@ class SeedAnalyzer {
       topChannelId: _pickTopChannel(history),
       searchQuery: _buildSearchQuery(history),
     );
+  }
+
+  /// 재생 기록 가중치를 적용한 시드 추출.
+  ///
+  /// [playbackRecords]의 재생 빈도가 높은 아티스트/채널에 가중치를 부여하여
+  /// 보다 정확한 추천 시드 생성.
+  SeedData analyzeWeighted(
+    List<DownloadItem> history,
+    List<PlaybackRecord> playbackRecords,
+  ) {
+    if (playbackRecords.isEmpty) return analyze(history);
+
+    // 재생 빈도 계산: videoId → 재생 횟수
+    final playCount = <String, int>{};
+    for (final record in playbackRecords) {
+      playCount.update(record.videoId, (v) => v + 1, ifAbsent: () => 1);
+    }
+
+    // 가중치 적용된 이력 정렬: 재생 횟수 높은 곡 우선
+    final weighted = List<DownloadItem>.from(history)
+      ..sort((a, b) {
+        final countA = playCount[a.videoId] ?? 0;
+        final countB = playCount[b.videoId] ?? 0;
+        return countB.compareTo(countA);
+      });
+
+    return SeedData(
+      recentVideoId: _pickRecentVideoId(history),
+      topChannelId: _pickWeightedTopChannel(history, playCount),
+      searchQuery: _buildWeightedSearchQuery(weighted),
+    );
+  }
+
+  /// 재생 빈도 가중치를 적용한 최빈 채널 반환.
+  String? _pickWeightedTopChannel(
+    List<DownloadItem> history,
+    Map<String, int> playCount,
+  ) {
+    final channelScore = <String, double>{};
+    for (final item in history) {
+      if (item.channelId == null) continue;
+      final weight = (playCount[item.videoId] ?? 0) + 1.0;
+      channelScore.update(
+        item.channelId!,
+        (v) => v + weight,
+        ifAbsent: () => weight,
+      );
+    }
+    if (channelScore.isEmpty) return null;
+    return (channelScore.entries.toList()
+          ..sort((a, b) => b.value.compareTo(a.value)))
+        .first
+        .key;
+  }
+
+  /// 재생 빈도 가중치를 적용한 검색 쿼리 생성.
+  String? _buildWeightedSearchQuery(List<DownloadItem> weighted) {
+    return _buildSearchQuery(weighted);
   }
 
   /// 최근 다운로드 1건의 videoId 반환.

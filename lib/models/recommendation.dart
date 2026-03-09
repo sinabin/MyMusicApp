@@ -1,5 +1,5 @@
 /// 추천 결과의 소스 유형.
-enum RecommendationSource { related, channel, search }
+enum RecommendationSource { related, channel, search, trending }
 
 /// UI에 표시되는 추천 결과 모델.
 ///

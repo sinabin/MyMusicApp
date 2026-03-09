@@ -13,6 +13,9 @@ class CandidateRanker {
   static const _scoreChannel = 2.0;
   static const _scoreSearch = 1.0;
 
+  /// 소스별 기본 점수: trending.
+  static const _scoreTrending = 1.5;
+
   /// 일반적 음악 길이(1~7분)에 부여하는 가산점.
   static const _scoreDurationIdeal = 2.0;
 
@@ -118,6 +121,8 @@ class CandidateRanker {
           score += _scoreChannel;
         case RecommendationSource.search:
           score += _scoreSearch;
+        case RecommendationSource.trending:
+          score += _scoreTrending;
       }
 
       // 재생 시간 보정
@@ -145,6 +150,7 @@ class CandidateRanker {
       RecommendationSource.related => _buildRelatedReason(c.sourceVideoId!),
       RecommendationSource.channel => '${c.channelName}의 최신곡',
       RecommendationSource.search => '회원님이 좋아할 만한 곡',
+      RecommendationSource.trending => '지금 인기 있는 곡',
     };
 
     return c.toRecommendation(reason);

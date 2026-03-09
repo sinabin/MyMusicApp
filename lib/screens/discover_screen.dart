@@ -8,6 +8,7 @@ import '../models/video_info.dart';
 import '../providers/download_provider.dart';
 import '../providers/history_provider.dart';
 import '../providers/player_provider.dart';
+import '../providers/premium_provider.dart';
 import '../providers/recommendation_provider.dart';
 import '../providers/settings_provider.dart';
 import '../services/youtube_service.dart';
@@ -19,13 +20,15 @@ import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
 import '../theme/app_theme.dart';
 import '../widgets/gradient_text.dart';
+import '../widgets/premium_gate.dart';
 import '../widgets/recommendation_card.dart';
 import '../widgets/recommendation_detail_sheet.dart';
 
 /// 음악 추천 화면.
 ///
-/// [RecommendationProvider]를 구독하여 추천 목록을 표시.
-/// 상태별 UI: 로딩(shimmer), 에러(재시도), cold start(안내), 빈 결과, 결과 목록.
+/// [RecommendationProvider]를 구독하여 섹션별 추천 목록을 표시.
+/// 상태별 UI: 로딩(shimmer), 에러(재시도), 빈 결과, 섹션별 결과 목록.
+/// 무료 사용자는 섹션당 3건까지 표시, 나머지는 [PremiumGate]로 게이팅.
 class DiscoverScreen extends StatefulWidget {
   const DiscoverScreen({super.key});
 
@@ -34,11 +37,14 @@ class DiscoverScreen extends StatefulWidget {
 }
 
 class _DiscoverScreenState extends State<DiscoverScreen> {
+  /// 무료 사용자에게 섹션당 노출하는 최대 항목 수.
+  static const _freeLimit = 3;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<RecommendationProvider>().loadRecommendations();
+      context.read<RecommendationProvider>().loadSectioned();
     });
   }
 
@@ -159,14 +165,14 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                       ),
                       onPressed: provider.isLoading
                           ? null
-                          : () => provider.loadRecommendations(force: true),
+                          : () => provider.loadSectioned(force: true),
                     );
                   },
                 ),
               ],
             ),
 
-            // Content
+            // Hero section
             SliverPadding(
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
               sliver: SliverList(
@@ -187,7 +193,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
               ),
             ),
 
-            // 추천 목록
+            // 섹션별 추천 목록
             Consumer<RecommendationProvider>(
               builder: (context, recProvider, _) {
                 // 로딩
@@ -201,49 +207,13 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                 }
 
                 // 빈 결과
-                if (recProvider.items.isEmpty) {
+                final sectioned = recProvider.sectioned;
+                if (sectioned == null || sectioned.isEmpty) {
                   return _buildEmpty(cs);
                 }
 
-                // 결과 목록
-                return SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
-                  sliver: Selector<DownloadProvider, (bool, String?)>(
-                    selector: (_, dp) => (dp.status.isActive, dp.currentVideoId),
-                    builder: (context, dlData, _) {
-                      final (isActive, currentVideoId) = dlData;
-                      return SliverList(
-                        delegate: SliverChildBuilderDelegate(
-                          (context, index) {
-                            final rec = recProvider.items[index];
-                            final isThis = isActive &&
-                                currentVideoId == rec.videoId;
-                            return Padding(
-                              padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                              child: RecommendationCard(
-                                recommendation: rec,
-                                isDownloading: isThis,
-                                onDownload: () => _onDownload(rec),
-                                onDismiss: () => recProvider.dismiss(rec.videoId),
-                                onTap: () => RecommendationDetailSheet.show(
-                                  context,
-                                  recommendation: rec,
-                                  onDownload: () => _onDownload(rec),
-                                  onStream: () => _onStream(rec),
-                                  isDownloading: isThis,
-                                ),
-                              ).animate().fadeIn(
-                                duration: AppDurations.normal,
-                                delay: Duration(milliseconds: (index * AppDurations.staggerMs).clamp(0, AppDurations.staggerMaxLongMs)),
-                              ),
-                            );
-                          },
-                          childCount: recProvider.items.length,
-                        ),
-                      );
-                    },
-                  ),
-                );
+                // 섹션별 결과 목록
+                return _buildSections(recProvider, cs);
               },
             ),
 
@@ -251,6 +221,192 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
             const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.xxxl)),
           ],
         ),
+      ),
+    );
+  }
+
+  /// 섹션별 추천 목록 위젯 생성.
+  Widget _buildSections(RecommendationProvider recProvider, AppColorScheme cs) {
+    return SliverPadding(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
+      sliver: Selector2<DownloadProvider, PremiumProvider, (bool, String?, bool)>(
+        selector: (_, dp, pp) => (dp.status.isActive, dp.currentVideoId, pp.isPremium),
+        builder: (context, data, _) {
+          final (isActive, currentVideoId, isPremium) = data;
+          final children = <Widget>[];
+
+          // For You 섹션
+          if (recProvider.forYouItems.isNotEmpty) {
+            children.add(_buildSectionHeader(
+              cs,
+              icon: Icons.auto_awesome,
+              title: 'For You',
+              count: recProvider.forYouItems.length,
+            ));
+            children.add(_buildSectionItems(
+              recProvider.forYouItems,
+              isPremium,
+              isActive,
+              currentVideoId,
+              recProvider,
+            ));
+          }
+
+          // Trending 섹션
+          if (recProvider.trendingItems.isNotEmpty) {
+            if (children.isNotEmpty) {
+              children.add(Divider(color: cs.divider, height: AppSpacing.xxxl));
+            }
+            children.add(_buildSectionHeader(
+              cs,
+              icon: Icons.trending_up,
+              title: 'Trending',
+              count: recProvider.trendingItems.length,
+            ));
+            children.add(_buildSectionItems(
+              recProvider.trendingItems,
+              isPremium,
+              isActive,
+              currentVideoId,
+              recProvider,
+            ));
+          }
+
+          // Similar Songs 섹션
+          if (recProvider.similarItems.isNotEmpty) {
+            if (children.isNotEmpty) {
+              children.add(Divider(color: cs.divider, height: AppSpacing.xxxl));
+            }
+            children.add(_buildSectionHeader(
+              cs,
+              icon: Icons.queue_music,
+              title: 'Similar Songs',
+              count: recProvider.similarItems.length,
+            ));
+            children.add(_buildSectionItems(
+              recProvider.similarItems,
+              isPremium,
+              isActive,
+              currentVideoId,
+              recProvider,
+            ));
+          }
+
+          return SliverList(
+            delegate: SliverChildListDelegate(children),
+          );
+        },
+      ),
+    );
+  }
+
+  /// 섹션 헤더 위젯.
+  Widget _buildSectionHeader(
+    AppColorScheme cs, {
+    required IconData icon,
+    required String title,
+    required int count,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.md),
+      child: Row(
+        children: [
+          Icon(icon, color: cs.primary, size: AppSizes.iconMd),
+          const SizedBox(width: AppSpacing.sm),
+          Text(title, style: AppTextStyles.sectionHeader),
+          const SizedBox(width: AppSpacing.sm),
+          Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.sm,
+              vertical: AppSpacing.xxs,
+            ),
+            decoration: BoxDecoration(
+              color: cs.primarySurface,
+              borderRadius: BorderRadius.circular(AppTheme.radiusSm),
+            ),
+            child: Text(
+              '$count',
+              style: AppTextStyles.caption.copyWith(
+                color: cs.primaryLight,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 섹션별 아이템 목록 위젯 (프리미엄 게이팅 포함).
+  Widget _buildSectionItems(
+    List<Recommendation> items,
+    bool isPremium,
+    bool isDownloadActive,
+    String? currentVideoId,
+    RecommendationProvider recProvider,
+  ) {
+    final visibleItems = isPremium ? items : items.take(_freeLimit).toList();
+    final hasMore = !isPremium && items.length > _freeLimit;
+
+    return Column(
+      children: [
+        for (int i = 0; i < visibleItems.length; i++)
+          Padding(
+            padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+            child: _buildCard(
+              visibleItems[i],
+              isDownloadActive,
+              currentVideoId,
+              recProvider,
+            ).animate().fadeIn(
+                  duration: AppDurations.normal,
+                  delay: Duration(
+                    milliseconds: (i * AppDurations.staggerMs)
+                        .clamp(0, AppDurations.staggerMaxLongMs),
+                  ),
+                ),
+          ),
+        if (hasMore)
+          PremiumGate(
+            featureLabel: '더 많은 추천 보기',
+            child: Column(
+              children: [
+                for (final rec in items.skip(_freeLimit).take(3))
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                    child: _buildCard(
+                      rec,
+                      isDownloadActive,
+                      currentVideoId,
+                      recProvider,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+      ],
+    );
+  }
+
+  /// 개별 추천 카드 위젯 생성.
+  Widget _buildCard(
+    Recommendation rec,
+    bool isDownloadActive,
+    String? currentVideoId,
+    RecommendationProvider recProvider,
+  ) {
+    final isThis = isDownloadActive && currentVideoId == rec.videoId;
+    return RecommendationCard(
+      recommendation: rec,
+      isDownloading: isThis,
+      onDownload: () => _onDownload(rec),
+      onDismiss: () => recProvider.dismiss(rec.videoId),
+      onTap: () => RecommendationDetailSheet.show(
+        context,
+        recommendation: rec,
+        onDownload: () => _onDownload(rec),
+        onStream: () => _onStream(rec),
+        isDownloading: isThis,
       ),
     );
   }
@@ -310,7 +466,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
               ),
               const SizedBox(height: AppSpacing.lg),
               TextButton.icon(
-                onPressed: () => provider.loadRecommendations(force: true),
+                onPressed: () => provider.loadSectioned(force: true),
                 icon: const Icon(Icons.refresh, size: AppSizes.iconMsl),
                 label: const Text('다시 시도'),
               ),

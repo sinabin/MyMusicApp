@@ -1,7 +1,9 @@
 import 'package:flutter/foundation.dart';
 import '../data/dismissed_recommendation_db.dart';
+import '../data/playback_history_db.dart';
 import '../models/app_exception.dart';
 import '../models/recommendation.dart';
+import '../models/sectioned_recommendations.dart';
 import '../services/recommendation/recommendation_service.dart';
 
 /// 추천 목록의 상태 관리 및 30분 TTL 캐싱을 담당하는 Provider.
@@ -16,6 +18,9 @@ class RecommendationProvider extends ChangeNotifier {
   DateTime? _cachedAt;
   bool _isLoading = false;
   String? _error;
+
+  SectionedRecommendations? _sectioned;
+  PlaybackHistoryDb? _playbackHistoryDb;
 
   static const _cacheTtl = Duration(minutes: 30);
 
@@ -34,6 +39,23 @@ class RecommendationProvider extends ChangeNotifier {
   /// 추천 목록.
   List<Recommendation> get items => _cached ?? [];
 
+  /// 재생 기록 DB 설정 (main.dart에서 호출).
+  void setPlaybackHistoryDb(PlaybackHistoryDb db) {
+    _playbackHistoryDb = db;
+  }
+
+  /// 섹션별 추천 목록.
+  SectionedRecommendations? get sectioned => _sectioned;
+
+  /// 트렌딩 추천 목록.
+  List<Recommendation> get trendingItems => _sectioned?.trending ?? [];
+
+  /// 유사곡 추천 목록.
+  List<Recommendation> get similarItems => _sectioned?.similarSongs ?? [];
+
+  /// 맞춤 추천 목록 (섹션별).
+  List<Recommendation> get forYouItems => _sectioned?.forYou ?? items;
+
   /// 추천 목록 조회. 캐시 유효 시 캐시 반환. 중복 호출 시 무시.
   Future<void> loadRecommendations({bool force = false}) async {
     if (_isLoading) return;
@@ -51,6 +73,43 @@ class RecommendationProvider extends ChangeNotifier {
     } catch (e) {
       debugPrint('[RecommendationProvider] Error: $e');
       _error = e is AppException ? e.userMessage : '추천을 불러올 수 없습니다';
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  /// 섹션별 추천 로드.
+  Future<void> loadSectioned({bool force = false}) async {
+    if (_isLoading) return;
+    if (!force && _sectioned != null && _isCacheValid()) return;
+
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      if (_playbackHistoryDb != null) {
+        _sectioned = await _service.buildSectionedRecommendations(
+          _playbackHistoryDb!,
+        );
+      } else {
+        // playbackHistoryDb 미설정 시에도 기본 추천 + 트렌딩 로드
+        final results = await Future.wait([
+          _service.buildRecommendations(),
+          _service.fetchTrending(),
+        ]);
+        _sectioned = SectionedRecommendations(
+          forYou: results[0],
+          trending: results[1],
+          similarSongs: [],
+        );
+      }
+      _cached = _sectioned!.forYou;
+      _cachedAt = DateTime.now();
+    } catch (e) {
+      debugPrint('[RecommendationProvider] Sectioned error: $e');
+      _error = '추천을 불러올 수 없습니다';
     } finally {
       _isLoading = false;
       notifyListeners();
