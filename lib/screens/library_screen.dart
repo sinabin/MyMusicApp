@@ -8,6 +8,7 @@ import '../providers/playback_history_provider.dart';
 import '../providers/player_provider.dart';
 import '../providers/playlist_provider.dart';
 import '../providers/settings_provider.dart';
+import '../theme/app_color_scheme.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_durations.dart';
 import '../theme/app_sizes.dart';
@@ -48,6 +49,8 @@ class _LibraryScreenState extends State<LibraryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = AppColorScheme.of(context);
+
     return Scaffold(
       body: SafeArea(
         child: CustomScrollView(
@@ -55,7 +58,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
             // AppBar
             SliverAppBar(
               floating: true,
-              backgroundColor: AppColors.scaffoldBackground,
+              backgroundColor: cs.scaffoldBackground,
               title: Row(
                 children: [
                   Container(
@@ -97,7 +100,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                   const SizedBox(height: 6),
                   Text(
                     'Your music collection',
-                    style: AppTextStyles.subtitle,
+                    style: AppTextStyles.subtitle.copyWith(color: cs.textSecondary),
                   ).animate().fadeIn(duration: AppDurations.emphasis, delay: 100.ms),
                   const SizedBox(height: AppSpacing.xxl),
                 ]),
@@ -116,7 +119,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                           icon: Icons.favorite,
                           label: 'Favorites',
                           count: history.favorites.length,
-                          color: AppColors.error,
+                          color: cs.error,
                           onTap: () => Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -129,7 +132,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                           icon: Icons.history,
                           label: 'Recent',
                           count: playback.recentCount,
-                          color: AppColors.secondary,
+                          color: cs.secondary,
                           onTap: () => Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -142,7 +145,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                           icon: Icons.music_note,
                           label: 'All Songs',
                           count: history.count,
-                          color: AppColors.primary,
+                          color: cs.primary,
                           onTap: () => Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -185,10 +188,10 @@ class _LibraryScreenState extends State<LibraryScreen> {
                                   builder: (_) => const RecentPlaysScreen(),
                                 ),
                               ),
-                              child: const Text(
+                              child: Text(
                                 'See All >',
                                 style: TextStyle(
-                                  color: AppColors.primary,
+                                  color: cs.primary,
                                   fontSize: 13,
                                 ),
                               ),
@@ -226,10 +229,10 @@ class _LibraryScreenState extends State<LibraryScreen> {
             ),
 
             // Divider
-            const SliverToBoxAdapter(
+            SliverToBoxAdapter(
               child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: AppSpacing.xxl, vertical: AppSpacing.lg),
-                child: Divider(color: AppColors.divider),
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl, vertical: AppSpacing.lg),
+                child: Divider(color: cs.divider),
               ),
             ),
 
@@ -252,7 +255,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                           icon: const Icon(Icons.add, size: AppSizes.iconMsl),
                           label: const Text('Create'),
                           style: TextButton.styleFrom(
-                            foregroundColor: AppColors.primary,
+                            foregroundColor: cs.primary,
                           ),
                         ),
                       ],

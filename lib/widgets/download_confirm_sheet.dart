@@ -6,6 +6,7 @@ import 'package:shimmer/shimmer.dart';
 
 import '../models/video_info.dart';
 import '../providers/download_provider.dart';
+import '../theme/app_color_scheme.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_sizes.dart';
 import '../theme/app_spacing.dart';
@@ -35,9 +36,10 @@ class DownloadConfirmSheet extends StatelessWidget {
     required VoidCallback onDownload,
     VoidCallback? onStream,
   }) {
+    final cs = AppColorScheme.of(context);
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.surface,
+      backgroundColor: cs.surface,
       shape: const RoundedRectangleBorder(
         borderRadius:
             BorderRadius.vertical(top: Radius.circular(AppTheme.radiusXl)),
@@ -52,6 +54,7 @@ class DownloadConfirmSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = AppColorScheme.of(context);
     return Padding(
       padding: EdgeInsets.fromLTRB(
         AppSpacing.xl,
@@ -67,14 +70,14 @@ class DownloadConfirmSheet extends StatelessWidget {
             width: AppSizes.handleWidth,
             height: AppSizes.handleHeight,
             decoration: BoxDecoration(
-              color: AppColors.textTertiary,
+              color: cs.textTertiary,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
           const SizedBox(height: AppSpacing.xl),
 
           // 영상 정보
-          _buildVideoInfo(),
+          _buildVideoInfo(context),
           const SizedBox(height: AppSpacing.xxl),
 
           // 스트리밍 재생 버튼
@@ -84,14 +87,15 @@ class DownloadConfirmSheet extends StatelessWidget {
           ],
 
           // 다운로드 버튼
-          _buildDownloadButton(),
+          _buildDownloadButton(context),
         ],
       ),
     );
   }
 
   /// 영상 썸네일·제목·채널·길이 표시.
-  Widget _buildVideoInfo() {
+  Widget _buildVideoInfo(BuildContext context) {
+    final cs = AppColorScheme.of(context);
     return Row(
       children: [
         ClipRRect(
@@ -103,15 +107,15 @@ class DownloadConfirmSheet extends StatelessWidget {
               imageUrl: videoInfo.thumbnailUrl,
               fit: BoxFit.cover,
               placeholder: (_, _) => Shimmer.fromColors(
-                baseColor: AppColors.surfaceVariant,
-                highlightColor: AppColors.surfaceLight,
-                child: Container(color: AppColors.surfaceVariant),
+                baseColor: cs.surfaceVariant,
+                highlightColor: cs.surfaceLight,
+                child: Container(color: cs.surfaceVariant),
               ),
               errorWidget: (_, _, _) => Container(
-                color: AppColors.surfaceVariant,
-                child: const Icon(
+                color: cs.surfaceVariant,
+                child: Icon(
                   Icons.music_note,
-                  color: AppColors.textTertiary,
+                  color: cs.textTertiary,
                 ),
               ),
             ),
@@ -135,13 +139,14 @@ class DownloadConfirmSheet extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: AppTextStyles.caption
-                    .copyWith(color: AppColors.textSecondary),
+                    .copyWith(color: cs.textSecondary),
               ),
               if (videoInfo.duration != Duration.zero) ...[
                 const SizedBox(height: AppSpacing.xs),
                 Text(
                   videoInfo.formattedDuration,
-                  style: AppTextStyles.caption,
+                  style: AppTextStyles.caption
+                      .copyWith(color: cs.textTertiary),
                 ),
               ],
             ],
@@ -202,7 +207,8 @@ class DownloadConfirmSheet extends StatelessWidget {
   }
 
   /// 다운로드 버튼 ([DownloadProvider] 상태에 따라 비활성화).
-  Widget _buildDownloadButton() {
+  Widget _buildDownloadButton(BuildContext context) {
+    final cs = AppColorScheme.of(context);
     return Selector<DownloadProvider, bool>(
       selector: (_, p) => p.status.isActive,
       builder: (context, isActive, _) {
@@ -224,8 +230,8 @@ class DownloadConfirmSheet extends StatelessWidget {
                 decoration: BoxDecoration(
                   border: isActive
                       ? null
-                      : Border.all(color: AppColors.primary, width: 1.5),
-                  color: isActive ? AppColors.surfaceVariant : null,
+                      : Border.all(color: cs.primary, width: 1.5),
+                  color: isActive ? cs.surfaceVariant : null,
                   borderRadius:
                       BorderRadius.circular(AppSizes.searchBarHeight / 2),
                 ),
@@ -236,8 +242,8 @@ class DownloadConfirmSheet extends StatelessWidget {
                       Icon(
                         Icons.download_rounded,
                         color: isActive
-                            ? AppColors.textTertiary
-                            : AppColors.primary,
+                            ? cs.textTertiary
+                            : cs.primary,
                         size: AppSizes.iconMl,
                       ),
                       const SizedBox(width: AppSpacing.sm),
@@ -247,8 +253,8 @@ class DownloadConfirmSheet extends StatelessWidget {
                             : 'Download Audio',
                         style: TextStyle(
                           color: isActive
-                              ? AppColors.textTertiary
-                              : AppColors.primary,
+                              ? cs.textTertiary
+                              : cs.primary,
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
                         ),

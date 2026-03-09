@@ -35,12 +35,9 @@ import 'services/youtube_service.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Status bar style
+  // Status bar style (테마에 맞춰 app.dart에서 재설정)
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
     statusBarColor: Colors.transparent,
-    statusBarIconBrightness: Brightness.light,
-    systemNavigationBarColor: Color(0xFF0D0D1A),
-    systemNavigationBarIconBrightness: Brightness.light,
   ));
 
   // Initialize services

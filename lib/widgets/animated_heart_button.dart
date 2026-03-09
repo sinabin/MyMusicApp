@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../theme/app_colors.dart';
+import '../theme/app_color_scheme.dart';
 import '../theme/app_durations.dart';
 import '../theme/app_sizes.dart';
 
@@ -63,6 +63,7 @@ class _AnimatedHeartButtonState extends State<AnimatedHeartButton>
 
   @override
   Widget build(BuildContext context) {
+    final cs = AppColorScheme.of(context);
     return Semantics(
       button: true,
       label: widget.isFavorite ? '좋아요 해제' : '좋아요',
@@ -81,8 +82,8 @@ class _AnimatedHeartButtonState extends State<AnimatedHeartButton>
                 child: Icon(
                   widget.isFavorite ? Icons.favorite : Icons.favorite_border,
                   color: widget.isFavorite
-                      ? AppColors.error
-                      : AppColors.textSecondary,
+                      ? cs.error
+                      : cs.textSecondary,
                   size: widget.size,
                 ),
               );

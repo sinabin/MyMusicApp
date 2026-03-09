@@ -11,7 +11,7 @@ import '../providers/recommendation_provider.dart';
 import '../providers/search_provider.dart';
 import '../providers/settings_provider.dart';
 import '../services/youtube_service.dart';
-import '../theme/app_colors.dart';
+import '../theme/app_color_scheme.dart';
 import '../theme/app_durations.dart';
 import '../theme/app_sizes.dart';
 import '../theme/app_spacing.dart';
@@ -186,6 +186,7 @@ class _SearchScreenState extends State<SearchScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = AppColorScheme.of(context);
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -204,25 +205,25 @@ class _SearchScreenState extends State<SearchScreen> {
             // 검색바
             Padding(
               padding: const EdgeInsets.fromLTRB(AppSpacing.lg, 0, AppSpacing.lg, AppSpacing.sm),
-              child: _buildSearchBar(),
+              child: _buildSearchBar(cs),
             ),
             // 결과 영역
             Expanded(
               child: Consumer<SearchProvider>(
                 builder: (context, provider, _) {
                   if (provider.isLoading) {
-                    return _buildLoadingState();
+                    return _buildLoadingState(cs);
                   }
                   if (provider.error != null) {
-                    return _buildErrorState(provider.error!);
+                    return _buildErrorState(cs, provider.error!);
                   }
                   if (provider.results.isEmpty && provider.query.isNotEmpty) {
-                    return _buildEmptyState();
+                    return _buildEmptyState(cs);
                   }
                   if (provider.results.isEmpty) {
-                    return _buildInitialState();
+                    return _buildInitialState(cs);
                   }
-                  return _buildResultsList(provider);
+                  return _buildResultsList(cs, provider);
                 },
               ),
             ),
@@ -232,27 +233,27 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 
-  Widget _buildSearchBar() {
+  Widget _buildSearchBar(AppColorScheme cs) {
     return Container(
       height: AppSizes.searchBarHeight,
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: cs.surface,
         borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: cs.border),
       ),
       child: Row(
         children: [
           const SizedBox(width: 14),
-          const Icon(Icons.search, color: AppColors.textTertiary, size: AppSizes.iconMl),
+          Icon(Icons.search, color: cs.textTertiary, size: AppSizes.iconMl),
           const SizedBox(width: 10),
           Expanded(
             child: TextField(
               controller: _searchController,
               focusNode: _focusNode,
               style: AppTextStyles.inputText,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 hintText: 'Search YouTube...',
-                hintStyle: TextStyle(color: AppColors.textTertiary),
+                hintStyle: TextStyle(color: cs.textTertiary),
                 border: InputBorder.none,
                 isDense: true,
                 contentPadding: EdgeInsets.zero,
@@ -266,9 +267,9 @@ class _SearchScreenState extends State<SearchScreen> {
             builder: (context, _) {
               if (_searchController.text.isNotEmpty) {
                 return IconButton(
-                  icon: const Icon(
+                  icon: Icon(
                     Icons.close,
-                    color: AppColors.textTertiary,
+                    color: cs.textTertiary,
                     size: AppSizes.iconMd,
                   ),
                   onPressed: _onClear,
@@ -282,7 +283,7 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 
-  Widget _buildInitialState() {
+  Widget _buildInitialState(AppColorScheme cs) {
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -290,38 +291,38 @@ class _SearchScreenState extends State<SearchScreen> {
           Icon(
             Icons.search,
             size: AppSizes.iconJumbo,
-            color: AppColors.textTertiary.withValues(alpha: 0.5),
+            color: cs.textTertiary.withValues(alpha: 0.5),
           ),
           const SizedBox(height: AppSpacing.lg),
           Text(
             'Search for music to download',
-            style: AppTextStyles.subtitle,
+            style: AppTextStyles.subtitle.copyWith(color: cs.textSecondary),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildLoadingState() {
-    return const Center(
-      child: CircularProgressIndicator(color: AppColors.primary),
+  Widget _buildLoadingState(AppColorScheme cs) {
+    return Center(
+      child: CircularProgressIndicator(color: cs.primary),
     );
   }
 
-  Widget _buildErrorState(String error) {
+  Widget _buildErrorState(AppColorScheme cs, String error) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.xxl),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.error_outline, size: AppSizes.iconHero, color: AppColors.error),
+            Icon(Icons.error_outline, size: AppSizes.iconHero, color: cs.error),
             const SizedBox(height: AppSpacing.md),
             Text('Search failed', style: AppTextStyles.sectionHeader),
             const SizedBox(height: AppSpacing.sm),
             Text(
               error,
-              style: AppTextStyles.caption,
+              style: AppTextStyles.caption.copyWith(color: cs.textTertiary),
               textAlign: TextAlign.center,
               maxLines: 3,
               overflow: TextOverflow.ellipsis,
@@ -337,24 +338,27 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(AppColorScheme cs) {
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(
+          Icon(
             Icons.search_off,
             size: AppSizes.iconHero,
-            color: AppColors.textTertiary,
+            color: cs.textTertiary,
           ),
           const SizedBox(height: AppSpacing.md),
-          Text('No results found', style: AppTextStyles.subtitle),
+          Text(
+            'No results found',
+            style: AppTextStyles.subtitle.copyWith(color: cs.textSecondary),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildResultsList(SearchProvider provider) {
+  Widget _buildResultsList(AppColorScheme cs, SearchProvider provider) {
     return Consumer<DownloadProvider>(
       builder: (context, downloadProv, _) {
         final isActive = downloadProv.status.isActive;
@@ -367,11 +371,11 @@ class _SearchScreenState extends State<SearchScreen> {
               provider.results.length + (provider.isLoadingMore ? 1 : 0),
           itemBuilder: (context, index) {
             if (index == provider.results.length) {
-              return const Padding(
-                padding: EdgeInsets.all(AppSpacing.lg),
+              return Padding(
+                padding: const EdgeInsets.all(AppSpacing.lg),
                 child: Center(
                   child: CircularProgressIndicator(
-                    color: AppColors.primary,
+                    color: cs.primary,
                     strokeWidth: AppSizes.strokeWidth,
                   ),
                 ),

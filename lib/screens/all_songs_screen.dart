@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../providers/history_provider.dart';
 import '../providers/player_provider.dart';
 import '../providers/settings_provider.dart';
+import '../theme/app_color_scheme.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_sizes.dart';
 import '../theme/app_spacing.dart';
@@ -65,6 +66,8 @@ class AllSongsScreen extends StatelessWidget {
   }
 
   Widget _buildHeaderButtons(BuildContext context) {
+    final cs = AppColorScheme.of(context);
+
     return Row(
       children: [
         Expanded(
@@ -114,8 +117,8 @@ class AllSongsScreen extends StatelessWidget {
                 icon: const Icon(Icons.shuffle, size: AppSizes.iconMd),
                 label: const Text('Shuffle'),
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: AppColors.primary,
-                  side: const BorderSide(color: AppColors.primary),
+                  foregroundColor: cs.primary,
+                  side: BorderSide(color: cs.primary),
                   padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(AppTheme.radiusMd),

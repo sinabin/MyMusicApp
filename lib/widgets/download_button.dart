@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../models/download_state.dart';
+import '../theme/app_color_scheme.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_durations.dart';
 import '../theme/app_sizes.dart';
@@ -73,28 +74,29 @@ class _DownloadButtonState extends State<DownloadButton>
       curve: Curves.easeInOut,
       height: AppSizes.buttonHeight,
       width: double.infinity,
-      child: _buildForPhase(),
+      child: _buildForPhase(context),
     );
   }
 
-  Widget _buildForPhase() {
+  Widget _buildForPhase(BuildContext context) {
     switch (widget.status.phase) {
       case DownloadPhase.idle:
-        return _buildIdleButton();
+        return _buildIdleButton(context);
       case DownloadPhase.fetching:
         return _buildFetchingButton();
       case DownloadPhase.downloading:
-        return _buildProgressButton();
+        return _buildProgressButton(context);
       case DownloadPhase.converting:
-        return _buildConvertingButton();
+        return _buildConvertingButton(context);
       case DownloadPhase.completed:
-        return _buildCompletedButton();
+        return _buildCompletedButton(context);
       case DownloadPhase.error:
-        return _buildErrorButton();
+        return _buildErrorButton(context);
     }
   }
 
-  Widget _buildIdleButton() {
+  Widget _buildIdleButton(BuildContext context) {
+    final cs = AppColorScheme.of(context);
     return Material(
       borderRadius: BorderRadius.circular(_pillRadius),
       child: InkWell(
@@ -108,7 +110,7 @@ class _DownloadButtonState extends State<DownloadButton>
         child: Ink(
           decoration: BoxDecoration(
             gradient: widget.enabled ? AppColors.primaryGradient : null,
-            color: widget.enabled ? null : AppColors.surfaceVariant,
+            color: widget.enabled ? null : cs.surfaceVariant,
             borderRadius: BorderRadius.circular(_pillRadius),
           ),
           child: Center(
@@ -117,14 +119,14 @@ class _DownloadButtonState extends State<DownloadButton>
               children: [
                 Icon(
                   Icons.download_rounded,
-                  color: widget.enabled ? Colors.white : AppColors.textTertiary,
+                  color: widget.enabled ? Colors.white : cs.textTertiary,
                   size: AppSizes.iconLg,
                 ),
                 const SizedBox(width: 10),
                 Text(
                   'Download Audio',
                   style: AppTextStyles.buttonText.copyWith(
-                    color: widget.enabled ? Colors.white : AppColors.textTertiary,
+                    color: widget.enabled ? Colors.white : cs.textTertiary,
                   ),
                 ),
               ],
@@ -170,11 +172,12 @@ class _DownloadButtonState extends State<DownloadButton>
     );
   }
 
-  Widget _buildProgressButton() {
+  Widget _buildProgressButton(BuildContext context) {
+    final cs = AppColorScheme.of(context);
     final progress = widget.status.progress;
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surfaceVariant,
+        color: cs.surfaceVariant,
         borderRadius: BorderRadius.circular(_pillRadius),
       ),
       child: Stack(
@@ -220,11 +223,12 @@ class _DownloadButtonState extends State<DownloadButton>
     );
   }
 
-  Widget _buildConvertingButton() {
+  Widget _buildConvertingButton(BuildContext context) {
+    final cs = AppColorScheme.of(context);
     return Container(
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [AppColors.primary, AppColors.secondary],
+        gradient: LinearGradient(
+          colors: [cs.primary, cs.secondary],
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,
         ),
@@ -256,7 +260,8 @@ class _DownloadButtonState extends State<DownloadButton>
     );
   }
 
-  Widget _buildCompletedButton() {
+  Widget _buildCompletedButton(BuildContext context) {
+    final cs = AppColorScheme.of(context);
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0.8, end: 1.0),
       duration: AppDurations.slow,
@@ -269,7 +274,7 @@ class _DownloadButtonState extends State<DownloadButton>
       },
       child: Container(
         decoration: BoxDecoration(
-          color: AppColors.success,
+          color: cs.success,
           borderRadius: BorderRadius.circular(_pillRadius),
         ),
         child: Center(
@@ -292,10 +297,11 @@ class _DownloadButtonState extends State<DownloadButton>
     );
   }
 
-  Widget _buildErrorButton() {
+  Widget _buildErrorButton(BuildContext context) {
+    final cs = AppColorScheme.of(context);
     return Material(
       borderRadius: BorderRadius.circular(_pillRadius),
-      color: AppColors.error,
+      color: cs.error,
       child: InkWell(
         borderRadius: BorderRadius.circular(_pillRadius),
         onTap: () {

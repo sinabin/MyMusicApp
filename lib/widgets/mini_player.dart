@@ -7,7 +7,7 @@ import '../providers/history_provider.dart';
 import '../providers/player_provider.dart';
 import '../screens/full_player_screen.dart';
 import '../app.dart';
-import '../theme/app_colors.dart';
+import '../theme/app_color_scheme.dart';
 import '../theme/app_durations.dart';
 import '../theme/app_sizes.dart';
 import '../theme/app_spacing.dart';
@@ -25,6 +25,7 @@ class MiniPlayer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = AppColorScheme.of(context);
     return Consumer2<PlayerProvider, HistoryProvider>(
       builder: (context, player, history, _) {
         final track = player.currentTrack;
@@ -45,10 +46,10 @@ class MiniPlayer extends StatelessWidget {
           duration: AppDurations.normal,
           curve: Curves.easeInOut,
           child: Container(
-          decoration: const BoxDecoration(
-            color: AppColors.surface,
+          decoration: BoxDecoration(
+            color: cs.surface,
             border: Border(
-              top: BorderSide(color: AppColors.border, width: 1),
+              top: BorderSide(color: cs.border, width: 1),
             ),
           ),
           child: Column(
@@ -58,9 +59,9 @@ class MiniPlayer extends StatelessWidget {
               LinearProgressIndicator(
                 value: progress.clamp(0.0, 1.0),
                 minHeight: AppSpacing.xxs,
-                backgroundColor: AppColors.border,
-                valueColor: const AlwaysStoppedAnimation<Color>(
-                  AppColors.primary,
+                backgroundColor: cs.border,
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  cs.primary,
                 ),
               ),
               // 컨트롤 영역
@@ -96,11 +97,11 @@ class MiniPlayer extends StatelessWidget {
                                           imageUrl: track.thumbnailUrl!,
                                           fit: BoxFit.cover,
                                           placeholder: (_, _) =>
-                                              _placeholderIcon(),
+                                              _placeholderIcon(context),
                                           errorWidget: (_, _, _) =>
-                                              _placeholderIcon(),
+                                              _placeholderIcon(context),
                                         )
-                                      : _placeholderIcon(),
+                                      : _placeholderIcon(context),
                                 ),
                               ),
                               const SizedBox(width: 10),
@@ -121,8 +122,8 @@ class MiniPlayer extends StatelessWidget {
                                         artist,
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
-                                        style: const TextStyle(
-                                          color: AppColors.textTertiary,
+                                        style: TextStyle(
+                                          color: cs.textTertiary,
                                           fontSize: 11,
                                         ),
                                       ),
@@ -138,20 +139,22 @@ class MiniPlayer extends StatelessWidget {
                       if (!track.isStreaming) ...[
                         // 즐겨찾기 토글
                         _controlButton(
+                          context: context,
                           icon: track.isFavorite
                               ? Icons.favorite
                               : Icons.favorite_border,
                           size: AppSizes.iconMd,
                           color: track.isFavorite
-                              ? AppColors.error
-                              : AppColors.textSecondary,
+                              ? cs.error
+                              : cs.textSecondary,
                           onPressed: () => history.toggleFavorite(track),
                         ),
                         // 플레이리스트에 추가
                         _controlButton(
+                          context: context,
                           icon: Icons.playlist_add,
                           size: AppSizes.iconMl,
-                          color: AppColors.textSecondary,
+                          color: cs.textSecondary,
                           onPressed: () {
                             final navContext =
                                 appNavigatorKey.currentState?.overlay?.context;
@@ -177,7 +180,7 @@ class MiniPlayer extends StatelessWidget {
                               player.isPlaying ? Icons.pause : Icons.play_arrow,
                               key: ValueKey(player.isPlaying),
                               size: AppSizes.iconXl,
-                              color: AppColors.textPrimary,
+                              color: cs.textPrimary,
                             ),
                           ),
                           onPressed: () {
@@ -187,7 +190,7 @@ class MiniPlayer extends StatelessWidget {
                                 : player.resume();
                           },
                           disabledColor:
-                              AppColors.textTertiary.withValues(alpha: 0.3),
+                              cs.textTertiary.withValues(alpha: 0.3),
                         ),
                       ),
                     ],
@@ -203,11 +206,13 @@ class MiniPlayer extends StatelessWidget {
   }
 
   Widget _controlButton({
+    required BuildContext context,
     required IconData icon,
     required double size,
     required Color color,
     VoidCallback? onPressed,
   }) {
+    final cs = AppColorScheme.of(context);
     return SizedBox(
       width: AppSizes.touchTarget,
       height: AppSizes.touchTarget,
@@ -216,17 +221,18 @@ class MiniPlayer extends StatelessWidget {
         constraints: const BoxConstraints(),
         icon: Icon(icon, size: size, color: color),
         onPressed: onPressed,
-        disabledColor: AppColors.textTertiary.withValues(alpha: 0.3),
+        disabledColor: cs.textTertiary.withValues(alpha: 0.3),
       ),
     );
   }
 
-  Widget _placeholderIcon() {
+  Widget _placeholderIcon(BuildContext context) {
+    final cs = AppColorScheme.of(context);
     return Container(
-      color: AppColors.primarySurface,
-      child: const Icon(
+      color: cs.primarySurface,
+      child: Icon(
         Icons.music_note,
-        color: AppColors.primaryLight,
+        color: cs.primaryLight,
         size: AppSizes.iconMl,
       ),
     );

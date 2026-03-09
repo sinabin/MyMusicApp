@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/playlist_provider.dart';
+import '../theme/app_color_scheme.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_sizes.dart';
 import '../theme/app_spacing.dart';
@@ -70,14 +71,15 @@ class _CreatePlaylistSheetState extends State<CreatePlaylistSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = AppColorScheme.of(context);
     return Padding(
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
       ),
       child: Container(
-        decoration: const BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(AppTheme.radiusXl)),
+        decoration: BoxDecoration(
+          color: cs.surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(AppTheme.radiusXl)),
         ),
         child: Padding(
           padding: EdgeInsets.fromLTRB(
@@ -91,7 +93,7 @@ class _CreatePlaylistSheetState extends State<CreatePlaylistSheet> {
                 width: AppSizes.handleWidth,
                 height: AppSizes.handleHeight,
                 decoration: BoxDecoration(
-                  color: AppColors.textTertiary,
+                  color: cs.textTertiary,
                   borderRadius: BorderRadius.circular(AppSpacing.xxs),
                 ),
               ),
@@ -105,7 +107,7 @@ class _CreatePlaylistSheetState extends State<CreatePlaylistSheet> {
                     style: AppTextStyles.titleLarge,
                   ),
                   IconButton(
-                    icon: const Icon(Icons.close, color: AppColors.textSecondary),
+                    icon: Icon(Icons.close, color: cs.textSecondary),
                     onPressed: () => Navigator.pop(context),
                   ),
                 ],
@@ -115,12 +117,12 @@ class _CreatePlaylistSheetState extends State<CreatePlaylistSheet> {
               TextField(
                 controller: _nameController,
                 autofocus: true,
-                style: const TextStyle(color: AppColors.textPrimary),
+                style: TextStyle(color: cs.textPrimary),
                 decoration: InputDecoration(
                   hintText: 'Playlist name',
-                  hintStyle: const TextStyle(color: AppColors.textTertiary),
+                  hintStyle: TextStyle(color: cs.textTertiary),
                   filled: true,
-                  fillColor: AppColors.surfaceVariant,
+                  fillColor: cs.surfaceVariant,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                     borderSide: BorderSide.none,
@@ -137,12 +139,12 @@ class _CreatePlaylistSheetState extends State<CreatePlaylistSheet> {
               TextField(
                 controller: _descController,
                 maxLines: 2,
-                style: const TextStyle(color: AppColors.textPrimary),
+                style: TextStyle(color: cs.textPrimary),
                 decoration: InputDecoration(
                   hintText: 'Description (optional)',
-                  hintStyle: const TextStyle(color: AppColors.textTertiary),
+                  hintStyle: TextStyle(color: cs.textTertiary),
                   filled: true,
-                  fillColor: AppColors.surfaceVariant,
+                  fillColor: cs.surfaceVariant,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                     borderSide: BorderSide.none,
@@ -163,7 +165,7 @@ class _CreatePlaylistSheetState extends State<CreatePlaylistSheet> {
                         ? AppColors.primaryGradient
                         : null,
                     color: _nameController.text.trim().isEmpty
-                        ? AppColors.surfaceVariant
+                        ? cs.surfaceVariant
                         : null,
                     borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                   ),

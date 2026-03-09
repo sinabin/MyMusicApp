@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import '../models/recommendation.dart';
 import '../models/video_info.dart';
 import '../services/youtube_service.dart';
-import '../theme/app_colors.dart';
+import '../theme/app_color_scheme.dart';
 import '../theme/app_sizes.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
@@ -104,6 +104,7 @@ class _RecommendationDetailSheetState
 
   @override
   Widget build(BuildContext context) {
+    final cs = AppColorScheme.of(context);
     final rec = widget.recommendation;
     final bottomPadding = MediaQuery.of(context).padding.bottom;
 
@@ -111,9 +112,9 @@ class _RecommendationDetailSheetState
       constraints: BoxConstraints(
         maxHeight: MediaQuery.of(context).size.height * 0.85,
       ),
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(AppSpacing.xl)),
+      decoration: BoxDecoration(
+        color: cs.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(AppSpacing.xl)),
       ),
       child: SingleChildScrollView(
         padding: EdgeInsets.fromLTRB(
@@ -127,7 +128,7 @@ class _RecommendationDetailSheetState
                 width: AppSizes.handleWidth,
                 height: AppSizes.handleHeight,
                 decoration: BoxDecoration(
-                  color: AppColors.textTertiary.withValues(alpha: 0.5),
+                  color: cs.textTertiary.withValues(alpha: 0.5),
                   borderRadius: BorderRadius.circular(AppSpacing.xxs),
                 ),
               ),
@@ -143,17 +144,17 @@ class _RecommendationDetailSheetState
                   imageUrl: rec.thumbnailUrl,
                   fit: BoxFit.cover,
                   placeholder: (_, _) => Container(
-                    color: AppColors.surfaceVariant,
-                    child: const Center(
+                    color: cs.surfaceVariant,
+                    child: Center(
                       child: Icon(Icons.music_note,
-                          color: AppColors.textTertiary, size: AppSizes.iconHero),
+                          color: cs.textTertiary, size: AppSizes.iconHero),
                     ),
                   ),
                   errorWidget: (_, _, _) => Container(
-                    color: AppColors.surfaceVariant,
-                    child: const Center(
+                    color: cs.surfaceVariant,
+                    child: Center(
                       child: Icon(Icons.music_note,
-                          color: AppColors.textTertiary, size: AppSizes.iconHero),
+                          color: cs.textTertiary, size: AppSizes.iconHero),
                     ),
                   ),
                 ),
@@ -169,24 +170,24 @@ class _RecommendationDetailSheetState
             const SizedBox(height: 10),
 
             // 채널명
-            _infoRow(Icons.person_outline, rec.channelName),
+            _infoRow(context, Icons.person_outline, rec.channelName),
             const SizedBox(height: AppSpacing.xs),
 
             // 재생 시간
             if (rec.duration != null) ...[
-              _infoRow(Icons.access_time, FormatUtils.duration(rec.duration!)),
+              _infoRow(context, Icons.access_time, FormatUtils.duration(rec.duration!)),
               const SizedBox(height: AppSpacing.xs),
             ],
 
             // 추천 소스
-            _infoRow(Icons.auto_awesome, _sourceLabel(rec.source)),
+            _infoRow(context, Icons.auto_awesome, _sourceLabel(rec.source)),
             const SizedBox(height: AppSpacing.sm),
 
             // 추천 사유 배지
             Container(
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
               decoration: BoxDecoration(
-                color: AppColors.primarySurface,
+                color: cs.primarySurface,
                 borderRadius: BorderRadius.circular(6),
               ),
               child: Text(
@@ -194,12 +195,12 @@ class _RecommendationDetailSheetState
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: AppTextStyles.caption.copyWith(
-                  color: AppColors.primaryLight,
+                  color: cs.primaryLight,
                 ),
               ),
             ),
             const SizedBox(height: AppSpacing.lg),
-            const Divider(color: AppColors.divider),
+            Divider(color: cs.divider),
             const SizedBox(height: AppSpacing.md),
 
             // 추가 메타데이터 (비동기 로드)
@@ -210,22 +211,22 @@ class _RecommendationDetailSheetState
                   child: SizedBox(
                     width: AppSizes.indicatorMd,
                     height: AppSizes.indicatorMd,
-                    child: const CircularProgressIndicator(
+                    child: CircularProgressIndicator(
                       strokeWidth: AppSizes.strokeWidth,
-                      color: AppColors.primary,
+                      color: cs.primary,
                     ),
                   ),
                 ),
               )
             else if (_videoInfo != null) ...[
               if (_videoInfo!.artistName != null) ...[
-                _infoRow(Icons.mic_outlined, _videoInfo!.artistName!),
+                _infoRow(context, Icons.mic_outlined, _videoInfo!.artistName!),
                 const SizedBox(height: AppSpacing.xs),
               ],
               if (_videoInfo!.keywords != null &&
                   _videoInfo!.keywords!.isNotEmpty) ...[
                 const SizedBox(height: AppSpacing.sm),
-                _buildTags(_videoInfo!.keywords!),
+                _buildTags(context, _videoInfo!.keywords!),
               ],
             ],
 
@@ -252,11 +253,11 @@ class _RecommendationDetailSheetState
                     label: Text(
                         _isStreaming ? '불러오는 중...' : '스트리밍 듣기'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.surfaceVariant,
-                      foregroundColor: AppColors.textPrimary,
+                      backgroundColor: cs.surfaceVariant,
+                      foregroundColor: cs.textPrimary,
                       disabledBackgroundColor:
-                          AppColors.surfaceVariant.withValues(alpha: 0.5),
-                      disabledForegroundColor: AppColors.textTertiary,
+                          cs.surfaceVariant.withValues(alpha: 0.5),
+                      disabledForegroundColor: cs.textTertiary,
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(AppTheme.radiusMd),
@@ -293,10 +294,10 @@ class _RecommendationDetailSheetState
                 label:
                     Text(widget.isDownloading ? '다운로드 중...' : '다운로드'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
+                  backgroundColor: cs.primary,
                   foregroundColor: Colors.white,
                   disabledBackgroundColor:
-                      AppColors.primaryDark.withValues(alpha: 0.5),
+                      cs.primaryDark.withValues(alpha: 0.5),
                   disabledForegroundColor: Colors.white70,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
@@ -316,16 +317,17 @@ class _RecommendationDetailSheetState
   }
 
   /// 아이콘 + 텍스트 정보 행.
-  Widget _infoRow(IconData icon, String text) {
+  Widget _infoRow(BuildContext context, IconData icon, String text) {
+    final cs = AppColorScheme.of(context);
     return Row(
       children: [
-        Icon(icon, color: AppColors.textTertiary, size: AppSizes.iconSm),
+        Icon(icon, color: cs.textTertiary, size: AppSizes.iconSm),
         const SizedBox(width: AppSpacing.sm),
         Expanded(
           child: Text(
             text,
             style: AppTextStyles.body.copyWith(
-              color: AppColors.textSecondary,
+              color: cs.textSecondary,
             ),
           ),
         ),
@@ -334,19 +336,20 @@ class _RecommendationDetailSheetState
   }
 
   /// 키워드 태그 목록.
-  Widget _buildTags(List<String> keywords) {
+  Widget _buildTags(BuildContext context, List<String> keywords) {
+    final cs = AppColorScheme.of(context);
     final display = keywords.take(8).toList();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
-            const Icon(Icons.tag, color: AppColors.textTertiary, size: AppSizes.iconSm),
+            Icon(Icons.tag, color: cs.textTertiary, size: AppSizes.iconSm),
             const SizedBox(width: AppSpacing.sm),
             Text(
               '태그',
               style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.textTertiary,
+                color: cs.textTertiary,
                 fontWeight: FontWeight.w400,
               ),
             ),
@@ -361,13 +364,13 @@ class _RecommendationDetailSheetState
                     padding:
                         const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
                     decoration: BoxDecoration(
-                      color: AppColors.surfaceVariant,
+                      color: cs.surfaceVariant,
                       borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                     ),
                     child: Text(
                       tag,
-                      style: const TextStyle(
-                        color: AppColors.textSecondary,
+                      style: TextStyle(
+                        color: cs.textSecondary,
                         fontSize: 11,
                       ),
                     ),

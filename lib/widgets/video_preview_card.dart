@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:shimmer/shimmer.dart';
 import '../models/video_info.dart';
-import '../theme/app_colors.dart';
+import '../theme/app_color_scheme.dart';
 import '../theme/app_sizes.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
@@ -18,6 +18,7 @@ class VideoPreviewCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = AppColorScheme.of(context);
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.md),
@@ -32,19 +33,19 @@ class VideoPreviewCard extends StatelessWidget {
                 height: AppSizes.videoPreviewHeight,
                 fit: BoxFit.cover,
                 placeholder: (context, url) => Shimmer.fromColors(
-                  baseColor: AppColors.surfaceVariant,
-                  highlightColor: AppColors.surfaceLight,
+                  baseColor: cs.surfaceVariant,
+                  highlightColor: cs.surfaceLight,
                   child: Container(
                     width: AppSizes.videoPreviewWidth,
                     height: AppSizes.videoPreviewHeight,
-                    color: AppColors.surfaceVariant,
+                    color: cs.surfaceVariant,
                   ),
                 ),
                 errorWidget: (context, url, error) => Container(
                   width: AppSizes.videoPreviewWidth,
                   height: AppSizes.videoPreviewHeight,
-                  color: AppColors.surfaceVariant,
-                  child: const Icon(Icons.music_note, color: AppColors.textTertiary),
+                  color: cs.surfaceVariant,
+                  child: Icon(Icons.music_note, color: cs.textTertiary),
                 ),
               ),
             ),
@@ -68,15 +69,15 @@ class VideoPreviewCard extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: AppTextStyles.caption.copyWith(
-                      color: AppColors.textSecondary,
+                      color: cs.textSecondary,
                     ),
                   ),
                   const SizedBox(height: 6),
                   Row(
                     children: [
-                      _chip(Icons.access_time, videoInfo.formattedDuration),
+                      _chip(context, Icons.access_time, videoInfo.formattedDuration),
                       const SizedBox(width: AppSpacing.sm),
-                      _chip(Icons.audiotrack, 'Audio'),
+                      _chip(context, Icons.audiotrack, 'Audio'),
                     ],
                   ),
                 ],
@@ -88,22 +89,23 @@ class VideoPreviewCard extends StatelessWidget {
     );
   }
 
-  Widget _chip(IconData icon, String label) {
+  Widget _chip(BuildContext context, IconData icon, String label) {
+    final cs = AppColorScheme.of(context);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: 3),
       decoration: BoxDecoration(
-        color: AppColors.primarySurface,
+        color: cs.primarySurface,
         borderRadius: BorderRadius.circular(AppTheme.radiusSm),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: AppSizes.iconXxs, color: AppColors.primaryLight),
+          Icon(icon, size: AppSizes.iconXxs, color: cs.primaryLight),
           const SizedBox(width: AppSpacing.xs),
           Text(
             label,
-            style: const TextStyle(
-              color: AppColors.primaryLight,
+            style: TextStyle(
+              color: cs.primaryLight,
               fontSize: 11,
               fontWeight: FontWeight.w500,
             ),
@@ -120,19 +122,20 @@ class VideoPreviewShimmer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = AppColorScheme.of(context);
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.md),
         child: Shimmer.fromColors(
-          baseColor: AppColors.surfaceVariant,
-          highlightColor: AppColors.surfaceLight,
+          baseColor: cs.surfaceVariant,
+          highlightColor: cs.surfaceLight,
           child: Row(
             children: [
               Container(
                 width: AppSizes.videoPreviewWidth,
                 height: AppSizes.videoPreviewHeight,
                 decoration: BoxDecoration(
-                  color: AppColors.surfaceVariant,
+                  color: cs.surfaceVariant,
                   borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                 ),
               ),
@@ -141,11 +144,11 @@ class VideoPreviewShimmer extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Container(height: 14, color: AppColors.surfaceVariant),
+                    Container(height: 14, color: cs.surfaceVariant),
                     const SizedBox(height: 6),
-                    Container(height: 14, width: AppSizes.videoPreviewWidth, color: AppColors.surfaceVariant),
+                    Container(height: 14, width: AppSizes.videoPreviewWidth, color: cs.surfaceVariant),
                     const SizedBox(height: 6),
-                    Container(height: 12, width: AppSizes.thumbnailXl, color: AppColors.surfaceVariant),
+                    Container(height: 12, width: AppSizes.thumbnailXl, color: cs.surfaceVariant),
                   ],
                 ),
               ),

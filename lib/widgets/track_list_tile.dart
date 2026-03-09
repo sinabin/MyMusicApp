@@ -6,7 +6,7 @@ import 'package:flutter/services.dart';
 
 import '../l10n/app_localizations.dart';
 import '../models/download_item.dart';
-import '../theme/app_colors.dart';
+import '../theme/app_color_scheme.dart';
 import '../theme/app_sizes.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
@@ -43,6 +43,7 @@ class TrackListTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = AppColorScheme.of(context);
     final title = item.fileName.endsWith('.m4a')
         ? item.fileName.substring(0, item.fileName.length - 4)
         : item.fileName;
@@ -58,7 +59,7 @@ class TrackListTile extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 10),
         decoration: BoxDecoration(
           color: isCurrentTrack
-              ? AppColors.primarySurface
+              ? cs.primarySurface
               : Colors.transparent,
           borderRadius: BorderRadius.circular(AppTheme.radiusMd),
         ),
@@ -70,7 +71,7 @@ class TrackListTile extends StatelessWidget {
               child: SizedBox(
                 width: AppSizes.thumbnailMd,
                 height: AppSizes.thumbnailMd,
-                child: _buildThumbnail(),
+                child: _buildThumbnail(context),
               ),
             ),
             const SizedBox(width: AppSpacing.md),
@@ -85,8 +86,8 @@ class TrackListTile extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: AppTextStyles.tileTitle.copyWith(
                       color: isCurrentTrack
-                          ? AppColors.primaryLight
-                          : AppColors.textPrimary,
+                          ? cs.primaryLight
+                          : cs.textPrimary,
                     ),
                   ),
                   const SizedBox(height: AppSpacing.xxs),
@@ -98,7 +99,7 @@ class TrackListTile extends StatelessWidget {
                     ].join(' · '),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: AppTextStyles.caption,
+                    style: AppTextStyles.caption.copyWith(color: cs.textTertiary),
                   ),
                 ],
               ),
@@ -109,8 +110,8 @@ class TrackListTile extends StatelessWidget {
                 icon: Icon(
                   isFavorite ? Icons.favorite : Icons.favorite_border,
                   color: isFavorite
-                      ? AppColors.error
-                      : AppColors.textSecondary,
+                      ? cs.error
+                      : cs.textSecondary,
                   size: AppSizes.iconMd,
                 ),
                 onPressed: () {
@@ -127,9 +128,9 @@ class TrackListTile extends StatelessWidget {
             // 점 메뉴
             if (onAddToQueue != null || onAddToPlaylist != null)
               PopupMenuButton<String>(
-                icon: const Icon(
+                icon: Icon(
                   Icons.more_vert,
-                  color: AppColors.textSecondary,
+                  color: cs.textSecondary,
                   size: AppSizes.iconMd,
                 ),
                 padding: EdgeInsets.zero,
@@ -137,7 +138,7 @@ class TrackListTile extends StatelessWidget {
                   minWidth: AppSizes.touchTarget,
                   minHeight: AppSizes.touchTarget,
                 ),
-                color: AppColors.surfaceVariant,
+                color: cs.surfaceVariant,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                 ),
@@ -153,6 +154,7 @@ class TrackListTile extends StatelessWidget {
 
   /// 롱프레스 시 컨텍스트 메뉴 표시.
   void _showContextMenu(BuildContext context) {
+    final cs = AppColorScheme.of(context);
     HapticFeedback.mediumImpact();
     final box = context.findRenderObject() as RenderBox;
     final offset = box.localToGlobal(Offset.zero);
@@ -165,7 +167,7 @@ class TrackListTile extends StatelessWidget {
         offset.dx + box.size.width,
         offset.dy + box.size.height,
       ),
-      color: AppColors.surfaceVariant,
+      color: cs.surfaceVariant,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppTheme.radiusMd),
       ),
@@ -192,6 +194,7 @@ class TrackListTile extends StatelessWidget {
   ///
   /// [includeFavorite]가 true이면 즐겨찾기 토글 항목도 포함 (롱프레스 메뉴용).
   List<PopupMenuEntry<String>> _buildMenuItems(BuildContext context, {bool includeFavorite = false}) {
+    final cs = AppColorScheme.of(context);
     final l = L.of(context)!;
     return [
       if (onAddToQueue != null)
@@ -199,8 +202,8 @@ class TrackListTile extends StatelessWidget {
           value: 'add_to_queue',
           child: Row(
             children: [
-              const Icon(Icons.queue_music, size: AppSizes.iconMd,
-                  color: AppColors.textSecondary),
+              Icon(Icons.queue_music, size: AppSizes.iconMd,
+                  color: cs.textSecondary),
               const SizedBox(width: AppSpacing.md),
               Text(l.addToQueue,
                   style: AppTextStyles.body),
@@ -212,8 +215,8 @@ class TrackListTile extends StatelessWidget {
           value: 'add_to_playlist',
           child: Row(
             children: [
-              const Icon(Icons.playlist_add, size: AppSizes.iconMd,
-                  color: AppColors.textSecondary),
+              Icon(Icons.playlist_add, size: AppSizes.iconMd,
+                  color: cs.textSecondary),
               const SizedBox(width: AppSpacing.md),
               Text(l.addToPlaylist,
                   style: AppTextStyles.body),
@@ -228,7 +231,7 @@ class TrackListTile extends StatelessWidget {
               Icon(
                 isFavorite ? Icons.favorite : Icons.favorite_border,
                 size: AppSizes.iconMd,
-                color: isFavorite ? AppColors.error : AppColors.textSecondary,
+                color: isFavorite ? cs.error : cs.textSecondary,
               ),
               const SizedBox(width: AppSpacing.md),
               Text(
@@ -242,30 +245,31 @@ class TrackListTile extends StatelessWidget {
   }
 
   /// 로컬 파일 경로면 [Image.file], URL이면 [CachedNetworkImage] 반환.
-  Widget _buildThumbnail() {
+  Widget _buildThumbnail(BuildContext context) {
     final url = item.thumbnailUrl;
-    if (url == null) return _placeholderIcon();
+    if (url == null) return _placeholderIcon(context);
     if (url.startsWith('/')) {
       return Image.file(
         File(url),
         fit: BoxFit.cover,
-        errorBuilder: (_, _, _) => _placeholderIcon(),
+        errorBuilder: (_, _, _) => _placeholderIcon(context),
       );
     }
     return CachedNetworkImage(
       imageUrl: url,
       fit: BoxFit.cover,
-      placeholder: (_, _) => _placeholderIcon(),
-      errorWidget: (_, _, _) => _placeholderIcon(),
+      placeholder: (_, _) => _placeholderIcon(context),
+      errorWidget: (_, _, _) => _placeholderIcon(context),
     );
   }
 
-  Widget _placeholderIcon() {
+  Widget _placeholderIcon(BuildContext context) {
+    final cs = AppColorScheme.of(context);
     return Container(
-      color: AppColors.primarySurface,
-      child: const Icon(
+      color: cs.primarySurface,
+      child: Icon(
         Icons.music_note,
-        color: AppColors.primaryLight,
+        color: cs.primaryLight,
         size: AppSizes.iconMl,
       ),
     );

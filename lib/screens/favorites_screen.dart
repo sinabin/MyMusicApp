@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 import '../providers/history_provider.dart';
 import '../providers/player_provider.dart';
 import '../providers/settings_provider.dart';
-import '../theme/app_colors.dart';
+import '../theme/app_color_scheme.dart';
 import '../widgets/add_to_playlist_sheet.dart';
 import '../widgets/empty_state_widget.dart';
 import '../widgets/song_list_screen.dart';
@@ -19,6 +19,7 @@ class FavoritesScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = AppColorScheme.of(context);
     return Consumer<HistoryProvider>(
       builder: (context, history, _) {
         return SongListScreen(
@@ -27,9 +28,9 @@ class FavoritesScreen extends StatelessWidget {
           showFavoriteButton: true,
           actions: [
             IconButton(
-              icon: const Icon(
+              icon: Icon(
                 Icons.shuffle,
-                color: AppColors.textSecondary,
+                color: cs.textSecondary,
               ),
               onPressed: history.favorites.isEmpty
                   ? null

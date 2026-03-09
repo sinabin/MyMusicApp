@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/playlist_provider.dart';
-import '../theme/app_colors.dart';
+import '../theme/app_color_scheme.dart';
 import '../theme/app_sizes.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
@@ -73,6 +73,7 @@ class _AddToPlaylistSheetState extends State<AddToPlaylistSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = AppColorScheme.of(context);
     final bottomPadding = MediaQuery.of(context).viewPadding.bottom;
     return Padding(
       padding: EdgeInsets.only(
@@ -82,9 +83,9 @@ class _AddToPlaylistSheetState extends State<AddToPlaylistSheet> {
       constraints: BoxConstraints(
         maxHeight: MediaQuery.of(context).size.height * 0.7,
       ),
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(AppTheme.radiusXl)),
+      decoration: BoxDecoration(
+        color: cs.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(AppTheme.radiusXl)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -96,7 +97,7 @@ class _AddToPlaylistSheetState extends State<AddToPlaylistSheet> {
               width: AppSizes.handleWidth,
               height: AppSizes.handleHeight,
               decoration: BoxDecoration(
-                color: AppColors.textTertiary,
+                color: cs.textTertiary,
                 borderRadius: BorderRadius.circular(AppSpacing.xxs),
               ),
             ),
@@ -112,7 +113,7 @@ class _AddToPlaylistSheetState extends State<AddToPlaylistSheet> {
                   style: AppTextStyles.sectionHeader,
                 ),
                 IconButton(
-                  icon: const Icon(Icons.close, color: AppColors.textSecondary),
+                  icon: Icon(Icons.close, color: cs.textSecondary),
                   onPressed: () => Navigator.pop(context),
                 ),
               ],
@@ -130,11 +131,11 @@ class _AddToPlaylistSheetState extends State<AddToPlaylistSheet> {
                     decoration: InputDecoration(
                       hintText: 'New playlist name',
                       hintStyle: TextStyle(
-                        color: AppColors.textTertiary,
+                        color: cs.textTertiary,
                         fontSize: 14,
                       ),
                       filled: true,
-                      fillColor: AppColors.surfaceVariant,
+                      fillColor: cs.surfaceVariant,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                         borderSide: BorderSide.none,
@@ -149,18 +150,18 @@ class _AddToPlaylistSheetState extends State<AddToPlaylistSheet> {
                 ),
                 const SizedBox(width: AppSpacing.sm),
                 IconButton(
-                  icon: const Icon(
+                  icon: Icon(
                     Icons.add_circle,
-                    color: AppColors.primary,
+                    color: cs.primary,
                   ),
                   onPressed: _createAndAdd,
                 ),
               ],
             ),
           ),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: AppSpacing.xxl, vertical: AppSpacing.sm),
-            child: Divider(color: AppColors.divider, height: 1),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl, vertical: AppSpacing.sm),
+            child: Divider(color: cs.divider, height: 1),
           ),
           // 기존 플레이리스트 목록
           Flexible(
@@ -170,9 +171,9 @@ class _AddToPlaylistSheetState extends State<AddToPlaylistSheet> {
                   return Padding(
                     padding: EdgeInsets.fromLTRB(
                         AppSpacing.xxxl, AppSpacing.xxxl, AppSpacing.xxxl, AppSpacing.xxxl + bottomPadding),
-                    child: const Text(
+                    child: Text(
                       'No playlists yet',
-                      style: TextStyle(color: AppColors.textTertiary),
+                      style: TextStyle(color: cs.textTertiary),
                     ),
                   );
                 }
@@ -203,7 +204,7 @@ class _AddToPlaylistSheetState extends State<AddToPlaylistSheet> {
                         FormatUtils.trackCount(
                           playlist.trackVideoIds.length,
                         ),
-                        style: AppTextStyles.caption,
+                        style: AppTextStyles.caption.copyWith(color: cs.textTertiary),
                       ),
                       onTap: () async {
                         HapticFeedback.lightImpact();

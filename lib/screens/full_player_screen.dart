@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import '../models/download_item.dart';
 import '../providers/history_provider.dart';
 import '../providers/player_provider.dart';
+import '../theme/app_color_scheme.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_durations.dart';
 import '../theme/app_sizes.dart';
@@ -56,8 +57,10 @@ class _FullPlayerScreenState extends State<FullPlayerScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = AppColorScheme.of(context);
+
     return Scaffold(
-      backgroundColor: AppColors.scaffoldBackground,
+      backgroundColor: cs.scaffoldBackground,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         leading: IconButton(
@@ -72,6 +75,7 @@ class _FullPlayerScreenState extends State<FullPlayerScreen> {
               if (track == null || track.isStreaming) {
                 return const SizedBox.shrink();
               }
+              final cs = AppColorScheme.of(context);
               return IconButton(
                 tooltip: 'Favorite',
                 onPressed: () =>
@@ -82,8 +86,8 @@ class _FullPlayerScreenState extends State<FullPlayerScreen> {
                     track.isFavorite ? Icons.favorite : Icons.favorite_border,
                     key: ValueKey(track.isFavorite),
                     color: track.isFavorite
-                        ? AppColors.error
-                        : AppColors.textSecondary,
+                        ? cs.error
+                        : cs.textSecondary,
                     size: AppSizes.iconLg,
                   ),
                 ),
@@ -96,11 +100,12 @@ class _FullPlayerScreenState extends State<FullPlayerScreen> {
               if (track == null || track.isStreaming) {
                 return const SizedBox.shrink();
               }
+              final cs = AppColorScheme.of(context);
               return IconButton(
                 tooltip: '플레이리스트에 추가',
-                icon: const Icon(
+                icon: Icon(
                   Icons.playlist_add,
-                  color: AppColors.textSecondary,
+                  color: cs.textSecondary,
                 ),
                 onPressed: () => AddToPlaylistSheet.show(
                   context,
@@ -111,7 +116,7 @@ class _FullPlayerScreenState extends State<FullPlayerScreen> {
           ),
           IconButton(
             tooltip: '재생 큐',
-            icon: const Icon(Icons.queue_music, color: AppColors.textSecondary),
+            icon: Icon(Icons.queue_music, color: cs.textSecondary),
             onPressed: () => QueueScreen.show(context),
           ),
         ],
@@ -120,10 +125,11 @@ class _FullPlayerScreenState extends State<FullPlayerScreen> {
         selector: (_, p) => p.currentTrack,
         builder: (context, track, _) {
           if (track == null) {
-            return const Center(
+            final cs = AppColorScheme.of(context);
+            return Center(
               child: Text(
                 'No track playing',
-                style: TextStyle(color: AppColors.textTertiary),
+                style: TextStyle(color: cs.textTertiary),
               ),
             );
           }
@@ -135,6 +141,7 @@ class _FullPlayerScreenState extends State<FullPlayerScreen> {
 
           final screenWidth = MediaQuery.of(context).size.width;
           final artPadding = screenWidth > 400 ? AppSpacing.hero : AppSpacing.xxl;
+          final cs = AppColorScheme.of(context);
 
           return Column(
             children: [
@@ -150,10 +157,10 @@ class _FullPlayerScreenState extends State<FullPlayerScreen> {
                         ? CachedNetworkImage(
                             imageUrl: track.thumbnailUrl!,
                             fit: BoxFit.cover,
-                            placeholder: (context, url) => _placeholderArt(),
-                            errorWidget: (context, url, error) => _placeholderArt(),
+                            placeholder: (context, url) => _placeholderArt(AppColorScheme.of(context)),
+                            errorWidget: (context, url, error) => _placeholderArt(AppColorScheme.of(context)),
                           )
-                        : _placeholderArt(),
+                        : _placeholderArt(cs),
                   ),
                 ),
               ),
@@ -176,7 +183,7 @@ class _FullPlayerScreenState extends State<FullPlayerScreen> {
                         artist,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
+                        style: AppTextStyles.body.copyWith(color: cs.textSecondary),
                       ),
                     ],
                   ],
@@ -197,13 +204,13 @@ class _FullPlayerScreenState extends State<FullPlayerScreen> {
   }
 
   /// 셔플·반복 활성 시 아이콘 아래 표시하는 점 인디케이터.
-  Widget _activeDot() {
+  Widget _activeDot(AppColorScheme cs) {
     return Container(
       width: AppSpacing.xs,
       height: AppSpacing.xs,
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: AppColors.primaryLight,
+        color: cs.primaryLight,
       ),
     );
   }
@@ -215,6 +222,7 @@ class _FullPlayerScreenState extends State<FullPlayerScreen> {
         final (isPlaying, isShuffleActive, loopMode) = data;
         final isRepeatActive = loopMode != LoopMode.off;
         final player = context.read<PlayerProvider>();
+        final cs = AppColorScheme.of(context);
 
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxxl),
@@ -233,8 +241,8 @@ class _FullPlayerScreenState extends State<FullPlayerScreen> {
                         Icons.shuffle,
                         key: ValueKey(isShuffleActive),
                         color: isShuffleActive
-                            ? AppColors.primary
-                            : AppColors.textTertiary,
+                            ? cs.primary
+                            : cs.textTertiary,
                       ),
                     ),
                     onPressed: () {
@@ -242,14 +250,14 @@ class _FullPlayerScreenState extends State<FullPlayerScreen> {
                       player.toggleShuffle();
                     },
                   ),
-                  if (isShuffleActive) _activeDot() else const SizedBox(height: AppSpacing.xs),
+                  if (isShuffleActive) _activeDot(cs) else const SizedBox(height: AppSpacing.xs),
                 ],
               ),
               // 이전
               IconButton(
                 tooltip: 'Previous',
                 icon: const Icon(Icons.skip_previous, size: AppSizes.iconXxxl),
-                color: AppColors.textPrimary,
+                color: cs.textPrimary,
                 onPressed: () => player.skipPrevious(),
               ),
               // 재생/일시정지
@@ -281,7 +289,7 @@ class _FullPlayerScreenState extends State<FullPlayerScreen> {
               IconButton(
                 tooltip: 'Next',
                 icon: const Icon(Icons.skip_next, size: AppSizes.iconXxxl),
-                color: AppColors.textPrimary,
+                color: cs.textPrimary,
                 onPressed: () => player.skipNext(),
               ),
               // 반복
@@ -296,8 +304,8 @@ class _FullPlayerScreenState extends State<FullPlayerScreen> {
                         _loopModeIcon(loopMode),
                         key: ValueKey(loopMode),
                         color: isRepeatActive
-                            ? AppColors.primary
-                            : AppColors.textTertiary,
+                            ? cs.primary
+                            : cs.textTertiary,
                       ),
                     ),
                     onPressed: () {
@@ -305,7 +313,7 @@ class _FullPlayerScreenState extends State<FullPlayerScreen> {
                       player.cycleLoopMode();
                     },
                   ),
-                  if (isRepeatActive) _activeDot() else const SizedBox(height: AppSpacing.xs),
+                  if (isRepeatActive) _activeDot(cs) else const SizedBox(height: AppSpacing.xs),
                 ],
               ),
             ],
@@ -322,12 +330,12 @@ class _FullPlayerScreenState extends State<FullPlayerScreen> {
     };
   }
 
-  Widget _placeholderArt() {
+  Widget _placeholderArt(AppColorScheme cs) {
     return Container(
-      color: AppColors.surfaceVariant,
-      child: const Icon(
+      color: cs.surfaceVariant,
+      child: Icon(
         Icons.music_note,
-        color: AppColors.primaryLight,
+        color: cs.primaryLight,
         size: AppSizes.iconMega,
       ),
     );

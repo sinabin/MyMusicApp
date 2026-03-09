@@ -11,6 +11,7 @@ import '../providers/player_provider.dart';
 import '../providers/recommendation_provider.dart';
 import '../providers/settings_provider.dart';
 import '../services/youtube_service.dart';
+import '../theme/app_color_scheme.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_durations.dart';
 import '../theme/app_sizes.dart';
@@ -96,11 +97,12 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
       recProvider.removeFromCurrent(rec.videoId);
       recProvider.markCacheStale();
       if (mounted) {
+        final cs = AppColorScheme.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Row(
               children: [
-                const Icon(Icons.check_circle, color: AppColors.success, size: AppSizes.iconMd),
+                Icon(Icons.check_circle, color: cs.success, size: AppSizes.iconMd),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
@@ -119,6 +121,8 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = AppColorScheme.of(context);
+
     return Scaffold(
       body: SafeArea(
         child: CustomScrollView(
@@ -126,7 +130,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
             // App bar
             SliverAppBar(
               floating: true,
-              backgroundColor: AppColors.scaffoldBackground,
+              backgroundColor: cs.scaffoldBackground,
               title: Row(
                 children: [
                   Container(
@@ -149,9 +153,9 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                 Consumer<RecommendationProvider>(
                   builder: (context, provider, _) {
                     return IconButton(
-                      icon: const Icon(
+                      icon: Icon(
                         Icons.refresh,
-                        color: AppColors.textSecondary,
+                        color: cs.textSecondary,
                       ),
                       onPressed: provider.isLoading
                           ? null
@@ -176,7 +180,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                   const SizedBox(height: 6),
                   Text(
                     'Recommendations based on your downloads',
-                    style: AppTextStyles.subtitle,
+                    style: AppTextStyles.subtitle.copyWith(color: cs.textSecondary),
                   ).animate().fadeIn(duration: AppDurations.emphasis, delay: 100.ms),
                   const SizedBox(height: AppSpacing.xxl),
                 ]),
@@ -188,17 +192,17 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
               builder: (context, recProvider, _) {
                 // 로딩
                 if (recProvider.isLoading) {
-                  return _buildShimmer();
+                  return _buildShimmer(cs);
                 }
 
                 // 에러
                 if (recProvider.error != null) {
-                  return _buildError(recProvider);
+                  return _buildError(recProvider, cs);
                 }
 
                 // 빈 결과
                 if (recProvider.items.isEmpty) {
-                  return _buildEmpty();
+                  return _buildEmpty(cs);
                 }
 
                 // 결과 목록
@@ -252,7 +256,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
   }
 
   /// 로딩 shimmer 위젯.
-  Widget _buildShimmer() {
+  Widget _buildShimmer(AppColorScheme cs) {
     return SliverPadding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
       sliver: SliverList(
@@ -261,12 +265,12 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
             return Padding(
               padding: const EdgeInsets.only(bottom: AppSpacing.sm),
               child: Shimmer.fromColors(
-                baseColor: AppColors.surface,
-                highlightColor: AppColors.surfaceVariant,
+                baseColor: cs.surface,
+                highlightColor: cs.surfaceVariant,
                 child: Container(
                   height: AppSizes.thumbnailXl,
                   decoration: BoxDecoration(
-                    color: AppColors.surface,
+                    color: cs.surface,
                     borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                   ),
                 ),
@@ -280,28 +284,28 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
   }
 
   /// 에러 상태 위젯.
-  Widget _buildError(RecommendationProvider provider) {
+  Widget _buildError(RecommendationProvider provider, AppColorScheme cs) {
     return SliverPadding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
       sliver: SliverToBoxAdapter(
         child: Container(
           padding: const EdgeInsets.all(AppSpacing.xxl),
           decoration: BoxDecoration(
-            color: AppColors.surface,
+            color: cs.surface,
             borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-            border: Border.all(color: AppColors.border),
+            border: Border.all(color: cs.border),
           ),
           child: Column(
             children: [
-              const Icon(
+              Icon(
                 Icons.cloud_off,
-                color: AppColors.textTertiary,
+                color: cs.textTertiary,
                 size: AppSizes.iconHero,
               ),
               const SizedBox(height: AppSpacing.md),
               Text(
                 provider.error!,
-                style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
+                style: AppTextStyles.body.copyWith(color: cs.textSecondary),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: AppSpacing.lg),
@@ -318,34 +322,34 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
   }
 
   /// 빈 결과 상태 위젯.
-  Widget _buildEmpty() {
+  Widget _buildEmpty(AppColorScheme cs) {
     return SliverPadding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
       sliver: SliverToBoxAdapter(
         child: Container(
           padding: const EdgeInsets.all(AppSpacing.xxl),
           decoration: BoxDecoration(
-            color: AppColors.surface,
+            color: cs.surface,
             borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-            border: Border.all(color: AppColors.border),
+            border: Border.all(color: cs.border),
           ),
           child: Column(
             children: [
-              const Icon(
+              Icon(
                 Icons.music_note_outlined,
-                color: AppColors.textTertiary,
+                color: cs.textTertiary,
                 size: AppSizes.iconHero,
               ),
               const SizedBox(height: AppSpacing.md),
               Text(
                 '새로운 추천을 준비 중입니다',
-                style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
+                style: AppTextStyles.body.copyWith(color: cs.textSecondary),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: AppSpacing.xs),
               Text(
                 '더 많은 곡을 다운로드하면 정확한 추천이 가능해요',
-                style: AppTextStyles.caption,
+                style: AppTextStyles.caption.copyWith(color: cs.textTertiary),
                 textAlign: TextAlign.center,
               ),
             ],

@@ -2,7 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../models/download_item.dart';
-import '../theme/app_colors.dart';
+import '../theme/app_color_scheme.dart';
 import '../theme/app_sizes.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_theme.dart';
@@ -30,6 +30,7 @@ class RecentPlayHorizontalList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = AppColorScheme.of(context);
     final items = tracks.take(10).toList();
     return SizedBox(
       height: AppSizes.recentPlayListHeight,
@@ -63,7 +64,7 @@ class RecentPlayHorizontalList extends StatelessWidget {
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                           border: isCurrent
-                              ? Border.all(color: AppColors.primary, width: 2)
+                              ? Border.all(color: cs.primary, width: 2)
                               : null,
                         ),
                         child: ClipRRect(
@@ -75,10 +76,10 @@ class RecentPlayHorizontalList extends StatelessWidget {
                                   imageUrl: item.thumbnailUrl!,
                                   fit: BoxFit.cover,
                                   memCacheWidth: 200,
-                                  placeholder: (_, _) => _placeholder(),
-                                  errorWidget: (_, _, _) => _placeholder(),
+                                  placeholder: (_, _) => _placeholder(context),
+                                  errorWidget: (_, _, _) => _placeholder(context),
                                 )
-                              : _placeholder(),
+                              : _placeholder(context),
                         ),
                       ),
                       const SizedBox(height: 6),
@@ -88,8 +89,8 @@ class RecentPlayHorizontalList extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           color: isCurrent
-                              ? AppColors.primaryLight
-                              : AppColors.textPrimary,
+                              ? cs.primaryLight
+                              : cs.textPrimary,
                           fontSize: 12,
                         ),
                       ),
@@ -98,8 +99,8 @@ class RecentPlayHorizontalList extends StatelessWidget {
                           artist,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            color: AppColors.textSecondary,
+                          style: TextStyle(
+                            color: cs.textSecondary,
                             fontSize: 11,
                           ),
                         ),
@@ -114,12 +115,13 @@ class RecentPlayHorizontalList extends StatelessWidget {
     );
   }
 
-  Widget _placeholder() {
+  Widget _placeholder(BuildContext context) {
+    final cs = AppColorScheme.of(context);
     return Container(
-      color: AppColors.primarySurface,
-      child: const Icon(
+      color: cs.primarySurface,
+      child: Icon(
         Icons.music_note,
-        color: AppColors.primaryLight,
+        color: cs.primaryLight,
         size: AppSizes.iconXxl,
       ),
     );

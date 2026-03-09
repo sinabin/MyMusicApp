@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../l10n/app_localizations.dart';
 import '../providers/player_provider.dart';
-import '../theme/app_colors.dart';
+import '../theme/app_color_scheme.dart';
 import '../theme/app_durations.dart';
 import '../theme/app_sizes.dart';
 import '../theme/app_spacing.dart';
@@ -31,14 +31,15 @@ class QueueScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = AppColorScheme.of(context);
     final bottomPadding = MediaQuery.of(context).viewPadding.bottom;
     return Container(
       constraints: BoxConstraints(
         maxHeight: MediaQuery.of(context).size.height * 0.7,
       ),
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(AppTheme.radiusXl)),
+      decoration: BoxDecoration(
+        color: cs.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(AppTheme.radiusXl)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -50,7 +51,7 @@ class QueueScreen extends StatelessWidget {
               width: AppSizes.handleWidth,
               height: AppSizes.handleHeight,
               decoration: BoxDecoration(
-                color: AppColors.textTertiary,
+                color: cs.textTertiary,
                 borderRadius: BorderRadius.circular(AppSpacing.xxs),
               ),
             ),
@@ -69,13 +70,13 @@ class QueueScreen extends StatelessWidget {
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.close, color: AppColors.textSecondary),
+                  icon: Icon(Icons.close, color: cs.textSecondary),
                   onPressed: () => Navigator.pop(context),
                 ),
               ],
             ),
           ),
-          const Divider(color: AppColors.divider, height: 1),
+          Divider(color: cs.divider, height: 1),
           // 큐 목록
           Flexible(
             child: Consumer<PlayerProvider>(
@@ -88,23 +89,23 @@ class QueueScreen extends StatelessWidget {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.queue_music,
                           size: AppSizes.iconHero,
-                          color: AppColors.textTertiary,
+                          color: cs.textTertiary,
                         ),
                         const SizedBox(height: AppSpacing.md),
                         Text(
                           L.of(context)!.queueEmpty,
-                          style: const TextStyle(
-                            color: AppColors.textTertiary,
+                          style: TextStyle(
+                            color: cs.textTertiary,
                           ),
                         ),
                         const SizedBox(height: AppSpacing.xs),
                         Text(
                           L.of(context)!.queueEmptyHint,
-                          style: const TextStyle(
-                            color: AppColors.textTertiary,
+                          style: TextStyle(
+                            color: cs.textTertiary,
                             fontSize: 12,
                           ),
                         ),
@@ -129,10 +130,10 @@ class QueueScreen extends StatelessWidget {
                       background: Container(
                         alignment: Alignment.centerRight,
                         padding: const EdgeInsets.only(right: AppSpacing.xl),
-                        color: AppColors.error.withValues(alpha: 0.2),
-                        child: const Icon(
+                        color: cs.error.withValues(alpha: 0.2),
+                        child: Icon(
                           Icons.delete,
-                          color: AppColors.error,
+                          color: cs.error,
                         ),
                       ),
                       onDismissed: (_) => player.removeFromQueue(index),

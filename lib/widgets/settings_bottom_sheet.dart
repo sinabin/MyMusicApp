@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:file_picker/file_picker.dart';
 import '../providers/settings_provider.dart';
 import '../screens/login_webview_screen.dart';
-import '../theme/app_colors.dart';
+import '../theme/app_color_scheme.dart';
 import '../theme/app_sizes.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
@@ -28,13 +28,14 @@ class SettingsBottomSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = AppColorScheme.of(context);
     return Container(
       constraints: BoxConstraints(
         maxHeight: MediaQuery.of(context).size.height * 0.7,
       ),
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(AppTheme.radiusXl)),
+      decoration: BoxDecoration(
+        color: cs.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(AppTheme.radiusXl)),
       ),
       child: SingleChildScrollView(
         child: Padding(
@@ -43,6 +44,7 @@ class SettingsBottomSheet extends StatelessWidget {
               AppSpacing.xxxl + MediaQuery.of(context).viewPadding.bottom),
           child: Consumer<SettingsProvider>(
             builder: (context, settings, _) {
+              final cs = AppColorScheme.of(context);
               return Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -51,7 +53,7 @@ class SettingsBottomSheet extends StatelessWidget {
                     width: AppSizes.handleWidth,
                     height: AppSizes.handleHeight,
                     decoration: BoxDecoration(
-                      color: AppColors.textTertiary,
+                      color: cs.textTertiary,
                       borderRadius: BorderRadius.circular(AppSpacing.xxs),
                     ),
                   ),
@@ -65,7 +67,7 @@ class SettingsBottomSheet extends StatelessWidget {
                         style: AppTextStyles.titleLarge,
                       ),
                       IconButton(
-                        icon: const Icon(Icons.close, color: AppColors.textSecondary),
+                        icon: Icon(Icons.close, color: cs.textSecondary),
                         onPressed: () => Navigator.pop(context),
                       ),
                     ],
@@ -75,7 +77,7 @@ class SettingsBottomSheet extends StatelessWidget {
                   // Save location
                   Row(
                     children: [
-                      const Icon(Icons.folder_outlined, color: AppColors.textSecondary, size: AppSizes.iconMd),
+                      Icon(Icons.folder_outlined, color: cs.textSecondary, size: AppSizes.iconMd),
                       const SizedBox(width: 10),
                       Expanded(
                         child: Column(
@@ -92,7 +94,7 @@ class SettingsBottomSheet extends StatelessWidget {
                               settings.settings.savePath.isEmpty
                                   ? '설정되지 않음'
                                   : settings.settings.savePath,
-                              style: AppTextStyles.caption,
+                              style: AppTextStyles.caption.copyWith(color: cs.textTertiary),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -111,14 +113,14 @@ class SettingsBottomSheet extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: AppSpacing.lg),
-                  const Divider(color: AppColors.divider),
+                  Divider(color: cs.divider),
                   const SizedBox(height: AppSpacing.lg),
 
                   // Tap play mode
                   Row(
                     children: [
-                      const Icon(Icons.play_circle_outline,
-                          color: AppColors.textSecondary, size: AppSizes.iconMd),
+                      Icon(Icons.play_circle_outline,
+                          color: cs.textSecondary, size: AppSizes.iconMd),
                       const SizedBox(width: 10),
                       Expanded(
                         child: Column(
@@ -133,7 +135,7 @@ class SettingsBottomSheet extends StatelessWidget {
                             const SizedBox(height: AppSpacing.xxs),
                             Text(
                               '선택한 곡부터 목록 전체를 이어서 재생',
-                              style: AppTextStyles.caption,
+                              style: AppTextStyles.caption.copyWith(color: cs.textTertiary),
                             ),
                           ],
                         ),
@@ -142,19 +144,19 @@ class SettingsBottomSheet extends StatelessWidget {
                         value: settings.settings.playAllOnTap,
                         onChanged: (value) =>
                             settings.setPlayAllOnTap(value),
-                        activeTrackColor: AppColors.primary,
+                        activeTrackColor: cs.primary,
                       ),
                     ],
                   ),
                   const SizedBox(height: AppSpacing.lg),
-                  const Divider(color: AppColors.divider),
+                  Divider(color: cs.divider),
                   const SizedBox(height: AppSpacing.lg),
 
                   // Theme mode
                   Row(
                     children: [
-                      const Icon(Icons.palette_outlined,
-                          color: AppColors.textSecondary, size: AppSizes.iconMd),
+                      Icon(Icons.palette_outlined,
+                          color: cs.textSecondary, size: AppSizes.iconMd),
                       const SizedBox(width: 10),
                       Expanded(
                         child: Column(
@@ -169,7 +171,7 @@ class SettingsBottomSheet extends StatelessWidget {
                             const SizedBox(height: AppSpacing.xxs),
                             Text(
                               _themeModeLabel(settings.settings.themeMode),
-                              style: AppTextStyles.caption,
+                              style: AppTextStyles.caption.copyWith(color: cs.textTertiary),
                             ),
                           ],
                         ),
@@ -201,7 +203,7 @@ class SettingsBottomSheet extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: AppSpacing.lg),
-                  const Divider(color: AppColors.divider),
+                  Divider(color: cs.divider),
                   const SizedBox(height: AppSpacing.lg),
 
                   // YouTube Login
@@ -224,6 +226,7 @@ class SettingsBottomSheet extends StatelessWidget {
   }
 
   Widget _buildLoginSection(BuildContext context, SettingsProvider settings) {
+    final cs = AppColorScheme.of(context);
     final isLoggedIn = settings.settings.isLoggedIn;
 
     return Column(
@@ -233,7 +236,7 @@ class SettingsBottomSheet extends StatelessWidget {
           children: [
             Icon(
               isLoggedIn ? Icons.check_circle : Icons.account_circle_outlined,
-              color: isLoggedIn ? AppColors.success : AppColors.textSecondary,
+              color: isLoggedIn ? cs.success : cs.textSecondary,
               size: AppSizes.iconMd,
             ),
             const SizedBox(width: 10),
@@ -252,7 +255,7 @@ class SettingsBottomSheet extends StatelessWidget {
                     isLoggedIn
                         ? settings.settings.userEmail ?? '로그인됨'
                         : '연령 제한 콘텐츠 재생 시 필요',
-                    style: AppTextStyles.caption,
+                    style: AppTextStyles.caption.copyWith(color: cs.textTertiary),
                   ),
                 ],
               ),
@@ -268,8 +271,8 @@ class SettingsBottomSheet extends StatelessWidget {
                   icon: const Icon(Icons.logout, size: AppSizes.iconMsl),
                   label: const Text('로그아웃'),
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.error,
-                    side: const BorderSide(color: AppColors.error),
+                    foregroundColor: cs.error,
+                    side: BorderSide(color: cs.error),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                     ),
@@ -292,7 +295,7 @@ class SettingsBottomSheet extends StatelessWidget {
                   icon: const Icon(Icons.login, size: AppSizes.iconMsl),
                   label: const Text('YouTube 로그인'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
+                    backgroundColor: cs.primary,
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(AppTheme.radiusMd),

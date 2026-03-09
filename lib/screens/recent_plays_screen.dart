@@ -7,7 +7,7 @@ import '../providers/history_provider.dart';
 import '../providers/playback_history_provider.dart';
 import '../providers/player_provider.dart';
 import '../providers/settings_provider.dart';
-import '../theme/app_colors.dart';
+import '../theme/app_color_scheme.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
 import '../widgets/add_to_playlist_sheet.dart';
@@ -23,10 +23,11 @@ class RecentPlaysScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = AppColorScheme.of(context);
     return Scaffold(
-      backgroundColor: AppColors.scaffoldBackground,
+      backgroundColor: cs.scaffoldBackground,
       appBar: AppBar(
-        backgroundColor: AppColors.scaffoldBackground,
+        backgroundColor: cs.scaffoldBackground,
         title: Text(
           'Recent Plays',
           style: AppTextStyles.sectionHeader,
@@ -35,9 +36,9 @@ class RecentPlaysScreen extends StatelessWidget {
           Consumer<PlaybackHistoryProvider>(
             builder: (context, provider, _) {
               return IconButton(
-                icon: const Icon(
+                icon: Icon(
                   Icons.delete_outline,
-                  color: AppColors.textSecondary,
+                  color: cs.textSecondary,
                 ),
                 onPressed: provider.recentCount == 0
                     ? null
@@ -88,6 +89,7 @@ class RecentPlaysScreen extends StatelessWidget {
                       child: Text(
                         entry.headerLabel!.toUpperCase(),
                         style: AppTextStyles.caption.copyWith(
+                          color: cs.textTertiary,
                           fontWeight: FontWeight.w600,
                           letterSpacing: 0.5,
                         ),
@@ -148,17 +150,18 @@ class RecentPlaysScreen extends StatelessWidget {
     BuildContext context,
     PlaybackHistoryProvider provider,
   ) {
+    final cs = AppColorScheme.of(context);
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.surface,
-        title: const Text(
+        backgroundColor: cs.surface,
+        title: Text(
           'Clear History',
-          style: TextStyle(color: AppColors.textPrimary),
+          style: TextStyle(color: cs.textPrimary),
         ),
-        content: const Text(
+        content: Text(
           'Are you sure you want to clear all play history?',
-          style: TextStyle(color: AppColors.textSecondary),
+          style: TextStyle(color: cs.textSecondary),
         ),
         actions: [
           TextButton(
@@ -170,9 +173,9 @@ class RecentPlaysScreen extends StatelessWidget {
               provider.clearHistory();
               Navigator.pop(ctx);
             },
-            child: const Text(
+            child: Text(
               'Clear',
-              style: TextStyle(color: AppColors.error),
+              style: TextStyle(color: cs.error),
             ),
           ),
         ],

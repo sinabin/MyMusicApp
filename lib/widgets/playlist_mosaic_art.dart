@@ -1,7 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
-import '../theme/app_colors.dart';
+import '../theme/app_color_scheme.dart';
 import '../theme/app_sizes.dart';
 import '../theme/app_theme.dart';
 
@@ -34,14 +34,14 @@ class PlaylistMosaicArt extends StatelessWidget {
       child: SizedBox(
         width: size,
         height: size,
-        child: urls.isEmpty ? _placeholder() : _buildGrid(urls),
+        child: urls.isEmpty ? _placeholder(context) : _buildGrid(context, urls),
       ),
     );
   }
 
-  Widget _buildGrid(List<String?> urls) {
+  Widget _buildGrid(BuildContext context, List<String?> urls) {
     if (urls.length == 1) {
-      return _imageOrPlaceholder(urls[0]);
+      return _imageOrPlaceholder(context, urls[0]);
     }
 
     final half = size / 2;
@@ -51,13 +51,13 @@ class PlaylistMosaicArt extends StatelessWidget {
         cells.add(SizedBox(
           width: half,
           height: half,
-          child: _imageOrPlaceholder(urls[i]),
+          child: _imageOrPlaceholder(context, urls[i]),
         ));
       } else {
         cells.add(SizedBox(
           width: half,
           height: half,
-          child: _placeholder(),
+          child: _placeholder(context),
         ));
       }
     }
@@ -65,22 +65,23 @@ class PlaylistMosaicArt extends StatelessWidget {
     return Wrap(children: cells);
   }
 
-  Widget _imageOrPlaceholder(String? url) {
-    if (url == null) return _placeholder();
+  Widget _imageOrPlaceholder(BuildContext context, String? url) {
+    if (url == null) return _placeholder(context);
     return CachedNetworkImage(
       imageUrl: url,
       fit: BoxFit.cover,
-      placeholder: (_, _) => _placeholder(),
-      errorWidget: (_, _, _) => _placeholder(),
+      placeholder: (_, _) => _placeholder(context),
+      errorWidget: (_, _, _) => _placeholder(context),
     );
   }
 
-  Widget _placeholder() {
+  Widget _placeholder(BuildContext context) {
+    final cs = AppColorScheme.of(context);
     return Container(
-      color: AppColors.primarySurface,
+      color: cs.primarySurface,
       child: Icon(
         Icons.music_note,
-        color: AppColors.primaryLight,
+        color: cs.primaryLight,
         size: size * 0.4,
       ),
     );

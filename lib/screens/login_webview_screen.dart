@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import '../services/auth_service.dart';
-import '../theme/app_colors.dart';
+import '../theme/app_color_scheme.dart';
 import '../theme/app_sizes.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
@@ -130,25 +130,26 @@ class _LoginWebviewScreenState extends State<LoginWebviewScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = AppColorScheme.of(context);
     return Scaffold(
-      backgroundColor: AppColors.scaffoldBackground,
+      backgroundColor: cs.scaffoldBackground,
       appBar: AppBar(
         title: Text(
           'YouTube Login',
           style: AppTextStyles.sectionHeader,
         ),
         leading: IconButton(
-          icon: const Icon(Icons.close, color: AppColors.textPrimary),
+          icon: Icon(Icons.close, color: cs.textPrimary),
           onPressed: () => Navigator.pop(context),
         ),
         actions: [
           if (_isLoading)
-            const Padding(
-              padding: EdgeInsets.only(right: AppSpacing.lg),
+            Padding(
+              padding: const EdgeInsets.only(right: AppSpacing.lg),
               child: SizedBox(
                 width: AppSizes.indicatorSm,
                 height: AppSizes.indicatorSm,
-                child: CircularProgressIndicator(strokeWidth: AppSizes.strokeWidth, color: AppColors.primary),
+                child: CircularProgressIndicator(strokeWidth: AppSizes.strokeWidth, color: cs.primary),
               ),
             ),
         ],
@@ -156,9 +157,9 @@ class _LoginWebviewScreenState extends State<LoginWebviewScreen> {
       body: Column(
         children: [
           if (_isLoading)
-            const LinearProgressIndicator(
-              color: AppColors.primary,
-              backgroundColor: AppColors.surfaceVariant,
+            LinearProgressIndicator(
+              color: cs.primary,
+              backgroundColor: cs.surfaceVariant,
             ),
           Expanded(
             child: WebViewWidget(controller: _controller),

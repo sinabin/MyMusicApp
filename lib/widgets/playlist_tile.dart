@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../models/playlist_item.dart';
-import '../theme/app_colors.dart';
+import '../theme/app_color_scheme.dart';
 import '../theme/app_sizes.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
@@ -39,6 +39,7 @@ class PlaylistTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = AppColorScheme.of(context);
     return Dismissible(
       key: ValueKey(playlist.id),
       direction: DismissDirection.endToStart,
@@ -46,10 +47,10 @@ class PlaylistTile extends StatelessWidget {
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: AppSpacing.xl),
         decoration: BoxDecoration(
-          color: AppColors.error.withValues(alpha: 0.2),
+          color: cs.error.withValues(alpha: 0.2),
           borderRadius: BorderRadius.circular(AppTheme.radiusMd),
         ),
-        child: const Icon(Icons.delete, color: AppColors.error),
+        child: Icon(Icons.delete, color: cs.error),
       ),
       confirmDismiss: (direction) async {
         return await showDialog<bool>(
@@ -64,9 +65,9 @@ class PlaylistTile extends StatelessWidget {
               ),
               TextButton(
                 onPressed: () => Navigator.pop(ctx, true),
-                child: const Text(
+                child: Text(
                   'Delete',
-                  style: TextStyle(color: AppColors.error),
+                  style: TextStyle(color: cs.error),
                 ),
               ),
             ],
@@ -80,9 +81,9 @@ class PlaylistTile extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(AppSpacing.md),
           decoration: BoxDecoration(
-            color: AppColors.surface,
+            color: cs.surface,
             borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-            border: Border.all(color: AppColors.border, width: 1),
+            border: Border.all(color: cs.border, width: 1),
           ),
           child: Row(
             children: [
@@ -104,14 +105,14 @@ class PlaylistTile extends StatelessWidget {
                     const SizedBox(height: AppSpacing.xxs),
                     Text(
                       subtitle,
-                      style: AppTextStyles.caption,
+                      style: AppTextStyles.caption.copyWith(color: cs.textTertiary),
                     ),
                   ],
                 ),
               ),
-              const Icon(
+              Icon(
                 Icons.chevron_right,
-                color: AppColors.textTertiary,
+                color: cs.textTertiary,
                 size: AppSizes.iconMd,
               ),
             ],

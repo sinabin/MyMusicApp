@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/player_provider.dart';
-import '../theme/app_colors.dart';
+import '../theme/app_color_scheme.dart';
 import '../theme/app_sizes.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
@@ -28,6 +28,7 @@ class _SeekBarState extends State<SeekBar> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = AppColorScheme.of(context);
     return Selector<PlayerProvider, (Duration, Duration)>(
       selector: (_, p) => (p.position, p.duration),
       builder: (context, data, _) {
@@ -53,10 +54,10 @@ class _SeekBarState extends State<SeekBar> {
                       ? AppSizes.seekBarFullOverlayRadius
                       : AppSizes.seekBarOverlayRadius,
                 ),
-                activeTrackColor: AppColors.primary,
-                inactiveTrackColor: AppColors.surfaceLight,
-                thumbColor: AppColors.primaryLight,
-                overlayColor: AppColors.primary.withValues(alpha: 0.2),
+                activeTrackColor: cs.primary,
+                inactiveTrackColor: cs.surfaceLight,
+                thumbColor: cs.primaryLight,
+                overlayColor: cs.primary.withValues(alpha: 0.2),
               ),
               child: Slider(
                 min: 0,
@@ -84,11 +85,11 @@ class _SeekBarState extends State<SeekBar> {
                 children: [
                   Text(
                     FormatUtils.duration(playerPos),
-                    style: AppTextStyles.caption,
+                    style: AppTextStyles.caption.copyWith(color: cs.textTertiary),
                   ),
                   Text(
                     FormatUtils.duration(playerDur),
-                    style: AppTextStyles.caption,
+                    style: AppTextStyles.caption.copyWith(color: cs.textTertiary),
                   ),
                 ],
               ),

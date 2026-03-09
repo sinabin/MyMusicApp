@@ -8,6 +8,7 @@ import '../providers/history_provider.dart';
 import '../providers/playback_history_provider.dart';
 import '../providers/player_provider.dart';
 import '../providers/settings_provider.dart';
+import '../theme/app_color_scheme.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_durations.dart';
 import '../theme/app_sizes.dart';
@@ -53,6 +54,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = AppColorScheme.of(context);
+
     return Scaffold(
       body: SafeArea(
         child: CustomScrollView(
@@ -83,8 +86,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     const Spacer(),
                     IconButton(
                       tooltip: '검색',
-                      icon: const Icon(Icons.search,
-                          color: AppColors.textSecondary),
+                      icon: Icon(Icons.search,
+                          color: cs.textSecondary),
                       onPressed: () => Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -93,8 +96,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     IconButton(
                       tooltip: '설정',
-                      icon: const Icon(Icons.settings_outlined,
-                          color: AppColors.textSecondary),
+                      icon: Icon(Icons.settings_outlined,
+                          color: cs.textSecondary),
                       onPressed: () => SettingsBottomSheet.show(context),
                     ),
                   ],

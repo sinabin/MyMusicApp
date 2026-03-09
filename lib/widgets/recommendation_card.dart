@@ -1,7 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import '../models/recommendation.dart';
-import '../theme/app_colors.dart';
+import '../theme/app_color_scheme.dart';
 import '../theme/app_sizes.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
@@ -39,6 +39,7 @@ class RecommendationCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = AppColorScheme.of(context);
     return Dismissible(
       key: ValueKey(recommendation.videoId),
       direction: DismissDirection.endToStart,
@@ -46,17 +47,17 @@ class RecommendationCard extends StatelessWidget {
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: AppSpacing.xl),
         decoration: BoxDecoration(
-          color: AppColors.error.withValues(alpha: 0.2),
+          color: cs.error.withValues(alpha: 0.2),
           borderRadius: BorderRadius.circular(AppTheme.radiusMd),
         ),
-        child: const Column(
+        child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.not_interested, color: AppColors.error),
-            SizedBox(height: AppSpacing.xs),
+            Icon(Icons.not_interested, color: cs.error),
+            const SizedBox(height: AppSpacing.xs),
             Text(
               '관심 없음',
-              style: TextStyle(color: AppColors.error, fontSize: 11),
+              style: TextStyle(color: cs.error, fontSize: 11),
             ),
           ],
         ),
@@ -65,9 +66,9 @@ class RecommendationCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: cs.surface,
           borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-          border: Border.all(color: AppColors.border, width: 1),
+          border: Border.all(color: cs.border, width: 1),
         ),
         child: Row(
           children: [
@@ -94,18 +95,18 @@ class RecommendationCard extends StatelessWidget {
                               imageUrl: recommendation.thumbnailUrl,
                               fit: BoxFit.cover,
                               placeholder: (_, _) => Container(
-                                color: AppColors.surfaceVariant,
-                                child: const Icon(
+                                color: cs.surfaceVariant,
+                                child: Icon(
                                   Icons.music_note,
-                                  color: AppColors.textTertiary,
+                                  color: cs.textTertiary,
                                   size: AppSizes.iconLg,
                                 ),
                               ),
                               errorWidget: (_, _, _) => Container(
-                                color: AppColors.surfaceVariant,
-                                child: const Icon(
+                                color: cs.surfaceVariant,
+                                child: Icon(
                                   Icons.music_note,
-                                  color: AppColors.textTertiary,
+                                  color: cs.textTertiary,
                                   size: AppSizes.iconLg,
                                 ),
                               ),
@@ -155,8 +156,8 @@ class RecommendationCard extends StatelessWidget {
                             recommendation.channelName,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              color: AppColors.textTertiary,
+                            style: TextStyle(
+                              color: cs.textTertiary,
                               fontSize: 11,
                             ),
                           ),
@@ -167,15 +168,15 @@ class RecommendationCard extends StatelessWidget {
                               vertical: AppSpacing.xxs,
                             ),
                             decoration: BoxDecoration(
-                              color: AppColors.primarySurface,
+                              color: cs.primarySurface,
                               borderRadius: BorderRadius.circular(AppSpacing.xs),
                             ),
                             child: Text(
                               recommendation.reason,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                color: AppColors.primaryLight,
+                              style: TextStyle(
+                                color: cs.primaryLight,
                                 fontSize: 10,
                               ),
                             ),
@@ -196,14 +197,14 @@ class RecommendationCard extends StatelessWidget {
                   ? SizedBox(
                       width: AppSizes.indicatorSm,
                       height: AppSizes.indicatorSm,
-                      child: const CircularProgressIndicator(
+                      child: CircularProgressIndicator(
                         strokeWidth: AppSizes.strokeWidth,
-                        color: AppColors.primary,
+                        color: cs.primary,
                       ),
                     )
-                  : const Icon(
+                  : Icon(
                       Icons.download_rounded,
-                      color: AppColors.primary,
+                      color: cs.primary,
                       size: AppSizes.iconLg,
                     ),
               onPressed: isDownloading ? null : onDownload,

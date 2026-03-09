@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/download_state.dart';
+import '../theme/app_color_scheme.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_durations.dart';
 import '../theme/app_spacing.dart';
@@ -20,6 +21,7 @@ class ProgressIndicatorBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = AppColorScheme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -31,7 +33,7 @@ class ProgressIndicatorBar extends StatelessWidget {
               Container(
                 height: AppSpacing.sm,
                 width: double.infinity,
-                color: AppColors.surfaceVariant,
+                color: cs.surfaceVariant,
               ),
               AnimatedFractionallySizedBox(
                 duration: AppDurations.fast,
@@ -54,8 +56,8 @@ class ProgressIndicatorBar extends StatelessWidget {
             Expanded(
               child: Text(
                 status.statusText ?? '',
-                style: const TextStyle(
-                  color: AppColors.textSecondary,
+                style: TextStyle(
+                  color: cs.textSecondary,
                   fontSize: 13,
                 ),
               ),
@@ -64,7 +66,7 @@ class ProgressIndicatorBar extends StatelessWidget {
               TextButton(
                 onPressed: onCancel,
                 style: TextButton.styleFrom(
-                  foregroundColor: AppColors.error,
+                  foregroundColor: cs.error,
                   padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
                   minimumSize: Size.zero,
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,

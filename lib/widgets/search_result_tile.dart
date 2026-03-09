@@ -2,7 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 import '../models/video_info.dart';
-import '../theme/app_colors.dart';
+import '../theme/app_color_scheme.dart';
 import '../theme/app_sizes.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
@@ -47,10 +47,11 @@ class SearchResultTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = AppColorScheme.of(context);
     return Container(
       margin: const EdgeInsets.only(bottom: AppSpacing.xs),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: cs.surface,
         borderRadius: BorderRadius.circular(AppTheme.radiusMd),
       ),
       child: Row(
@@ -64,25 +65,26 @@ class SearchResultTile extends StatelessWidget {
                 padding: const EdgeInsets.all(10),
                 child: Row(
                   children: [
-                    _buildThumbnail(),
+                    _buildThumbnail(context),
                     const SizedBox(width: AppSpacing.md),
-                    Expanded(child: _buildInfo()),
+                    Expanded(child: _buildInfo(context)),
                   ],
                 ),
               ),
             ),
           ),
           // 스트리밍 재생 버튼
-          _buildStreamButton(),
+          _buildStreamButton(context),
           // 다운로드 버튼
-          _buildDownloadButton(),
+          _buildDownloadButton(context),
           const SizedBox(width: AppSpacing.xs),
         ],
       ),
     );
   }
 
-  Widget _buildThumbnail() {
+  Widget _buildThumbnail(BuildContext context) {
+    final cs = AppColorScheme.of(context);
     return ClipRRect(
       borderRadius: BorderRadius.circular(AppTheme.radiusSm),
       child: SizedBox(
@@ -95,15 +97,15 @@ class SearchResultTile extends StatelessWidget {
               imageUrl: videoInfo.thumbnailUrl,
               fit: BoxFit.cover,
               placeholder: (context, url) => Shimmer.fromColors(
-                baseColor: AppColors.surfaceVariant,
-                highlightColor: AppColors.surfaceLight,
-                child: Container(color: AppColors.surfaceVariant),
+                baseColor: cs.surfaceVariant,
+                highlightColor: cs.surfaceLight,
+                child: Container(color: cs.surfaceVariant),
               ),
               errorWidget: (context, url, error) => Container(
-                color: AppColors.surfaceVariant,
-                child: const Icon(
+                color: cs.surfaceVariant,
+                child: Icon(
                   Icons.music_note,
-                  color: AppColors.textTertiary,
+                  color: cs.textTertiary,
                   size: AppSizes.iconMd,
                 ),
               ),
@@ -138,7 +140,8 @@ class SearchResultTile extends StatelessWidget {
     );
   }
 
-  Widget _buildInfo() {
+  Widget _buildInfo(BuildContext context) {
+    final cs = AppColorScheme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
@@ -154,8 +157,8 @@ class SearchResultTile extends StatelessWidget {
           videoInfo.channelName,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
-            color: AppColors.textSecondary,
+          style: TextStyle(
+            color: cs.textSecondary,
             fontSize: 11,
           ),
         ),
@@ -163,25 +166,26 @@ class SearchResultTile extends StatelessWidget {
     );
   }
 
-  Widget _buildStreamButton() {
+  Widget _buildStreamButton(BuildContext context) {
+    final cs = AppColorScheme.of(context);
     if (isStreamLoading) {
       return Padding(
         padding: const EdgeInsets.all(AppSpacing.md),
         child: SizedBox(
           width: AppSizes.indicatorSm,
           height: AppSizes.indicatorSm,
-          child: const CircularProgressIndicator(
+          child: CircularProgressIndicator(
             strokeWidth: AppSizes.strokeWidth,
-            color: AppColors.primaryLight,
+            color: cs.primaryLight,
           ),
         ),
       );
     }
 
     return IconButton(
-      icon: const Icon(
+      icon: Icon(
         Icons.play_circle_outline,
-        color: AppColors.primaryLight,
+        color: cs.primaryLight,
         size: AppSizes.iconMl,
       ),
       onPressed: onStream,
@@ -190,16 +194,17 @@ class SearchResultTile extends StatelessWidget {
     );
   }
 
-  Widget _buildDownloadButton() {
+  Widget _buildDownloadButton(BuildContext context) {
+    final cs = AppColorScheme.of(context);
     if (isDownloading) {
       return Padding(
         padding: const EdgeInsets.all(AppSpacing.md),
         child: SizedBox(
           width: AppSizes.indicatorSm,
           height: AppSizes.indicatorSm,
-          child: const CircularProgressIndicator(
+          child: CircularProgressIndicator(
             strokeWidth: AppSizes.strokeWidth,
-            color: AppColors.primary,
+            color: cs.primary,
           ),
         ),
       );
@@ -209,8 +214,8 @@ class SearchResultTile extends StatelessWidget {
       icon: Icon(
         Icons.download_rounded,
         color: downloadDisabled
-            ? AppColors.textTertiary.withValues(alpha: 0.4)
-            : AppColors.primaryLight,
+            ? cs.textTertiary.withValues(alpha: 0.4)
+            : cs.primaryLight,
         size: AppSizes.iconMl,
       ),
       onPressed: downloadDisabled ? null : onDownload,

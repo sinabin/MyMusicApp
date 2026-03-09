@@ -14,6 +14,7 @@ import '../providers/player_provider.dart';
 import '../providers/playlist_provider.dart';
 import '../providers/settings_provider.dart';
 import '../services/file_service.dart';
+import '../theme/app_color_scheme.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_sizes.dart';
 import '../theme/app_spacing.dart';
@@ -44,8 +45,10 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = AppColorScheme.of(context);
+
     return Scaffold(
-      backgroundColor: AppColors.scaffoldBackground,
+      backgroundColor: cs.scaffoldBackground,
       body: Consumer<PlaylistProvider>(
         builder: (context, provider, _) {
           final tracks = provider.getTracksForPlaylist(widget.playlist);
@@ -60,7 +63,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
               SliverAppBar(
                 expandedHeight: 300,
                 pinned: true,
-                backgroundColor: AppColors.scaffoldBackground,
+                backgroundColor: cs.scaffoldBackground,
                 flexibleSpace: FlexibleSpaceBar(
                   title: Text(
                     widget.playlist.name,
@@ -69,13 +72,13 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                     style: AppTextStyles.sectionHeader.copyWith(fontSize: 16),
                   ),
                   background: Container(
-                    decoration: const BoxDecoration(
+                    decoration: BoxDecoration(
                       gradient: LinearGradient(
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                         colors: [
-                          AppColors.surfaceVariant,
-                          AppColors.scaffoldBackground,
+                          cs.surfaceVariant,
+                          cs.scaffoldBackground,
                         ],
                       ),
                     ),
@@ -92,7 +95,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                           const SizedBox(height: AppSpacing.lg),
                           Text(
                             meta,
-                            style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
+                            style: AppTextStyles.bodySmall.copyWith(color: cs.textSecondary),
                           ),
                         ],
                       ),
@@ -101,11 +104,11 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                 ),
                 actions: [
                   PopupMenuButton<String>(
-                    icon: const Icon(
+                    icon: Icon(
                       Icons.more_vert,
-                      color: AppColors.textSecondary,
+                      color: cs.textSecondary,
                     ),
-                    color: AppColors.surfaceVariant,
+                    color: cs.surfaceVariant,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                     ),
@@ -117,33 +120,36 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                           _showDeleteDialog(context, provider);
                       }
                     },
-                    itemBuilder: (context) => [
-                      PopupMenuItem(
-                        value: 'rename',
-                        child: Row(
-                          children: [
-                            Icon(Icons.edit, size: AppSizes.iconMd,
-                                color: AppColors.textSecondary),
-                            SizedBox(width: AppSpacing.md),
-                            Text('Rename',
-                                style: TextStyle(
-                                    color: AppColors.textPrimary)),
-                          ],
+                    itemBuilder: (context) {
+                      final cs = AppColorScheme.of(context);
+                      return [
+                        PopupMenuItem(
+                          value: 'rename',
+                          child: Row(
+                            children: [
+                              Icon(Icons.edit, size: AppSizes.iconMd,
+                                  color: cs.textSecondary),
+                              SizedBox(width: AppSpacing.md),
+                              Text('Rename',
+                                  style: TextStyle(
+                                      color: cs.textPrimary)),
+                            ],
+                          ),
                         ),
-                      ),
-                      PopupMenuItem(
-                        value: 'delete',
-                        child: Row(
-                          children: [
-                            Icon(Icons.delete, size: AppSizes.iconMd,
-                                color: AppColors.error),
-                            SizedBox(width: AppSpacing.md),
-                            Text('Delete',
-                                style: TextStyle(color: AppColors.error)),
-                          ],
+                        PopupMenuItem(
+                          value: 'delete',
+                          child: Row(
+                            children: [
+                              Icon(Icons.delete, size: AppSizes.iconMd,
+                                  color: cs.error),
+                              SizedBox(width: AppSpacing.md),
+                              Text('Delete',
+                                  style: TextStyle(color: cs.error)),
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
+                      ];
+                    },
                   ),
                 ],
               ),
@@ -198,9 +204,9 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                           icon: const Icon(Icons.shuffle, size: AppSizes.iconMd),
                           label: const Text('Shuffle'),
                           style: OutlinedButton.styleFrom(
-                            foregroundColor: AppColors.primary,
+                            foregroundColor: cs.primary,
                             side:
-                                const BorderSide(color: AppColors.primary),
+                                BorderSide(color: cs.primary),
                             padding: const EdgeInsets.symmetric(
                               vertical: AppSpacing.md,
                             ),
@@ -225,7 +231,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                       children: [
                         Text(
                           '${tracks.length} tracks',
-                          style: AppTextStyles.bodySmall.copyWith(color: AppColors.textTertiary),
+                          style: AppTextStyles.bodySmall.copyWith(color: cs.textTertiary),
                         ),
                         const Spacer(),
                         TextButton.icon(
@@ -238,8 +244,8 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                           label: Text(_isEditing ? 'Done' : 'Reorder'),
                           style: TextButton.styleFrom(
                             foregroundColor: _isEditing
-                                ? AppColors.primary
-                                : AppColors.textSecondary,
+                                ? cs.primary
+                                : cs.textSecondary,
                             padding:
                                 const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
                           ),
@@ -283,6 +289,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                           padding: const EdgeInsets.only(bottom: AppSpacing.xs),
                           child: Consumer<PlayerProvider>(
                             builder: (context, player, _) {
+                              final cs = AppColorScheme.of(context);
                               return Row(
                                 children: [
                                   Expanded(
@@ -326,9 +333,9 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                                       },
                                     ),
                                   ),
-                                  const Icon(
+                                  Icon(
                                     Icons.drag_handle,
-                                    color: AppColors.textTertiary,
+                                    color: cs.textTertiary,
                                     size: AppSizes.iconMd,
                                   ),
                                 ],
@@ -347,6 +354,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                     delegate: SliverChildBuilderDelegate(
                       (context, index) {
                         final item = tracks[index];
+                        final cs = AppColorScheme.of(context);
                         return Dismissible(
                           key: ValueKey(
                               '${widget.playlist.id}_${item.videoId}'),
@@ -356,41 +364,44 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                             padding: const EdgeInsets.only(right: AppSpacing.xl),
                             decoration: BoxDecoration(
                               color:
-                                  AppColors.error.withValues(alpha: 0.2),
+                                  cs.error.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                             ),
-                            child: const Icon(
+                            child: Icon(
                               Icons.delete,
-                              color: AppColors.error,
+                              color: cs.error,
                             ),
                           ),
                           confirmDismiss: (_) async {
                             return await showDialog<bool>(
                               context: context,
-                              builder: (ctx) => AlertDialog(
-                                backgroundColor: AppColors.surface,
-                                title: const Text(
-                                  'Remove from playlist?',
-                                  style: TextStyle(
-                                      color: AppColors.textPrimary),
-                                ),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () =>
-                                        Navigator.pop(ctx, false),
-                                    child: const Text('Cancel'),
+                              builder: (ctx) {
+                                final cs = AppColorScheme.of(ctx);
+                                return AlertDialog(
+                                  backgroundColor: cs.surface,
+                                  title: Text(
+                                    'Remove from playlist?',
+                                    style: TextStyle(
+                                        color: cs.textPrimary),
                                   ),
-                                  TextButton(
-                                    onPressed: () =>
-                                        Navigator.pop(ctx, true),
-                                    child: const Text(
-                                      'Remove',
-                                      style: TextStyle(
-                                          color: AppColors.error),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () =>
+                                          Navigator.pop(ctx, false),
+                                      child: const Text('Cancel'),
                                     ),
-                                  ),
-                                ],
-                              ),
+                                    TextButton(
+                                      onPressed: () =>
+                                          Navigator.pop(ctx, true),
+                                      child: Text(
+                                        'Remove',
+                                        style: TextStyle(
+                                            color: cs.error),
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              },
                             ) ?? false;
                           },
                           onDismissed: (_) {
@@ -466,7 +477,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                       icon: const Icon(Icons.add, size: AppSizes.iconMsl),
                       label: const Text('Add Songs'),
                       style: TextButton.styleFrom(
-                        foregroundColor: AppColors.primary,
+                        foregroundColor: cs.primary,
                       ),
                     ),
                   ),
@@ -487,78 +498,84 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
     final controller = TextEditingController(text: widget.playlist.name);
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.surface,
-        title: const Text(
-          'Rename Playlist',
-          style: TextStyle(color: AppColors.textPrimary),
-        ),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          style: const TextStyle(color: AppColors.textPrimary),
-          decoration: InputDecoration(
-            filled: true,
-            fillColor: AppColors.surfaceVariant,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-              borderSide: BorderSide.none,
+      builder: (ctx) {
+        final cs = AppColorScheme.of(ctx);
+        return AlertDialog(
+          backgroundColor: cs.surface,
+          title: Text(
+            'Rename Playlist',
+            style: TextStyle(color: cs.textPrimary),
+          ),
+          content: TextField(
+            controller: controller,
+            autofocus: true,
+            style: TextStyle(color: cs.textPrimary),
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: cs.surfaceVariant,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+                borderSide: BorderSide.none,
+              ),
             ),
           ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              final name = controller.text.trim();
-              if (name.isNotEmpty) {
-                HapticFeedback.lightImpact();
-                provider.renamePlaylist(widget.playlist, name);
-                Navigator.pop(ctx);
-              }
-            },
-            child: const Text('Save'),
-          ),
-        ],
-      ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                final name = controller.text.trim();
+                if (name.isNotEmpty) {
+                  HapticFeedback.lightImpact();
+                  provider.renamePlaylist(widget.playlist, name);
+                  Navigator.pop(ctx);
+                }
+              },
+              child: const Text('Save'),
+            ),
+          ],
+        );
+      },
     );
   }
 
   void _showDeleteDialog(BuildContext context, PlaylistProvider provider) {
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.surface,
-        title: const Text(
-          'Delete Playlist',
-          style: TextStyle(color: AppColors.textPrimary),
-        ),
-        content: Text(
-          'Are you sure you want to delete "${widget.playlist.name}"?',
-          style: const TextStyle(color: AppColors.textSecondary),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
+      builder: (ctx) {
+        final cs = AppColorScheme.of(ctx);
+        return AlertDialog(
+          backgroundColor: cs.surface,
+          title: Text(
+            'Delete Playlist',
+            style: TextStyle(color: cs.textPrimary),
           ),
-          TextButton(
-            onPressed: () {
-              HapticFeedback.mediumImpact();
-              provider.deletePlaylist(widget.playlist);
-              Navigator.pop(ctx);
-              Navigator.pop(context);
-            },
-            child: const Text(
-              'Delete',
-              style: TextStyle(color: AppColors.error),
+          content: Text(
+            'Are you sure you want to delete "${widget.playlist.name}"?',
+            style: TextStyle(color: cs.textSecondary),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancel'),
             ),
-          ),
-        ],
-      ),
+            TextButton(
+              onPressed: () {
+                HapticFeedback.mediumImpact();
+                provider.deletePlaylist(widget.playlist);
+                Navigator.pop(ctx);
+                Navigator.pop(context);
+              },
+              child: Text(
+                'Delete',
+                style: TextStyle(color: cs.error),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -728,15 +745,16 @@ class _AddSongsSheetState extends State<_AddSongsSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = AppColorScheme.of(context);
     final bottomPadding = MediaQuery.of(context).viewPadding.bottom;
 
     return Container(
       constraints: BoxConstraints(
         maxHeight: MediaQuery.of(context).size.height * 0.75,
       ),
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(AppTheme.radiusXl)),
+      decoration: BoxDecoration(
+        color: cs.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(AppTheme.radiusXl)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -748,7 +766,7 @@ class _AddSongsSheetState extends State<_AddSongsSheet> {
               width: AppSizes.handleWidth,
               height: AppSizes.handleHeight,
               decoration: BoxDecoration(
-                color: AppColors.textTertiary,
+                color: cs.textTertiary,
                 borderRadius: BorderRadius.circular(AppSpacing.xxs),
               ),
             ),
@@ -768,16 +786,16 @@ class _AddSongsSheetState extends State<_AddSongsSheet> {
                   TextButton(
                     onPressed: _toggleAll,
                     style: TextButton.styleFrom(
-                      foregroundColor: AppColors.primary,
+                      foregroundColor: cs.primary,
                       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
                     ),
                     child: Text(_allSelected ? 'Deselect All' : 'Select All'),
                   ),
                 const SizedBox(width: AppSpacing.xs),
                 IconButton(
-                  icon: const Icon(
+                  icon: Icon(
                     Icons.close,
-                    color: AppColors.textSecondary,
+                    color: cs.textSecondary,
                   ),
                   onPressed: () => Navigator.pop(context),
                 ),
@@ -789,9 +807,9 @@ class _AddSongsSheetState extends State<_AddSongsSheet> {
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
             child: Row(
               children: [
-                const Icon(
+                Icon(
                   Icons.folder_outlined,
-                  color: AppColors.textTertiary,
+                  color: cs.textTertiary,
                   size: 14,
                 ),
                 const SizedBox(width: 6),
@@ -800,8 +818,8 @@ class _AddSongsSheetState extends State<_AddSongsSheet> {
                     widget.savePath,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: AppColors.textTertiary,
+                    style: TextStyle(
+                      color: cs.textTertiary,
                       fontSize: 11,
                     ),
                   ),
@@ -810,19 +828,19 @@ class _AddSongsSheetState extends State<_AddSongsSheet> {
             ),
           ),
           const SizedBox(height: AppSpacing.sm),
-          const Divider(color: AppColors.divider, height: 1),
+          Divider(color: cs.divider, height: 1),
           // 곡 목록
           Flexible(
             child: _loading
-                ? const Padding(
-                    padding: EdgeInsets.all(AppSpacing.xxxl),
+                ? Padding(
+                    padding: const EdgeInsets.all(AppSpacing.xxxl),
                     child: Center(
                       child: SizedBox(
                         width: AppSizes.indicatorMd,
                         height: AppSizes.indicatorMd,
                         child: CircularProgressIndicator(
                           strokeWidth: AppSizes.strokeWidth,
-                          color: AppColors.primary,
+                          color: cs.primary,
                         ),
                       ),
                     ),
@@ -831,9 +849,9 @@ class _AddSongsSheetState extends State<_AddSongsSheet> {
                     ? Padding(
                         padding: EdgeInsets.fromLTRB(
                             AppSpacing.xxxl, AppSpacing.xxxl, AppSpacing.xxxl, AppSpacing.xxxl + bottomPadding),
-                        child: const Text(
+                        child: Text(
                           'No songs available to add',
-                          style: TextStyle(color: AppColors.textTertiary),
+                          style: TextStyle(color: cs.textTertiary),
                         ),
                       )
                     : ListView.builder(
@@ -855,9 +873,9 @@ class _AddSongsSheetState extends State<_AddSongsSheet> {
           if (!_loading && _available.isNotEmpty)
             Container(
               padding: EdgeInsets.fromLTRB(AppSpacing.xxl, AppSpacing.md, AppSpacing.xxl, AppSpacing.md + bottomPadding),
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 border: Border(
-                  top: BorderSide(color: AppColors.divider),
+                  top: BorderSide(color: cs.divider),
                 ),
               ),
               child: SizedBox(
@@ -871,7 +889,7 @@ class _AddSongsSheetState extends State<_AddSongsSheet> {
                           ? AppColors.primaryGradient
                           : null,
                       color: _selectedIds.isEmpty
-                          ? AppColors.surfaceVariant
+                          ? cs.surfaceVariant
                           : null,
                       borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                     ),
@@ -883,7 +901,7 @@ class _AddSongsSheetState extends State<_AddSongsSheet> {
                         shadowColor: Colors.transparent,
                         disabledBackgroundColor: Colors.transparent,
                         foregroundColor: Colors.white,
-                        disabledForegroundColor: AppColors.textTertiary,
+                        disabledForegroundColor: cs.textTertiary,
                         padding:
                             const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(
@@ -924,6 +942,7 @@ class _SelectableTrackTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = AppColorScheme.of(context);
     final title = item.fileName.endsWith('.m4a')
         ? item.fileName.substring(0, item.fileName.length - 4)
         : item.fileName;
@@ -934,7 +953,7 @@ class _SelectableTrackTile extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: 10),
         color: selected
-            ? AppColors.primarySurface.withValues(alpha: 0.3)
+            ? cs.primarySurface.withValues(alpha: 0.3)
             : Colors.transparent,
         child: Row(
           children: [
@@ -943,7 +962,7 @@ class _SelectableTrackTile extends StatelessWidget {
               selected
                   ? Icons.check_circle_rounded
                   : Icons.radio_button_unchecked,
-              color: selected ? AppColors.primary : AppColors.textTertiary,
+              color: selected ? cs.primary : cs.textTertiary,
               size: AppSizes.iconMl,
             ),
             const SizedBox(width: AppSpacing.md),
@@ -958,13 +977,13 @@ class _SelectableTrackTile extends StatelessWidget {
                         imageUrl: item.thumbnailUrl!,
                         fit: BoxFit.cover,
                         placeholder: (context, url) => Shimmer.fromColors(
-                          baseColor: AppColors.surfaceVariant,
-                          highlightColor: AppColors.surfaceLight,
-                          child: Container(color: AppColors.surfaceVariant),
+                          baseColor: AppColorScheme.of(context).surfaceVariant,
+                          highlightColor: AppColorScheme.of(context).surfaceLight,
+                          child: Container(color: AppColorScheme.of(context).surfaceVariant),
                         ),
-                        errorWidget: (context, url, error) => _placeholder(),
+                        errorWidget: (context, url, error) => _placeholder(AppColorScheme.of(context)),
                       )
-                    : _placeholder(),
+                    : _placeholder(cs),
               ),
             ),
             const SizedBox(width: AppSpacing.md),
@@ -979,8 +998,8 @@ class _SelectableTrackTile extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       color: selected
-                          ? AppColors.primaryLight
-                          : AppColors.textPrimary,
+                          ? cs.primaryLight
+                          : cs.textPrimary,
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
                     ),
@@ -991,7 +1010,7 @@ class _SelectableTrackTile extends StatelessWidget {
                       artist,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: AppTextStyles.caption,
+                      style: AppTextStyles.caption.copyWith(color: cs.textTertiary),
                     ),
                   ],
                 ],
@@ -1003,12 +1022,12 @@ class _SelectableTrackTile extends StatelessWidget {
     );
   }
 
-  Widget _placeholder() {
+  Widget _placeholder(AppColorScheme cs) {
     return Container(
-      color: AppColors.primarySurface,
-      child: const Icon(
+      color: cs.primarySurface,
+      child: Icon(
         Icons.music_note,
-        color: AppColors.primaryLight,
+        color: cs.primaryLight,
         size: AppSizes.iconMl,
       ),
     );

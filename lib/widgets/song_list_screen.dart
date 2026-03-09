@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../models/download_item.dart';
 import '../providers/player_provider.dart';
-import '../theme/app_colors.dart';
+import '../theme/app_color_scheme.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
 import 'empty_state_widget.dart';
@@ -98,10 +98,11 @@ class _SongListScreenState extends State<SongListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = AppColorScheme.of(context);
     return Scaffold(
-      backgroundColor: AppColors.scaffoldBackground,
+      backgroundColor: cs.scaffoldBackground,
       appBar: AppBar(
-        backgroundColor: AppColors.scaffoldBackground,
+        backgroundColor: cs.scaffoldBackground,
         title: Text(
           '${widget.title} (${widget.items.length})',
           style: AppTextStyles.sectionHeader,
@@ -187,21 +188,22 @@ class _SongListScreenState extends State<SongListScreen> {
   }
 
   Widget _sortChip(String label, _SortOption option) {
+    final cs = AppColorScheme.of(context);
     final selected = _sortOption == option;
     return ChoiceChip(
       label: Text(
         label,
         style: TextStyle(
           fontSize: 12,
-          color: selected ? AppColors.textPrimary : AppColors.textSecondary,
+          color: selected ? cs.textPrimary : cs.textSecondary,
         ),
       ),
       selected: selected,
       onSelected: (_) => setState(() => _sortOption = option),
-      selectedColor: AppColors.primary,
-      backgroundColor: AppColors.surface,
+      selectedColor: cs.primary,
+      backgroundColor: cs.surface,
       side: BorderSide(
-        color: selected ? AppColors.primary : AppColors.border,
+        color: selected ? cs.primary : cs.border,
       ),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       visualDensity: VisualDensity.compact,

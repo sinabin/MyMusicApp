@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
-import '../theme/app_colors.dart';
+import '../theme/app_color_scheme.dart';
 import '../theme/app_durations.dart';
 import '../theme/app_sizes.dart';
 import '../theme/app_spacing.dart';
@@ -43,6 +43,7 @@ class EmptyStateWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = AppColorScheme.of(context);
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(
@@ -56,7 +57,7 @@ class EmptyStateWidget extends StatelessWidget {
             Icon(
               icon,
               size: AppSizes.iconJumbo,
-              color: AppColors.textTertiary.withValues(alpha: 0.5),
+              color: cs.textTertiary.withValues(alpha: 0.5),
             )
                 .animate(onPlay: (c) => c.repeat(reverse: true))
                 .scaleXY(
@@ -72,7 +73,7 @@ class EmptyStateWidget extends StatelessWidget {
               textAlign: TextAlign.center,
               style: AppTextStyles.inputText.copyWith(
                 fontWeight: FontWeight.w600,
-                color: AppColors.textSecondary,
+                color: cs.textSecondary,
               ),
             )
                 .animate()
@@ -86,7 +87,7 @@ class EmptyStateWidget extends StatelessWidget {
                 description!,
                 textAlign: TextAlign.center,
                 style: AppTextStyles.bodySmall.copyWith(
-                  color: AppColors.textTertiary,
+                  color: cs.textTertiary,
                   fontWeight: FontWeight.w400,
                 ),
               ).animate().fadeIn(
@@ -105,7 +106,7 @@ class EmptyStateWidget extends StatelessWidget {
                     : const SizedBox.shrink(),
                 label: Text(actionLabel!),
                 style: TextButton.styleFrom(
-                  foregroundColor: AppColors.primary,
+                  foregroundColor: cs.primary,
                 ),
               ).animate().fadeIn(
                     duration: AppDurations.normal,

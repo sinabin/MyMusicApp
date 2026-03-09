@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../theme/app_colors.dart';
+import '../theme/app_color_scheme.dart';
 import '../theme/app_durations.dart';
 import '../theme/app_sizes.dart';
 import '../theme/app_spacing.dart';
@@ -74,6 +74,7 @@ class _UrlInputFieldState extends State<UrlInputField> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = AppColorScheme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -84,7 +85,7 @@ class _UrlInputFieldState extends State<UrlInputField> {
             boxShadow: _isFocused
                 ? [
                     BoxShadow(
-                      color: AppColors.primaryLight.withValues(alpha: 0.3),
+                      color: cs.primaryLight.withValues(alpha: 0.3),
                       blurRadius: 12,
                       spreadRadius: 0,
                     ),
@@ -95,7 +96,7 @@ class _UrlInputFieldState extends State<UrlInputField> {
             controller: _controller,
             focusNode: _focusNode,
             onChanged: _onChanged,
-            style: const TextStyle(color: AppColors.textPrimary, fontSize: 16),
+            style: TextStyle(color: cs.textPrimary, fontSize: 16),
             decoration: InputDecoration(
               hintText: 'YouTube URL 붙여넣기...',
               prefixIcon: const Icon(
@@ -107,13 +108,13 @@ class _UrlInputFieldState extends State<UrlInputField> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.content_paste, color: AppColors.textSecondary),
+                    icon: Icon(Icons.content_paste, color: cs.textSecondary),
                     onPressed: _paste,
                     tooltip: '붙여넣기',
                   ),
                   if (_controller.text.isNotEmpty)
                     IconButton(
-                      icon: const Icon(Icons.close, color: AppColors.textSecondary),
+                      icon: Icon(Icons.close, color: cs.textSecondary),
                       onPressed: _clear,
                       tooltip: '지우기',
                     ),
@@ -129,14 +130,14 @@ class _UrlInputFieldState extends State<UrlInputField> {
               Icon(
                 _isValid ? Icons.check_circle : Icons.error_outline,
                 size: AppSizes.iconSm,
-                color: _isValid ? AppColors.success : AppColors.error,
+                color: _isValid ? cs.success : cs.error,
               ),
               const SizedBox(width: 6),
               Text(
                 _isValid ? '유효한 YouTube URL' : '유효하지 않은 URL',
                 style: TextStyle(
                   fontSize: 12,
-                  color: _isValid ? AppColors.success : AppColors.error,
+                  color: _isValid ? cs.success : cs.error,
                 ),
               ),
             ],

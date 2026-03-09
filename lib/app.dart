@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'l10n/app_localizations.dart';
 import 'providers/settings_provider.dart';
@@ -39,6 +40,15 @@ class App extends StatelessWidget {
           home: const MainShell(),
           builder: (context, child) {
             final cs = AppColorScheme.of(context);
+            final isDark = Theme.of(context).brightness == Brightness.dark;
+            SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+              statusBarColor: Colors.transparent,
+              statusBarIconBrightness:
+                  isDark ? Brightness.light : Brightness.dark,
+              systemNavigationBarColor: cs.scaffoldBackground,
+              systemNavigationBarIconBrightness:
+                  isDark ? Brightness.light : Brightness.dark,
+            ));
             return ColoredBox(
               color: cs.scaffoldBackground,
               child: SafeArea(

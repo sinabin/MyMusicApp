@@ -50,10 +50,10 @@ class AppTheme {
         secondary: colorScheme.secondary,
         surface: colorScheme.surface,
         error: colorScheme.error,
-        onPrimary: colorScheme.textPrimary,
-        onSecondary: colorScheme.textPrimary,
+        onPrimary: Colors.white,
+        onSecondary: Colors.white,
         onSurface: colorScheme.textPrimary,
-        onError: colorScheme.textPrimary,
+        onError: Colors.white,
       ),
       extensions: [colorScheme],
       appBarTheme: AppBarTheme(
