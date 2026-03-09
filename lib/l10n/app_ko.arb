@@ -3,109 +3,109 @@
 
   "appTitle": "MyMusicApp",
 
-  "tabHome": "Home",
-  "tabDiscover": "Discover",
-  "tabLibrary": "Library",
+  "tabHome": "홈",
+  "tabDiscover": "발견",
+  "tabLibrary": "보관함",
 
-  "searchHint": "Search music...",
+  "searchHint": "음악 검색...",
   "searchFailed": "검색 실패",
   "noResults": "결과 없음",
   "retry": "다시 시도",
 
-  "recentDownloads": "Recent Downloads",
-  "recentDownloadsCount": "Recent Downloads ({count})",
+  "recentDownloads": "최근 다운로드",
+  "recentDownloadsCount": "최근 다운로드 ({count})",
   "@recentDownloadsCount": {
     "placeholders": {
       "count": { "type": "int" }
     }
   },
 
-  "recentlyPlayed": "Recently Played",
-  "seeAll": "See All >",
+  "recentlyPlayed": "최근 재생",
+  "seeAll": "모두 보기 >",
 
-  "download": "Download Audio",
+  "download": "오디오 다운로드",
   "downloadInProgress": "다운로드가 이미 진행 중입니다",
-  "downloadPreparing": "Preparing download...",
-  "downloadComplete": "Download Complete!",
-  "downloadFailed": "Download failed",
-  "downloadSaved": "Saved: {fileName}",
+  "downloadPreparing": "다운로드 준비 중...",
+  "downloadComplete": "다운로드 완료!",
+  "downloadFailed": "다운로드 실패",
+  "downloadSaved": "저장됨: {fileName}",
   "@downloadSaved": {
     "placeholders": {
       "fileName": { "type": "String" }
     }
   },
 
-  "stream": "Stream",
-  "streamFailed": "Streaming failed",
+  "stream": "스트리밍",
+  "streamFailed": "스트리밍 실패",
 
-  "play": "Play",
-  "pause": "Pause",
-  "previous": "Previous",
-  "next": "Next",
-  "shuffle": "Shuffle",
-  "repeat": "Repeat",
+  "play": "재생",
+  "pause": "일시정지",
+  "previous": "이전",
+  "next": "다음",
+  "shuffle": "셔플",
+  "repeat": "반복",
 
   "addToQueue": "바로 다음에 재생",
-  "addedToQueue": "Added to queue",
+  "addedToQueue": "현재 재생리스트에 추가했어요",
   "addToPlaylist": "플레이리스트에 추가",
   "favorite": "좋아요",
   "unfavorite": "좋아요 해제",
 
-  "queueTitle": "Queue",
-  "queueCount": "Queue ({count})",
+  "queueTitle": "현재 재생리스트",
+  "queueCount": "현재 재생리스트 ({count})",
   "@queueCount": {
     "placeholders": {
       "count": { "type": "int" }
     }
   },
-  "queueEmpty": "Queue is empty",
-  "queueEmptyHint": "Play a song to start your queue",
+  "queueEmpty": "현재 재생리스트가 비어 있어요",
+  "queueEmptyHint": "곡을 재생하면 여기에 표시돼요",
 
-  "libraryTitle": "My Library",
-  "librarySubtitle": "Your music collection",
-  "favorites": "Favorites",
-  "recent": "Recent",
-  "allSongs": "All Songs",
-  "playlists": "Playlists",
-  "playlistsCount": "Playlists ({count})",
+  "libraryTitle": "내 보관함",
+  "librarySubtitle": "내 음악 컬렉션",
+  "favorites": "좋아요 목록",
+  "recent": "최근",
+  "allSongs": "전체 곡",
+  "playlists": "플레이리스트",
+  "playlistsCount": "플레이리스트 ({count})",
   "@playlistsCount": {
     "placeholders": {
       "count": { "type": "int" }
     }
   },
-  "createPlaylist": "Create",
-  "noPlaylists": "No playlists yet",
-  "noPlaylistsHint": "Tap \"+ Create\" to make your first playlist",
+  "createPlaylist": "만들기",
+  "noPlaylists": "플레이리스트가 없어요",
+  "noPlaylistsHint": "\"+ 만들기\"를 눌러 첫 플레이리스트를 만들어보세요",
 
-  "discoverTitle": "Discover",
-  "discoverSubtitle": "Recommendations based on your downloads",
-  "forYou": "For You",
+  "discoverTitle": "발견",
+  "discoverSubtitle": "다운로드한 곡 기반 추천",
+  "forYou": "맞춤 추천",
   "notInterested": "관심 없음",
   "preparingRecommendations": "새로운 추천을 준비 중입니다",
   "downloadMoreHint": "더 많은 곡을 다운로드하면 정확한 추천이 가능해요",
 
-  "noDownloads": "No downloads yet",
-  "noDownloadsHint": "Your downloaded audio files will appear here",
-  "noPlays": "No plays yet",
-  "noPlaysHint": "Songs you play will appear here",
-  "noFavorites": "No favorites yet",
-  "noFavoritesHint": "Tap the heart icon to add favorites",
-  "noSongs": "No songs yet",
-  "noSongsHint": "Download songs to build your collection",
-  "noTrackPlaying": "No track playing",
+  "noDownloads": "다운로드한 곡이 없어요",
+  "noDownloadsHint": "다운로드한 곡이 여기에 표시돼요",
+  "noPlays": "재생 기록이 없어요",
+  "noPlaysHint": "재생한 곡이 여기에 표시돼요",
+  "noFavorites": "좋아요한 곡이 없어요",
+  "noFavoritesHint": "하트를 눌러 좋아요를 추가하세요",
+  "noSongs": "곡이 없어요",
+  "noSongsHint": "곡을 다운로드해서 컬렉션을 만들어보세요",
+  "noTrackPlaying": "재생 중인 곡 없음",
 
-  "delete": "Delete",
-  "deleteConfirm": "Remove this download?",
-  "cancel": "Cancel",
-  "clear": "Clear",
-  "clearHistory": "Clear History",
-  "clearHistoryConfirm": "Are you sure you want to clear all play history?",
+  "delete": "삭제",
+  "deleteConfirm": "이 다운로드를 삭제할까요?",
+  "cancel": "취소",
+  "clear": "지우기",
+  "clearHistory": "기록 삭제",
+  "clearHistoryConfirm": "모든 재생 기록을 삭제할까요?",
 
   "settings": "설정",
   "closePlayer": "플레이어 닫기",
   "openFullPlayer": "전체 플레이어 열기",
   "cancelDownload": "다운로드 취소",
-  "playQueue": "재생 큐",
+  "playQueue": "현재 재생리스트",
 
   "downloadCompleteNotification": "{title} 다운로드 완료",
   "@downloadCompleteNotification": {

@@ -12,16 +12,16 @@ class LKo extends L {
   String get appTitle => 'MyMusicApp';
 
   @override
-  String get tabHome => 'Home';
+  String get tabHome => '홈';
 
   @override
-  String get tabDiscover => 'Discover';
+  String get tabDiscover => '발견';
 
   @override
-  String get tabLibrary => 'Library';
+  String get tabLibrary => '보관함';
 
   @override
-  String get searchHint => 'Search music...';
+  String get searchHint => '음악 검색...';
 
   @override
   String get searchFailed => '검색 실패';
@@ -33,68 +33,68 @@ class LKo extends L {
   String get retry => '다시 시도';
 
   @override
-  String get recentDownloads => 'Recent Downloads';
+  String get recentDownloads => '최근 다운로드';
 
   @override
   String recentDownloadsCount(int count) {
-    return 'Recent Downloads ($count)';
+    return '최근 다운로드 ($count)';
   }
 
   @override
-  String get recentlyPlayed => 'Recently Played';
+  String get recentlyPlayed => '최근 재생';
 
   @override
-  String get seeAll => 'See All >';
+  String get seeAll => '모두 보기 >';
 
   @override
-  String get download => 'Download Audio';
+  String get download => '오디오 다운로드';
 
   @override
   String get downloadInProgress => '다운로드가 이미 진행 중입니다';
 
   @override
-  String get downloadPreparing => 'Preparing download...';
+  String get downloadPreparing => '다운로드 준비 중...';
 
   @override
-  String get downloadComplete => 'Download Complete!';
+  String get downloadComplete => '다운로드 완료!';
 
   @override
-  String get downloadFailed => 'Download failed';
+  String get downloadFailed => '다운로드 실패';
 
   @override
   String downloadSaved(String fileName) {
-    return 'Saved: $fileName';
+    return '저장됨: $fileName';
   }
 
   @override
-  String get stream => 'Stream';
+  String get stream => '스트리밍';
 
   @override
-  String get streamFailed => 'Streaming failed';
+  String get streamFailed => '스트리밍 실패';
 
   @override
-  String get play => 'Play';
+  String get play => '재생';
 
   @override
-  String get pause => 'Pause';
+  String get pause => '일시정지';
 
   @override
-  String get previous => 'Previous';
+  String get previous => '이전';
 
   @override
-  String get next => 'Next';
+  String get next => '다음';
 
   @override
-  String get shuffle => 'Shuffle';
+  String get shuffle => '셔플';
 
   @override
-  String get repeat => 'Repeat';
+  String get repeat => '반복';
 
   @override
   String get addToQueue => '바로 다음에 재생';
 
   @override
-  String get addedToQueue => 'Added to queue';
+  String get addedToQueue => '현재 재생리스트에 추가했어요';
 
   @override
   String get addToPlaylist => '플레이리스트에 추가';
@@ -106,59 +106,59 @@ class LKo extends L {
   String get unfavorite => '좋아요 해제';
 
   @override
-  String get queueTitle => 'Queue';
+  String get queueTitle => '현재 재생리스트';
 
   @override
   String queueCount(int count) {
-    return 'Queue ($count)';
+    return '현재 재생리스트 ($count)';
   }
 
   @override
-  String get queueEmpty => 'Queue is empty';
+  String get queueEmpty => '현재 재생리스트가 비어 있어요';
 
   @override
-  String get queueEmptyHint => 'Play a song to start your queue';
+  String get queueEmptyHint => '곡을 재생하면 여기에 표시돼요';
 
   @override
-  String get libraryTitle => 'My Library';
+  String get libraryTitle => '내 보관함';
 
   @override
-  String get librarySubtitle => 'Your music collection';
+  String get librarySubtitle => '내 음악 컬렉션';
 
   @override
-  String get favorites => 'Favorites';
+  String get favorites => '좋아요 목록';
 
   @override
-  String get recent => 'Recent';
+  String get recent => '최근';
 
   @override
-  String get allSongs => 'All Songs';
+  String get allSongs => '전체 곡';
 
   @override
-  String get playlists => 'Playlists';
+  String get playlists => '플레이리스트';
 
   @override
   String playlistsCount(int count) {
-    return 'Playlists ($count)';
+    return '플레이리스트 ($count)';
   }
 
   @override
-  String get createPlaylist => 'Create';
+  String get createPlaylist => '만들기';
 
   @override
-  String get noPlaylists => 'No playlists yet';
+  String get noPlaylists => '플레이리스트가 없어요';
 
   @override
-  String get noPlaylistsHint => 'Tap \"+ Create\" to make your first playlist';
+  String get noPlaylistsHint => '"+ 만들기"를 눌러 첫 플레이리스트를 만들어보세요';
 
   @override
-  String get discoverTitle => 'Discover';
+  String get discoverTitle => '발견';
 
   @override
-  String get discoverSubtitle => 'Recommendations based on your downloads';
+  String get discoverSubtitle => '다운로드한 곡 기반 추천';
 
   @override
-  String get forYou => 'For You';
+  String get forYou => '맞춤 추천';
 
   @override
   String get notInterested => '관심 없음';
@@ -170,50 +170,50 @@ class LKo extends L {
   String get downloadMoreHint => '더 많은 곡을 다운로드하면 정확한 추천이 가능해요';
 
   @override
-  String get noDownloads => 'No downloads yet';
+  String get noDownloads => '다운로드한 곡이 없어요';
 
   @override
-  String get noDownloadsHint => 'Your downloaded audio files will appear here';
+  String get noDownloadsHint => '다운로드한 곡이 여기에 표시돼요';
 
   @override
-  String get noPlays => 'No plays yet';
+  String get noPlays => '재생 기록이 없어요';
 
   @override
-  String get noPlaysHint => 'Songs you play will appear here';
+  String get noPlaysHint => '재생한 곡이 여기에 표시돼요';
 
   @override
-  String get noFavorites => 'No favorites yet';
+  String get noFavorites => '좋아요한 곡이 없어요';
 
   @override
-  String get noFavoritesHint => 'Tap the heart icon to add favorites';
+  String get noFavoritesHint => '하트를 눌러 좋아요를 추가하세요';
 
   @override
-  String get noSongs => 'No songs yet';
+  String get noSongs => '곡이 없어요';
 
   @override
-  String get noSongsHint => 'Download songs to build your collection';
+  String get noSongsHint => '곡을 다운로드해서 컬렉션을 만들어보세요';
 
   @override
-  String get noTrackPlaying => 'No track playing';
+  String get noTrackPlaying => '재생 중인 곡 없음';
 
   @override
-  String get delete => 'Delete';
+  String get delete => '삭제';
 
   @override
-  String get deleteConfirm => 'Remove this download?';
+  String get deleteConfirm => '이 다운로드를 삭제할까요?';
 
   @override
-  String get cancel => 'Cancel';
+  String get cancel => '취소';
 
   @override
-  String get clear => 'Clear';
+  String get clear => '지우기';
 
   @override
-  String get clearHistory => 'Clear History';
+  String get clearHistory => '기록 삭제';
 
   @override
   String get clearHistoryConfirm =>
-      'Are you sure you want to clear all play history?';
+      '모든 재생 기록을 삭제할까요?';
 
   @override
   String get settings => '설정';
@@ -228,7 +228,7 @@ class LKo extends L {
   String get cancelDownload => '다운로드 취소';
 
   @override
-  String get playQueue => '재생 큐';
+  String get playQueue => '현재 재생리스트';
 
   @override
   String downloadCompleteNotification(String title) {
