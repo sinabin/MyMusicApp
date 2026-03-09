@@ -31,4 +31,13 @@ class AppConstants {
 
   /// Hive 재생 기록 Box 이름.
   static const String hivePlaybackBox = 'playback_history';
+
+  /// SharedPreferences 프리미엄 상태 키.
+  static const String settingsKeyIsPremium = 'is_premium';
+
+  /// Google Play IAP 프리미엄 상품 ID.
+  static const String premiumProductId = 'premium_unlock';
+
+  /// Hive 가사 캐시 Box 이름.
+  static const String hiveLyricsBox = 'lyrics_cache';
 }

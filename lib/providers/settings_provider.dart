@@ -37,6 +37,7 @@ class SettingsProvider extends ChangeNotifier {
     final email = await _authService.loadEmail();
     final playAllOnTap = await _localStorage.getPlayAllOnTap();
     final themeMode = await _localStorage.getThemeMode();
+    final isPremium = await _localStorage.getIsPremium();
 
     _settings = AppSettings(
       savePath: savePath,
@@ -44,6 +45,7 @@ class SettingsProvider extends ChangeNotifier {
       userEmail: email,
       playAllOnTap: playAllOnTap,
       themeMode: themeMode,
+      isPremium: isPremium,
     );
     notifyListeners();
   }
@@ -80,6 +82,14 @@ class SettingsProvider extends ChangeNotifier {
     if (_settings.themeMode == mode) return;
     _settings = _settings.copyWith(themeMode: mode);
     await _localStorage.setThemeMode(mode);
+    notifyListeners();
+  }
+
+  /// 프리미엄 구매 상태 [value] 변경 및 영속 저장.
+  Future<void> setIsPremium(bool value) async {
+    if (_settings.isPremium == value) return;
+    _settings = _settings.copyWith(isPremium: value);
+    await _localStorage.setIsPremium(value);
     notifyListeners();
   }
 

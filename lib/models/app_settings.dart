@@ -19,12 +19,16 @@ class AppSettings {
   /// 테마 모드 (system / light / dark).
   final ThemeMode themeMode;
 
+  /// 프리미엄 구매 여부.
+  final bool isPremium;
+
   const AppSettings({
     this.savePath = '',
     this.isLoggedIn = false,
     this.userEmail,
     this.playAllOnTap = true,
     this.themeMode = ThemeMode.dark,
+    this.isPremium = false,
   });
 
   /// 지정된 필드만 변경한 새 [AppSettings] 인스턴스 반환.
@@ -34,6 +38,7 @@ class AppSettings {
     String? userEmail,
     bool? playAllOnTap,
     ThemeMode? themeMode,
+    bool? isPremium,
   }) {
     return AppSettings(
       savePath: savePath ?? this.savePath,
@@ -41,6 +46,7 @@ class AppSettings {
       userEmail: userEmail ?? this.userEmail,
       playAllOnTap: playAllOnTap ?? this.playAllOnTap,
       themeMode: themeMode ?? this.themeMode,
+      isPremium: isPremium ?? this.isPremium,
     );
   }
 }

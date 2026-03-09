@@ -1,13 +1,17 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:file_picker/file_picker.dart';
+import '../providers/premium_provider.dart';
 import '../providers/settings_provider.dart';
 import '../screens/login_webview_screen.dart';
 import '../theme/app_color_scheme.dart';
+import '../theme/app_colors.dart';
 import '../theme/app_sizes.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
 import '../theme/app_theme.dart';
+import 'premium_purchase_sheet.dart';
 
 /// 앱 설정(오디오 품질·저장 경로·YouTube 로그인)을 표시하는 바텀시트 위젯.
 ///
@@ -206,6 +210,12 @@ class SettingsBottomSheet extends StatelessWidget {
                   Divider(color: cs.divider),
                   const SizedBox(height: AppSpacing.lg),
 
+                  // Premium
+                  _buildPremiumSection(context),
+                  const SizedBox(height: AppSpacing.lg),
+                  Divider(color: cs.divider),
+                  const SizedBox(height: AppSpacing.lg),
+
                   // YouTube Login
                   _buildLoginSection(context, settings),
                 ],
@@ -223,6 +233,80 @@ class SettingsBottomSheet extends StatelessWidget {
       ThemeMode.light => '라이트 모드',
       ThemeMode.dark => '다크 모드',
     };
+  }
+
+  Widget _buildPremiumSection(BuildContext context) {
+    return Consumer<PremiumProvider>(
+      builder: (context, premium, _) {
+        final cs = AppColorScheme.of(context);
+        final isPremium = premium.isPremium;
+
+        return GestureDetector(
+          onLongPress: kDebugMode ? () => premium.debugTogglePremium() : null,
+          child: Row(
+            children: [
+              Container(
+                width: AppSizes.iconMd + 8,
+                height: AppSizes.iconMd + 8,
+                decoration: BoxDecoration(
+                  gradient: isPremium ? AppColors.primaryGradient : null,
+                  color: isPremium ? null : cs.surfaceVariant,
+                  borderRadius: BorderRadius.circular(AppTheme.radiusSm),
+                ),
+                child: Icon(
+                  Icons.diamond,
+                  color: isPremium ? Colors.white : cs.textTertiary,
+                  size: AppSizes.iconMsl,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Premium',
+                      style: AppTextStyles.tileTitle.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.xxs),
+                    Text(
+                      isPremium ? '모든 프리미엄 기능 활성화됨' : '5가지 프리미엄 기능 잠금 해제',
+                      style: AppTextStyles.caption.copyWith(color: cs.textTertiary),
+                    ),
+                  ],
+                ),
+              ),
+              if (isPremium)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.sm,
+                    vertical: AppSpacing.xxs,
+                  ),
+                  decoration: BoxDecoration(
+                    color: cs.success.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusSm),
+                  ),
+                  child: Text(
+                    '활성',
+                    style: TextStyle(
+                      color: cs.success,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                )
+              else
+                TextButton(
+                  onPressed: () => PremiumPurchaseSheet.show(context),
+                  child: const Text('업그레이드'),
+                ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   Widget _buildLoginSection(BuildContext context, SettingsProvider settings) {

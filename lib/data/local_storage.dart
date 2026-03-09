@@ -63,4 +63,16 @@ class LocalStorage {
     final p = await prefs;
     await p.setInt(AppConstants.settingsKeyThemeMode, mode.index);
   }
+
+  /// 프리미엄 구매 여부 반환. 미설정 시 false.
+  Future<bool> getIsPremium() async {
+    final p = await prefs;
+    return p.getBool(AppConstants.settingsKeyIsPremium) ?? false;
+  }
+
+  /// 프리미엄 구매 상태 [value] 저장.
+  Future<void> setIsPremium(bool value) async {
+    final p = await prefs;
+    await p.setBool(AppConstants.settingsKeyIsPremium, value);
+  }
 }
