@@ -1,11 +1,15 @@
+import 'dart:io';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
+import '../models/download_item.dart';
 import '../providers/history_provider.dart';
 import '../providers/player_provider.dart';
 import '../screens/full_player_screen.dart';
+import '../services/file_service.dart';
 import '../app.dart';
 import '../theme/app_color_scheme.dart';
 import '../theme/app_durations.dart';
@@ -92,16 +96,7 @@ class MiniPlayer extends StatelessWidget {
                                 child: SizedBox(
                                   width: AppSizes.miniPlayerArt,
                                   height: AppSizes.miniPlayerArt,
-                                  child: track.thumbnailUrl != null
-                                      ? CachedNetworkImage(
-                                          imageUrl: track.thumbnailUrl!,
-                                          fit: BoxFit.cover,
-                                          placeholder: (_, _) =>
-                                              _placeholderIcon(context),
-                                          errorWidget: (_, _, _) =>
-                                              _placeholderIcon(context),
-                                        )
-                                      : _placeholderIcon(context),
+                                  child: _buildThumbnail(context, track),
                                 ),
                               ),
                               const SizedBox(width: 10),
@@ -223,6 +218,38 @@ class MiniPlayer extends StatelessWidget {
         onPressed: onPressed,
         disabledColor: cs.textTertiary.withValues(alpha: 0.3),
       ),
+    );
+  }
+
+  /// 로컬 파일 우선, 네트워크 URL 폴백으로 썸네일 반환.
+  Widget _buildThumbnail(BuildContext context, DownloadItem track) {
+    final url = track.thumbnailUrl;
+    if (url == null) return _placeholderIcon(context);
+
+    if (url.startsWith('/')) {
+      return Image.file(
+        File(url),
+        fit: BoxFit.cover,
+        errorBuilder: (_, _, _) => _placeholderIcon(context),
+      );
+    }
+
+    final localPath = context
+        .read<FileService>()
+        .getLocalThumbnailPathSync(track.fileName);
+    if (localPath != null) {
+      return Image.file(
+        File(localPath),
+        fit: BoxFit.cover,
+        errorBuilder: (_, _, _) => _placeholderIcon(context),
+      );
+    }
+
+    return CachedNetworkImage(
+      imageUrl: url,
+      fit: BoxFit.cover,
+      placeholder: (_, _) => _placeholderIcon(context),
+      errorWidget: (_, _, _) => _placeholderIcon(context),
     );
   }
 

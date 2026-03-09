@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 
 import '../models/download_item.dart';
 import '../providers/history_provider.dart';
+import '../services/file_service.dart';
 import '../providers/playback_history_provider.dart';
 import '../providers/player_provider.dart';
 import '../providers/settings_provider.dart';
@@ -163,6 +164,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   return RecentPlayHorizontalList(
                     tracks: recentTracks,
                     currentTrack: currentTrack,
+                    fileService: context.read<FileService>(),
                     onTap: (item) {
                       final player = context.read<PlayerProvider>();
                       final playAll = context
@@ -206,7 +208,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   padding: const EdgeInsets.only(bottom: AppSpacing.sm),
                   child: DownloadHistoryTile(
                     item: item,
-                    onDelete: () => history.removeItem(index),
+                    fileService: context.read<FileService>(),
+                    onDelete: () => history.removeItem(item),
                     onTap: () => _playFromHistory(recent, index),
                     onAddToQueue: () {
                       HapticFeedback.lightImpact();

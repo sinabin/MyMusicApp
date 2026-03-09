@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../models/download_item.dart';
 import '../providers/history_provider.dart';
+import '../services/file_service.dart';
 import '../providers/playback_history_provider.dart';
 import '../providers/player_provider.dart';
 import '../providers/settings_provider.dart';
@@ -101,6 +102,7 @@ class RecentPlaysScreen extends StatelessWidget {
                     padding: const EdgeInsets.only(bottom: AppSpacing.xs),
                     child: TrackListTile(
                       item: item,
+                      fileService: context.read<FileService>(),
                       isCurrentTrack: currentVideoId == item.videoId,
                       onTap: () {
                         final playAll = context

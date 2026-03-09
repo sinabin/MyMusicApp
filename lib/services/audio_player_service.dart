@@ -235,7 +235,11 @@ class AudioPlayerService {
       id: item.isStreaming ? item.streamUrl! : item.filePath,
       title: title,
       artist: item.artistName ?? item.channelName ?? '',
-      artUri: item.thumbnailUrl != null ? Uri.parse(item.thumbnailUrl!) : null,
+      artUri: item.thumbnailUrl != null
+          ? (item.thumbnailUrl!.startsWith('/')
+              ? Uri.file(item.thumbnailUrl!)
+              : Uri.parse(item.thumbnailUrl!))
+          : null,
       duration: item.duration,
     );
   }

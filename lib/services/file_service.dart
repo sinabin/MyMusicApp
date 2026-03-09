@@ -8,6 +8,8 @@ import '../utils/file_name_sanitizer.dart';
 /// 저장 경로 생성, 파일명 정제, 고유 경로 생성 등을 제공.
 /// [DownloadProvider]·[SettingsProvider]에서 사용.
 class FileService {
+  /// 캐시된 썸네일 디렉토리 경로. [getThumbnailDir] 최초 호출 시 설정.
+  String? _cachedThumbnailDir;
   /// Android 공용 다운로드 디렉토리 하위 앱 폴더 경로.
   static const _androidDownloadPath = '/storage/emulated/0/Download/MyMusicApp';
 
@@ -84,11 +86,13 @@ class FileService {
 
   /// 썸네일 저장 디렉토리 경로 반환. 미존재 시 자동 생성.
   Future<String> getThumbnailDir() async {
+    if (_cachedThumbnailDir != null) return _cachedThumbnailDir!;
     final appDir = await getApplicationDocumentsDirectory();
     final thumbDir = Directory('${appDir.path}/thumbnails');
     if (!thumbDir.existsSync()) {
       await thumbDir.create(recursive: true);
     }
+    _cachedThumbnailDir = thumbDir.path;
     return thumbDir.path;
   }
 
@@ -131,6 +135,19 @@ class FileService {
         ? m4aFileName.substring(0, m4aFileName.length - 4)
         : m4aFileName;
     final localPath = '$thumbDir/$baseName.jpg';
+    return File(localPath).existsSync() ? localPath : null;
+  }
+
+  /// [m4aFileName] 기준 로컬 썸네일 경로를 동기적으로 반환.
+  ///
+  /// [getThumbnailDir]가 한 번 이상 호출된 후에만 유효.
+  /// 캐시 미초기화 또는 파일 미존재 시 null 반환.
+  String? getLocalThumbnailPathSync(String m4aFileName) {
+    if (_cachedThumbnailDir == null) return null;
+    final baseName = m4aFileName.endsWith('.m4a')
+        ? m4aFileName.substring(0, m4aFileName.length - 4)
+        : m4aFileName;
+    final localPath = '$_cachedThumbnailDir/$baseName.jpg';
     return File(localPath).existsSync() ? localPath : null;
   }
 }

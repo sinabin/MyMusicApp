@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../models/download_item.dart';
 import '../providers/player_provider.dart';
+import '../services/file_service.dart';
 import '../theme/app_color_scheme.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
@@ -150,6 +151,7 @@ class _SongListScreenState extends State<SongListScreen> {
                       padding: const EdgeInsets.only(bottom: AppSpacing.xs),
                       child: TrackListTile(
                         item: item,
+                        fileService: context.read<FileService>(),
                         isCurrentTrack:
                             player.currentTrack?.videoId == item.videoId,
                         onTap: () => widget.onTap(item),

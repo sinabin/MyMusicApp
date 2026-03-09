@@ -1,7 +1,10 @@
+import 'dart:io';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../models/download_item.dart';
+import '../services/file_service.dart';
 import '../theme/app_color_scheme.dart';
 import '../theme/app_sizes.dart';
 import '../theme/app_spacing.dart';
@@ -9,7 +12,7 @@ import '../theme/app_theme.dart';
 
 /// 최근 재생 곡을 가로 스크롤로 표시하는 위젯.
 ///
-/// [LibraryScreen]의 "Recently Played" 섹션에서 사용.
+/// [HomeScreen]의 "Recently Played" 섹션에서 사용.
 /// 최대 10곡까지 표시.
 class RecentPlayHorizontalList extends StatelessWidget {
   /// 표시할 곡 목록.
@@ -21,11 +24,15 @@ class RecentPlayHorizontalList extends StatelessWidget {
   /// 곡 탭 콜백.
   final void Function(DownloadItem) onTap;
 
+  /// 로컬 썸네일 조회용 [FileService].
+  final FileService? fileService;
+
   const RecentPlayHorizontalList({
     super.key,
     required this.tracks,
     this.currentTrack,
     required this.onTap,
+    this.fileService,
   });
 
   @override
@@ -71,15 +78,7 @@ class RecentPlayHorizontalList extends StatelessWidget {
                           borderRadius: BorderRadius.circular(
                             isCurrent ? 10 : AppTheme.radiusMd,
                           ),
-                          child: item.thumbnailUrl != null
-                              ? CachedNetworkImage(
-                                  imageUrl: item.thumbnailUrl!,
-                                  fit: BoxFit.cover,
-                                  memCacheWidth: 200,
-                                  placeholder: (_, _) => _placeholder(context),
-                                  errorWidget: (_, _, _) => _placeholder(context),
-                                )
-                              : _placeholder(context),
+                          child: _buildThumbnail(context, item),
                         ),
                       ),
                       const SizedBox(height: 6),
@@ -112,6 +111,39 @@ class RecentPlayHorizontalList extends StatelessWidget {
           );
         },
       ),
+    );
+  }
+
+  /// 로컬 파일 우선, 네트워크 URL 폴백으로 썸네일 반환.
+  Widget _buildThumbnail(BuildContext context, DownloadItem item) {
+    final url = item.thumbnailUrl;
+    if (url == null) return _placeholder(context);
+
+    // 로컬 경로(DownloadItem에 저장된 경우)
+    if (url.startsWith('/')) {
+      return Image.file(
+        File(url),
+        fit: BoxFit.cover,
+        errorBuilder: (_, _, _) => _placeholder(context),
+      );
+    }
+
+    // 기존 데이터: 로컬 썸네일 파일이 존재하면 우선 사용
+    final localPath = fileService?.getLocalThumbnailPathSync(item.fileName);
+    if (localPath != null) {
+      return Image.file(
+        File(localPath),
+        fit: BoxFit.cover,
+        errorBuilder: (_, _, _) => _placeholder(context),
+      );
+    }
+
+    return CachedNetworkImage(
+      imageUrl: url,
+      fit: BoxFit.cover,
+      memCacheWidth: 200,
+      placeholder: (_, _) => _placeholder(context),
+      errorWidget: (_, _, _) => _placeholder(context),
     );
   }
 

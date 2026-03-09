@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../l10n/app_localizations.dart';
 import '../providers/player_provider.dart';
+import '../services/file_service.dart';
 import '../theme/app_color_scheme.dart';
 import '../theme/app_durations.dart';
 import '../theme/app_sizes.dart';
@@ -139,6 +140,7 @@ class QueueScreen extends StatelessWidget {
                       onDismissed: (_) => player.removeFromQueue(index),
                       child: TrackListTile(
                         item: item,
+                        fileService: context.read<FileService>(),
                         isCurrentTrack: isCurrent,
                         onTap: () {
                           if (!isCurrent) {

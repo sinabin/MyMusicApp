@@ -74,12 +74,17 @@ class HistoryProvider extends ChangeNotifier {
     });
   }
 
-  /// [index] 위치의 기록 삭제 및 목록 갱신.
-  Future<void> removeItem(int index) {
-    return _synchronized(() async {
-      await _db.remove(index);
-      _items = _db.getAll();
-      notifyListeners();
+  /// [item]을 기록에서 삭제 및 목록 갱신.
+  ///
+  /// 메모리 리스트에서 즉시 제거 후 DB 삭제를 수행하여
+  /// [Dismissible] 위젯 동기화 문제를 방지.
+  void removeItem(DownloadItem item) {
+    _items.remove(item);
+    notifyListeners();
+    _synchronized(() async {
+      if (item.isInBox) {
+        await item.delete();
+      }
     });
   }
 

@@ -90,10 +90,11 @@ class DownloadProvider extends ChangeNotifier {
 
       // Phase 3.5: 썸네일 로컬 저장 (실패해도 다운로드 결과에 영향 없음)
       final fileName = outputPath.split('/').last;
-      await _fileService.saveThumbnail(videoInfo.thumbnailUrl, fileName);
+      final localThumb = await _fileService.saveThumbnail(
+        videoInfo.thumbnailUrl, fileName);
 
       // Phase 4: Completed
-      return await _buildResult(videoInfo, outputPath);
+      return await _buildResult(videoInfo, outputPath, localThumb);
     } catch (e, st) {
       debugPrint('[DownloadProvider] Error (videoId=${videoInfo.videoId}): $e');
       debugPrint('[DownloadProvider] StackTrace: $st');
@@ -150,6 +151,7 @@ class DownloadProvider extends ChangeNotifier {
   Future<DownloadItem> _buildResult(
     VideoInfo videoInfo,
     String outputPath,
+    String? localThumbnailPath,
   ) async {
     final fileSize = await _fileService.getFileSize(outputPath);
     final fileName = outputPath.split('/').last;
@@ -168,7 +170,7 @@ class DownloadProvider extends ChangeNotifier {
       fileSize: fileSize,
       downloadDate: DateTime.now(),
       videoId: videoInfo.videoId,
-      thumbnailUrl: videoInfo.thumbnailUrl,
+      thumbnailUrl: localThumbnailPath ?? videoInfo.thumbnailUrl,
       channelName: videoInfo.channelName,
       channelId: videoInfo.channelId,
       keywords: videoInfo.keywords,

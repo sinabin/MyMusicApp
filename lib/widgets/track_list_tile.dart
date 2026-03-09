@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 
 import '../l10n/app_localizations.dart';
 import '../models/download_item.dart';
+import '../services/file_service.dart';
 import '../theme/app_color_scheme.dart';
 import '../theme/app_sizes.dart';
 import '../theme/app_spacing.dart';
@@ -26,6 +27,9 @@ class TrackListTile extends StatelessWidget {
   final VoidCallback? onToggleFavorite;
   final VoidCallback? onAddToPlaylist;
 
+  /// 로컬 썸네일 조회용 [FileService].
+  final FileService? fileService;
+
   const TrackListTile({
     super.key,
     required this.item,
@@ -35,6 +39,7 @@ class TrackListTile extends StatelessWidget {
     this.isFavorite = false,
     this.onToggleFavorite,
     this.onAddToPlaylist,
+    this.fileService,
   });
 
   /// 컨텍스트 메뉴 항목 유무.
@@ -244,10 +249,11 @@ class TrackListTile extends StatelessWidget {
     ];
   }
 
-  /// 로컬 파일 경로면 [Image.file], URL이면 [CachedNetworkImage] 반환.
+  /// 로컬 파일 우선, 네트워크 URL 폴백으로 썸네일 반환.
   Widget _buildThumbnail(BuildContext context) {
     final url = item.thumbnailUrl;
     if (url == null) return _placeholderIcon(context);
+
     if (url.startsWith('/')) {
       return Image.file(
         File(url),
@@ -255,6 +261,16 @@ class TrackListTile extends StatelessWidget {
         errorBuilder: (_, _, _) => _placeholderIcon(context),
       );
     }
+
+    final localPath = fileService?.getLocalThumbnailPathSync(item.fileName);
+    if (localPath != null) {
+      return Image.file(
+        File(localPath),
+        fit: BoxFit.cover,
+        errorBuilder: (_, _, _) => _placeholderIcon(context),
+      );
+    }
+
     return CachedNetworkImage(
       imageUrl: url,
       fit: BoxFit.cover,

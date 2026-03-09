@@ -295,6 +295,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                                   Expanded(
                                     child: TrackListTile(
                                       item: item,
+                                      fileService: context.read<FileService>(),
                                       isCurrentTrack:
                                           player.currentTrack?.videoId ==
                                               item.videoId,
@@ -416,6 +417,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                                 padding: const EdgeInsets.only(bottom: AppSpacing.xs),
                                 child: TrackListTile(
                                   item: item,
+                                  fileService: context.read<FileService>(),
                                   isCurrentTrack:
                                       player.currentTrack?.videoId ==
                                           item.videoId,
