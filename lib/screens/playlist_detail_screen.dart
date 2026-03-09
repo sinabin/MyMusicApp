@@ -43,6 +43,17 @@ class PlaylistDetailScreen extends StatefulWidget {
 class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
   bool _isEditing = false;
 
+  /// [playAllOnTap] 설정에 따라 전체/단일 재생 분기.
+  void _playTrack(List<DownloadItem> tracks, int index) {
+    final player = context.read<PlayerProvider>();
+    final playAll = context.read<SettingsProvider>().settings.playAllOnTap;
+    if (playAll) {
+      player.playAll(tracks, startIndex: index);
+    } else {
+      player.playTrack(tracks[index]);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final cs = AppColorScheme.of(context);
@@ -302,14 +313,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                                       isCurrentTrack:
                                           player.currentTrack?.videoId ==
                                               item.videoId,
-                                      onTap: () {
-                                        context
-                                            .read<PlayerProvider>()
-                                            .playAll(
-                                              tracks,
-                                              startIndex: index,
-                                            );
-                                      },
+                                      onTap: () => _playTrack(tracks, index),
                                       onAddToQueue: () {
                                         HapticFeedback.lightImpact();
                                         context
@@ -424,14 +428,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                                   isCurrentTrack:
                                       player.currentTrack?.videoId ==
                                           item.videoId,
-                                  onTap: () {
-                                    context
-                                        .read<PlayerProvider>()
-                                        .playAll(
-                                          tracks,
-                                          startIndex: index,
-                                        );
-                                  },
+                                  onTap: () => _playTrack(tracks, index),
                                   onAddToQueue: () {
                                     HapticFeedback.lightImpact();
                                     context
@@ -456,6 +453,44 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                                       context,
                                       videoId: item.videoId,
                                     );
+                                  },
+                                  onLongPress: () async {
+                                    final confirmed = await showDialog<bool>(
+                                      context: context,
+                                      builder: (ctx) {
+                                        final cs = AppColorScheme.of(ctx);
+                                        return AlertDialog(
+                                          backgroundColor: cs.surface,
+                                          title: Text(
+                                            'Remove from playlist?',
+                                            style: TextStyle(
+                                                color: cs.textPrimary),
+                                          ),
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () =>
+                                                  Navigator.pop(ctx, false),
+                                              child: const Text('Cancel'),
+                                            ),
+                                            TextButton(
+                                              onPressed: () =>
+                                                  Navigator.pop(ctx, true),
+                                              child: Text(
+                                                'Remove',
+                                                style: TextStyle(
+                                                    color: cs.error),
+                                              ),
+                                            ),
+                                          ],
+                                        );
+                                      },
+                                    ) ?? false;
+                                    if (confirmed && context.mounted) {
+                                      provider.removeTrackFromPlaylist(
+                                        widget.playlist,
+                                        item.videoId,
+                                      );
+                                    }
                                   },
                                 ),
                               );

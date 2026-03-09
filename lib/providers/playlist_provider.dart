@@ -134,12 +134,13 @@ class PlaylistProvider extends ChangeNotifier {
 
   /// 플레이리스트의 곡 목록을 [DownloadItem]으로 resolve.
   ///
+  /// 동일 videoId의 다운로드가 복수 존재하면 최신 항목을 사용.
   /// DB에 존재하지 않는 고아 videoId는 자동 제거 후 저장.
   List<DownloadItem> getTracksForPlaylist(PlaylistItem playlist) {
-    final allDownloads = _downloadDb.getAll();
+    final allDownloads = _downloadDb.getAll(); // 최신순 정렬
     final downloadMap = <String, DownloadItem>{};
     for (final item in allDownloads) {
-      downloadMap[item.videoId] = item;
+      downloadMap.putIfAbsent(item.videoId, () => item);
     }
     final resolved = <DownloadItem>[];
     final validIds = <String>[];

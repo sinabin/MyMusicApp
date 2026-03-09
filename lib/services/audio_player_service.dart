@@ -63,8 +63,8 @@ class AudioPlayerService {
   /// [items] 목록을 큐로 설정하고 [startIndex]부터 재생.
   ///
   /// 스트리밍 항목은 파일 검증을 건너뛰고, 로컬 파일은 존재 여부 확인.
-  /// [_listenToIndex]가 setAudioSource 이후 currentIndexStream을 수신하여
-  /// [QueueState]를 발행하므로 명시적 emit 불필요.
+  /// [setAudioSource] 후 명시적으로 [QueueState]를 발행하여
+  /// [currentIndexStream]의 distinct 필터로 인한 누락을 방지.
   Future<void> playQueue(
     List<DownloadItem> items, {
     int startIndex = 0,
@@ -82,11 +82,13 @@ class AudioPlayerService {
       if (adjustedIndex < 0) adjustedIndex = 0;
     }
 
-    // _listenToIndex가 _queue를 참조하므로 setAudioSource 호출 전에 설정.
     _queue = validItems;
 
     final mediaItems = validItems.map(_toMediaItem).toList();
     await _handler.setAudioSource(mediaItems, initialIndex: adjustedIndex);
+    // currentIndexStream은 동일 인덱스(예: 0→0)에 대해 이벤트를 발행하지
+    // 않으므로(distinct), 큐 교체 시 반드시 명시적으로 QueueState 발행.
+    _emitQueueState(adjustedIndex);
     await _handler.play();
   }
 
