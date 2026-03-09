@@ -1,17 +1,65 @@
-# mymusicapp
+# MyMusicApp
 
-A new Flutter project.
+YouTube 음악을 내 폰에 저장하고, 언제 어디서나 오프라인으로 들을 수 있는 안드로이드 뮤직 플레이어입니다.
 
-## Getting Started
+## 주요 기능
 
-This project is a starting point for a Flutter application.
+### 음악 다운로드
+- YouTube에서 원하는 곡을 검색하여 고음질(AAC/m4a)로 다운로드
+- 다운로드한 음악은 인터넷 없이도 재생 가능
+- 저장 폴더를 원하는 위치로 변경 가능
 
-A few resources to get you started if this is your first Flutter project:
+### 음악 재생
+- 백그라운드 재생 지원 — 앱을 닫아도 음악이 계속 재생됨
+- 알림창에서 재생/일시정지, 이전곡/다음곡 조작 가능
+- 셔플(랜덤) 및 반복 재생(전체 반복, 한 곡 반복)
+- 재생 대기열(큐)에서 곡 순서를 드래그로 변경하거나 스와이프로 삭제
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+### 플레이리스트
+- 나만의 플레이리스트를 무제한으로 생성
+- 플레이리스트에 곡 추가/삭제, 순서 변경
+- 플레이리스트 전체 재생 및 셔플 재생
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+### 즐겨찾기
+- 하트 버튼 한 번으로 좋아하는 곡을 즐겨찾기에 등록
+- 즐겨찾기 목록에서 바로 재생
+
+### 추천
+- 내 다운로드 기록을 기반으로 새로운 음악을 추천
+- 추천 곡을 바로 스트리밍하거나 다운로드
+
+### 라이브러리
+- 전체 보관함, 즐겨찾기, 최근 재생 목록을 한눈에 확인
+- 최근 재생 기록을 날짜별(오늘, 어제, 이번 주, 이전)로 구분
+
+## 설정
+
+| 항목 | 설명 |
+|------|------|
+| 저장 위치 | 다운로드 파일이 저장될 폴더 지정 |
+| 탭 재생 모드 | 곡 하나만 재생 / 목록 전체를 이어서 재생 선택 |
+| 테마 | 라이트 모드, 다크 모드, 시스템 설정 따르기 |
+| YouTube 로그인 | 연령 제한 콘텐츠 이용 시 필요 |
+
+## 설치 요구 사항
+
+- Android 7.0 (Nougat) 이상
+- 인터넷 연결 (검색 및 다운로드 시)
+
+## 설치 방법
+
+1. Releases 페이지에서 최신 APK 파일을 다운로드합니다.
+2. 다운로드한 APK 파일을 실행하여 설치합니다.
+3. "출처를 알 수 없는 앱 설치" 허용 안내가 뜨면 허용 후 설치를 진행합니다.
+
+## 앱 권한 안내
+
+| 권한 | 사용 목적 |
+|------|-----------|
+| 인터넷 | YouTube 검색 및 음악 다운로드 |
+| 저장공간 | 다운로드한 음악 파일 저장 및 읽기 |
+| 백그라운드 실행 | 앱을 닫아도 음악 재생 유지 |
+
+## 문의 및 피드백
+
+사용 중 문제가 발생하거나 개선 의견이 있으시면 Issues 탭에 남겨 주세요.
