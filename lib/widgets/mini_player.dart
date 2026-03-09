@@ -109,7 +109,10 @@ class MiniPlayer extends StatelessWidget {
                                       title,
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
-                                      style: AppTextStyles.bodySmall,
+                                      style: AppTextStyles.bodySmall.copyWith(
+                                        color: cs.textPrimary,
+                                        decoration: TextDecoration.none,
+                                      ),
                                     ),
                                     if (artist.isNotEmpty) ...[
                                       const SizedBox(height: 1),
