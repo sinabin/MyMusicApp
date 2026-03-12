@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -6,6 +8,7 @@ import 'package:provider/provider.dart';
 import '../models/download_item.dart';
 import '../models/voice_command.dart';
 import '../providers/player_provider.dart';
+import '../services/file_service.dart';
 import '../services/voice_command_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
@@ -27,21 +30,19 @@ class _CarModeScreenState extends State<CarModeScreen> {
   bool _voiceAvailable = false;
   bool _isListening = false;
   String _partialText = '';
+  String _lastCommandLabel = '';
 
   @override
   void initState() {
     super.initState();
-    // 화면 꺼짐 방지
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
-
     _initVoice();
   }
 
   Future<void> _initVoice() async {
     final available = await _voiceService.initialize();
-    if (mounted) {
-      setState(() => _voiceAvailable = available);
-    }
+    if (!mounted) return;
+    setState(() => _voiceAvailable = available);
   }
 
   @override
@@ -51,36 +52,7 @@ class _CarModeScreenState extends State<CarModeScreen> {
     super.dispose();
   }
 
-  void _handleVoiceCommand(VoiceCommand command) {
-    final player = context.read<PlayerProvider>();
-
-    setState(() {
-      _isListening = false;
-      _partialText = '';
-    });
-
-    switch (command.type) {
-      case VoiceCommandType.play:
-        player.resume();
-      case VoiceCommandType.pause:
-        player.pause();
-      case VoiceCommandType.next:
-        player.skipNext();
-      case VoiceCommandType.previous:
-        player.skipPrevious();
-      case VoiceCommandType.search:
-        // 차량 모드에서는 검색 미지원 (안전상 이유)
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('검색: "${command.query}"'),
-              duration: const Duration(seconds: 2),
-            ),
-          );
-        }
-    }
-  }
-
+  /// 화면 탭으로 음성 인식 토글.
   Future<void> _toggleVoice() async {
     if (!_voiceAvailable) return;
 
@@ -103,7 +75,45 @@ class _CarModeScreenState extends State<CarModeScreen> {
           if (mounted) setState(() => _partialText = text);
         },
       );
+      // 인식 종료 후 자동으로 상태 복원
+      if (mounted) {
+        setState(() {
+          _isListening = false;
+          _partialText = '';
+        });
+      }
     }
+  }
+
+  void _handleVoiceCommand(VoiceCommand command) {
+    final player = context.read<PlayerProvider>();
+
+    switch (command.type) {
+      case VoiceCommandType.play:
+        player.resume();
+        _showCommandFeedback('재생');
+      case VoiceCommandType.pause:
+        player.pause();
+        _showCommandFeedback('정지');
+      case VoiceCommandType.next:
+        player.skipNext();
+        _showCommandFeedback('다음 곡');
+      case VoiceCommandType.previous:
+        player.skipPrevious();
+        _showCommandFeedback('이전 곡');
+      case VoiceCommandType.search:
+        _showCommandFeedback('지원하지 않는 명령');
+    }
+  }
+
+  /// 명령 인식 피드백 표시.
+  void _showCommandFeedback(String label) {
+    if (!mounted) return;
+    setState(() => _lastCommandLabel = label);
+
+    Future.delayed(const Duration(seconds: 2), () {
+      if (mounted) setState(() => _lastCommandLabel = '');
+    });
   }
 
   @override
@@ -152,91 +162,67 @@ class _CarModeScreenState extends State<CarModeScreen> {
             return SafeArea(
               child: Column(
                 children: [
-                  const Spacer(),
+                  // 탭 가능 영역: 앨범아트 + 곡 정보 (화면 상단 전체)
+                  Expanded(
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: _voiceAvailable ? _toggleVoice : null,
+                      child: Column(
+                        children: [
+                          const Spacer(),
 
-                  // 대형 앨범아트
-                  _buildAlbumArt(track),
-                  const SizedBox(height: AppSpacing.xxl),
+                          // 대형 앨범아트
+                          _buildAlbumArt(track),
+                          const SizedBox(height: AppSpacing.xxl),
 
-                  // 곡 정보
-                  Padding(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: AppSpacing.xxxl),
-                    child: Column(
-                      children: [
-                        Text(
-                          title,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 22,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        if (artist.isNotEmpty) ...[
-                          const SizedBox(height: 8),
-                          Text(
-                            artist,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              color: Colors.white60,
-                              fontSize: 16,
+                          // 곡 정보
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: AppSpacing.xxxl),
+                            child: Column(
+                              children: [
+                                Text(
+                                  title,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                if (artist.isNotEmpty) ...[
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    artist,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      color: Colors.white60,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                ],
+                              ],
                             ),
                           ),
+                          const Spacer(),
                         ],
-                      ],
+                      ),
                     ),
                   ),
-                  const SizedBox(height: AppSpacing.xxxl),
 
-                  // 대형 컨트롤 버튼
+                  const SizedBox(height: AppSpacing.md),
+
+                  // 대형 컨트롤 버튼 (제스처 분리)
                   _buildControls(),
 
                   const SizedBox(height: AppSpacing.xxl),
 
-                  // 음성 인식 상태
-                  if (_isListening) ...[
-                    Container(
-                      margin: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.xxxl),
-                      padding: const EdgeInsets.all(AppSpacing.md),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.1),
-                        borderRadius:
-                            BorderRadius.circular(AppTheme.radiusMd),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white70,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Flexible(
-                            child: Text(
-                              _partialText.isEmpty
-                                  ? '듣고 있습니다...'
-                                  : _partialText,
-                              style: const TextStyle(
-                                  color: Colors.white70, fontSize: 15),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-
-                  const Spacer(flex: 2),
+                  // 음성 안내
+                  if (_voiceAvailable) _buildVoiceStatus(),
+                  const SizedBox(height: AppSpacing.lg),
                 ],
               ),
             );
@@ -246,7 +232,7 @@ class _CarModeScreenState extends State<CarModeScreen> {
     );
   }
 
-  /// 대형 앨범아트 빌드.
+  /// 로컬 파일 우선, 네트워크 URL 폴백으로 대형 앨범아트 빌드.
   Widget _buildAlbumArt(DownloadItem track) {
     final size = MediaQuery.of(context).size.width * 0.4;
 
@@ -255,15 +241,40 @@ class _CarModeScreenState extends State<CarModeScreen> {
       child: SizedBox(
         width: size,
         height: size,
-        child: track.thumbnailUrl != null
-            ? CachedNetworkImage(
-                imageUrl: track.thumbnailUrl!,
-                fit: BoxFit.cover,
-                placeholder: (context, url) => _placeholder(),
-                errorWidget: (context, url, error) => _placeholder(),
-              )
-            : _placeholder(),
+        child: _buildThumbnail(track),
       ),
+    );
+  }
+
+  /// 3단계 폴백 썸네일: 로컬 경로 → FileService 캐시 → 네트워크.
+  Widget _buildThumbnail(DownloadItem track) {
+    final url = track.thumbnailUrl;
+    if (url == null) return _placeholder();
+
+    if (url.startsWith('/')) {
+      return Image.file(
+        File(url),
+        fit: BoxFit.cover,
+        errorBuilder: (_, _, _) => _placeholder(),
+      );
+    }
+
+    final localPath = context
+        .read<FileService>()
+        .getLocalThumbnailPathSync(track.fileName);
+    if (localPath != null) {
+      return Image.file(
+        File(localPath),
+        fit: BoxFit.cover,
+        errorBuilder: (_, _, _) => _placeholder(),
+      );
+    }
+
+    return CachedNetworkImage(
+      imageUrl: url,
+      fit: BoxFit.cover,
+      placeholder: (context, url) => _placeholder(),
+      errorWidget: (context, url, error) => _placeholder(),
     );
   }
 
@@ -289,7 +300,6 @@ class _CarModeScreenState extends State<CarModeScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              // 이전
               _CarModeButton(
                 size: buttonSize,
                 icon: Icons.skip_previous,
@@ -299,8 +309,6 @@ class _CarModeScreenState extends State<CarModeScreen> {
                   player.skipPrevious();
                 },
               ),
-
-              // 재생/일시정지
               _CarModeButton(
                 size: playButtonSize,
                 icon: isPlaying ? Icons.pause : Icons.play_arrow,
@@ -311,8 +319,6 @@ class _CarModeScreenState extends State<CarModeScreen> {
                   isPlaying ? player.pause() : player.resume();
                 },
               ),
-
-              // 다음
               _CarModeButton(
                 size: buttonSize,
                 icon: Icons.skip_next,
@@ -322,23 +328,83 @@ class _CarModeScreenState extends State<CarModeScreen> {
                   player.skipNext();
                 },
               ),
-
-              // 음성 (가용 시만 표시)
-              if (_voiceAvailable)
-                _CarModeButton(
-                  size: buttonSize,
-                  icon: _isListening ? Icons.mic : Icons.mic_none,
-                  iconSize: 36,
-                  isActive: _isListening,
-                  onTap: () {
-                    HapticFeedback.mediumImpact();
-                    _toggleVoice();
-                  },
-                ),
             ],
           ),
         );
       },
+    );
+  }
+
+  /// 음성 인식 상태 및 안내 표시 빌드.
+  Widget _buildVoiceStatus() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxxl),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // 명령 인식 피드백
+          if (_lastCommandLabel.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+                ),
+                child: Text(
+                  _lastCommandLabel,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ),
+
+          if (_isListening) ...[
+            // 인식 중 상태
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.mic,
+                  color: Colors.redAccent.withValues(alpha: 0.8),
+                  size: 16,
+                ),
+                const SizedBox(width: 8),
+                Flexible(
+                  child: Text(
+                    _partialText.isEmpty ? '듣고 있습니다...' : _partialText,
+                    style: const TextStyle(
+                        color: Colors.white54, fontSize: 13),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Text(
+              '"재생" · "정지" · "다음곡" · "이전곡"',
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.25),
+                fontSize: 12,
+              ),
+            ),
+          ] else
+            // 대기 상태: 탭 안내
+            Text(
+              '화면을 탭하여 음성 명령',
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.3),
+                fontSize: 13,
+              ),
+            ),
+        ],
+      ),
     );
   }
 }
@@ -357,9 +423,6 @@ class _CarModeButton extends StatelessWidget {
   /// 주요 액션 여부 (그라디언트 적용).
   final bool isPrimary;
 
-  /// 활성 상태 (음성 인식 등).
-  final bool isActive;
-
   /// 탭 콜백.
   final VoidCallback onTap;
 
@@ -368,7 +431,6 @@ class _CarModeButton extends StatelessWidget {
     required this.icon,
     required this.iconSize,
     this.isPrimary = false,
-    this.isActive = false,
     required this.onTap,
   });
 
@@ -384,15 +446,11 @@ class _CarModeButton extends StatelessWidget {
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             gradient: isPrimary ? AppColors.primaryGradient : null,
-            color: isPrimary
-                ? null
-                : isActive
-                    ? Colors.white.withValues(alpha: 0.2)
-                    : Colors.white.withValues(alpha: 0.1),
+            color: isPrimary ? null : Colors.white.withValues(alpha: 0.1),
           ),
           child: Icon(
             icon,
-            color: isActive ? Colors.redAccent : Colors.white,
+            color: Colors.white,
             size: iconSize,
           ),
         ),

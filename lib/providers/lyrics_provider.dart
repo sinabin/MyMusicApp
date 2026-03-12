@@ -64,6 +64,39 @@ class LyricsProvider extends ChangeNotifier {
     }
   }
 
+  /// 캐시를 무시하고 가사 재검색.
+  Future<void> retryLyrics(DownloadItem track) async {
+    _currentVideoId = track.videoId;
+    _isLoading = true;
+    _notFound = false;
+    _lyrics = null;
+    notifyListeners();
+
+    try {
+      final title = track.fileName.endsWith('.m4a')
+          ? track.fileName.substring(0, track.fileName.length - 4)
+          : track.fileName;
+
+      final result = await _service.getLyrics(
+        videoId: track.videoId,
+        trackName: title,
+        artistName: track.artistName,
+        forceRefresh: true,
+      );
+
+      if (_currentVideoId != track.videoId) return;
+
+      _lyrics = result;
+      _notFound = result == null;
+    } catch (e) {
+      debugPrint('[LyricsProvider] Retry error: $e');
+      _notFound = true;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
   /// 가사 상태 초기화.
   void clear() {
     _currentVideoId = null;

@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../providers/lyrics_provider.dart';
+import '../providers/player_provider.dart';
 import '../theme/app_color_scheme.dart';
 import '../theme/app_sizes.dart';
 import '../theme/app_spacing.dart';
@@ -28,38 +29,7 @@ class LyricsWidget extends StatelessWidget {
 
         // 가사 미발견
         if (provider.notFound) {
-          return Center(
-            child: Padding(
-              padding: const EdgeInsets.all(AppSpacing.xxl),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.lyrics_outlined,
-                    color: cs.textTertiary,
-                    size: AppSizes.iconHero,
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-                  Text(
-                    '가사를 찾을 수 없습니다',
-                    style: TextStyle(
-                      color: cs.textSecondary,
-                      fontSize: 15,
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.xs),
-                  Text(
-                    '이 곡의 가사 정보가 아직 등록되지 않았습니다',
-                    style: TextStyle(
-                      color: cs.textTertiary,
-                      fontSize: 13,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ),
-            ),
-          );
+          return _buildNotFound(context, cs, provider);
         }
 
         // 가사 표시
@@ -93,6 +63,61 @@ class LyricsWidget extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+
+  /// 가사 미발견 상태 UI.
+  Widget _buildNotFound(
+    BuildContext context,
+    AppColorScheme cs,
+    LyricsProvider provider,
+  ) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.xxl),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.lyrics_outlined,
+              color: cs.textTertiary,
+              size: AppSizes.iconHero,
+            ),
+            const SizedBox(height: AppSpacing.md),
+            Text(
+              '가사를 찾을 수 없습니다',
+              style: TextStyle(
+                color: cs.textSecondary,
+                fontSize: 15,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            Text(
+              '이 곡의 가사 정보가 아직 등록되지 않았습니다',
+              style: TextStyle(
+                color: cs.textTertiary,
+                fontSize: 13,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            TextButton.icon(
+              onPressed: () {
+                final track =
+                    context.read<PlayerProvider>().currentTrack;
+                if (track != null) {
+                  provider.retryLyrics(track);
+                }
+              },
+              icon: const Icon(Icons.refresh, size: 18),
+              label: const Text('다시 검색'),
+              style: TextButton.styleFrom(
+                foregroundColor: cs.textSecondary,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

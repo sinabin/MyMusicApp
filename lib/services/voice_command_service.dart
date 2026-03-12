@@ -11,6 +11,9 @@ class VoiceCommandService {
   final SpeechToText _speech = SpeechToText();
   bool _isAvailable = false;
 
+  /// 인식 세션 종료(타임아웃·에러 포함) 시 호출.
+  VoidCallback? onListeningStopped;
+
   /// 음성 인식 가용 여부.
   bool get isAvailable => _isAvailable;
 
@@ -22,6 +25,11 @@ class VoiceCommandService {
     try {
       _isAvailable = await _speech.initialize(
         onError: (error) => debugPrint('[VoiceCommandService] Error: $error'),
+        onStatus: (status) {
+          if (status == 'done') {
+            onListeningStopped?.call();
+          }
+        },
       );
       return _isAvailable;
     } catch (e) {

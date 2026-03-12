@@ -13,6 +13,7 @@ class PremiumProvider extends ChangeNotifier {
   final SettingsProvider _settingsProvider;
 
   ProductDetails? _product;
+  bool _isLoadingProduct = true;
   bool _isPurchasing = false;
   bool _isRestoring = false;
   String? _error;
@@ -38,6 +39,9 @@ class PremiumProvider extends ChangeNotifier {
   /// 상품 정보.
   ProductDetails? get product => _product;
 
+  /// 상품 정보 로딩 중 여부.
+  bool get isLoadingProduct => _isLoadingProduct;
+
   /// 구매 진행 중 여부.
   bool get isPurchasing => _isPurchasing;
 
@@ -49,8 +53,19 @@ class PremiumProvider extends ChangeNotifier {
 
   /// 상품 정보 로드.
   Future<void> _loadProduct() async {
-    _product = await _service.loadProduct();
+    _isLoadingProduct = true;
     notifyListeners();
+
+    _product = await _service.loadProduct();
+    _isLoadingProduct = false;
+    notifyListeners();
+  }
+
+  /// 상품 정보 재시도.
+  Future<void> retryLoadProduct() async {
+    if (_isLoadingProduct) return;
+    _error = null;
+    await _loadProduct();
   }
 
   /// 프리미엄 구매 시작.

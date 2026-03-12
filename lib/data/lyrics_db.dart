@@ -40,6 +40,14 @@ class LyricsDb {
     await box.add(cache);
   }
 
+  /// [videoId]에 해당하는 캐시 삭제.
+  Future<void> deleteByVideoId(String videoId) async {
+    final entries = box.values.where((e) => e.videoId == videoId).toList();
+    for (final entry in entries) {
+      await entry.delete();
+    }
+  }
+
   /// [maxAgeDays]일 이전의 오래된 캐시 삭제.
   Future<void> cleanup({int maxAgeDays = 180}) async {
     final cutoff = DateTime.now().subtract(Duration(days: maxAgeDays));

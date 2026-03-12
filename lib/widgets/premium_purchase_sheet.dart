@@ -150,7 +150,9 @@ class PremiumPurchaseSheet extends StatelessWidget {
                     );
                   }
 
-                  final priceText = premium.product?.price ?? '가격 로딩 중...';
+                  final productReady = premium.product != null;
+                  final canPurchase =
+                      productReady && !premium.isPurchasing;
 
                   return Column(
                     children: [
@@ -158,32 +160,79 @@ class PremiumPurchaseSheet extends StatelessWidget {
                       SizedBox(
                         width: double.infinity,
                         height: 52,
-                        child: ElevatedButton(
-                          onPressed: premium.isPurchasing ? null : () => premium.purchase(),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: cs.primary,
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-                            ),
-                          ),
-                          child: premium.isPurchasing
-                              ? const SizedBox(
+                        child: premium.isLoadingProduct
+                            ? ElevatedButton(
+                                onPressed: null,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: cs.primary,
+                                  disabledBackgroundColor:
+                                      cs.primary.withValues(alpha: 0.4),
+                                  foregroundColor: Colors.white,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius:
+                                        BorderRadius.circular(AppTheme.radiusMd),
+                                  ),
+                                ),
+                                child: const SizedBox(
                                   width: 20,
                                   height: 20,
                                   child: CircularProgressIndicator(
                                     strokeWidth: 2,
                                     color: Colors.white,
                                   ),
-                                )
-                              : Text(
-                                  '$priceText로 구매하기',
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                  ),
                                 ),
-                        ),
+                              )
+                            : !productReady
+                                ? OutlinedButton.icon(
+                                    onPressed: () => premium.retryLoadProduct(),
+                                    icon: Icon(Icons.refresh,
+                                        color: cs.textSecondary, size: 18),
+                                    label: Text(
+                                      '스토어 연결 실패 — 탭하여 재시도',
+                                      style: TextStyle(
+                                        color: cs.textSecondary,
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                    style: OutlinedButton.styleFrom(
+                                      side: BorderSide(
+                                          color: cs.textTertiary, width: 1),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(
+                                            AppTheme.radiusMd),
+                                      ),
+                                    ),
+                                  )
+                                : ElevatedButton(
+                                    onPressed: canPurchase
+                                        ? () => premium.purchase()
+                                        : null,
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: cs.primary,
+                                      foregroundColor: Colors.white,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(
+                                            AppTheme.radiusMd),
+                                      ),
+                                    ),
+                                    child: premium.isPurchasing
+                                        ? const SizedBox(
+                                            width: 20,
+                                            height: 20,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                              color: Colors.white,
+                                            ),
+                                          )
+                                        : Text(
+                                            '${premium.product!.price}로 구매하기',
+                                            style: const TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                  ),
                       ),
                       const SizedBox(height: AppSpacing.md),
                       // 복원 버튼
