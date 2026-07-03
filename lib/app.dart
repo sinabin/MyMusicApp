@@ -28,7 +28,7 @@ class App extends StatelessWidget {
       selector: (_, p) => p.settings.themeMode,
       builder: (context, themeMode, _) {
         return MaterialApp(
-          title: 'MyMusicApp',
+          title: 'Tunestash',
           debugShowCheckedModeBanner: false,
           theme: AppTheme.lightTheme,
           darkTheme: AppTheme.darkTheme,

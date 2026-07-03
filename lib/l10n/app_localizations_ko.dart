@@ -9,7 +9,7 @@ class LKo extends L {
   LKo([String locale = 'ko']) : super(locale);
 
   @override
-  String get appTitle => 'MyMusicApp';
+  String get appTitle => 'Tunestash';
 
   @override
   String get tabHome => '홈';

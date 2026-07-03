@@ -100,7 +100,7 @@ abstract class L {
   /// No description provided for @appTitle.
   ///
   /// In ko, this message translates to:
-  /// **'MyMusicApp'**
+  /// **'Tunestash'**
   String get appTitle;
 
   /// No description provided for @tabHome.

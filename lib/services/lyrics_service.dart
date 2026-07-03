@@ -135,7 +135,7 @@ class LyricsService {
       final uri = Uri.https('lrclib.net', '/api/search', queryParams);
       debugPrint('[LyricsService] Searching: $queryParams');
       final response = await _httpClient
-          .get(uri, headers: {'User-Agent': 'MyMusicApp/1.0'})
+          .get(uri, headers: {'User-Agent': 'Tunestash/1.0'})
           .timeout(const Duration(seconds: 10));
 
       if (response.statusCode != 200) {

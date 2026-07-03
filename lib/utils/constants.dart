@@ -3,7 +3,7 @@ class AppConstants {
   AppConstants._();
 
   /// 앱 표시 이름.
-  static const String appName = 'MyMusicApp';
+  static const String appName = 'Tunestash';
 
   /// 앱 버전.
   static const String appVersion = '1.0.0';

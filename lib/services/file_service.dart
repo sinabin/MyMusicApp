@@ -11,7 +11,7 @@ class FileService {
   /// 캐시된 썸네일 디렉토리 경로. [getThumbnailDir] 최초 호출 시 설정.
   String? _cachedThumbnailDir;
   /// Android 공용 다운로드 디렉토리 하위 앱 폴더 경로.
-  static const _androidDownloadPath = '/storage/emulated/0/Download/MyMusicApp';
+  static const _androidDownloadPath = '/storage/emulated/0/Download/Tunestash';
 
   /// 기본 저장 디렉토리 경로 반환. 존재하지 않으면 자동 생성.
   ///
@@ -33,10 +33,10 @@ class FileService {
     }
   }
 
-  /// 앱 Documents/MyMusicApp 경로 반환. 미존재 시 생성.
+  /// 앱 Documents/Tunestash 경로 반환. 미존재 시 생성.
   Future<String> _getDocumentsSavePath() async {
     final dir = await getApplicationDocumentsDirectory();
-    final musicDir = Directory('${dir.path}/MyMusicApp');
+    final musicDir = Directory('${dir.path}/Tunestash');
     if (!await musicDir.exists()) {
       await musicDir.create(recursive: true);
     }

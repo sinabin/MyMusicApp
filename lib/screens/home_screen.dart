@@ -94,7 +94,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     const SizedBox(width: 10),
                     Text(
-                      'MyMusicApp',
+                      'Tunestash',
                       style: AppTextStyles.sectionHeader,
                     ),
                     const Spacer(),

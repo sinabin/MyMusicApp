@@ -9,7 +9,7 @@ class LEn extends L {
   LEn([String locale = 'en']) : super(locale);
 
   @override
-  String get appTitle => 'MyMusicApp';
+  String get appTitle => 'Tunestash';
 
   @override
   String get tabHome => 'Home';
