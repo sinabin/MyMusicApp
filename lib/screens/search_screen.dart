@@ -18,6 +18,7 @@ import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
 import '../theme/app_theme.dart';
 import '../widgets/download_confirm_sheet.dart';
+import '../widgets/download_failure_snack_bar.dart';
 import '../widgets/search_result_tile.dart';
 
 /// YouTube 검색 화면.
@@ -111,15 +112,27 @@ class _SearchScreenState extends State<SearchScreen> {
       final settings = context.read<SettingsProvider>().settings;
       final downloadProvider = context.read<DownloadProvider>();
       final historyProvider = context.read<HistoryProvider>();
+      final recommendationProvider = context.read<RecommendationProvider>();
 
       final item = await downloadProvider.startDownload(
         videoInfo: videoInfo,
         savePath: settings.savePath,
       );
 
-      if (item != null && mounted) {
-        historyProvider.addItem(item);
-        context.read<RecommendationProvider>().invalidateCache();
+      if (item == null) {
+        // startDownload는 실패 시에도 예외 없이 null 반환 → 상태로 실패 여부 판별.
+        final errorMsg = downloadProvider.lastErrorMessage;
+        if (errorMsg != null && mounted) {
+          DownloadFailureSnackBar.show(context,
+              title: videoInfo.title, message: errorMsg);
+        }
+        return;
+      }
+
+      // 화면 이탈 여부와 무관하게 다운로드 기록은 반드시 저장.
+      historyProvider.addItem(item);
+      recommendationProvider.invalidateCache();
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Saved: ${item.fileName}')),
         );
@@ -127,9 +140,7 @@ class _SearchScreenState extends State<SearchScreen> {
     } catch (e) {
       if (mounted) {
         final msg = e is AppException ? e.userMessage : 'Download failed';
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(msg)),
-        );
+        DownloadFailureSnackBar.show(context, message: msg);
       }
     }
   }

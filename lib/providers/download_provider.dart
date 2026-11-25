@@ -33,6 +33,13 @@ class DownloadProvider extends ChangeNotifier {
   /// 현재 다운로드 상태.
   DownloadStatus get status => _status;
 
+  /// 직전 다운로드가 실패한 경우 사용자 안내 문구 반환. 실패 상태가 아니면 null.
+  ///
+  /// [startDownload]는 실패 시 예외 대신 null을 반환하므로, 호출 측에서
+  /// 취소(null)와 실패(null)를 구분하여 피드백을 표시할 때 사용.
+  String? get lastErrorMessage =>
+      _status.phase == DownloadPhase.error ? _status.errorMessage : null;
+
   /// 현재 다운로드 중인 영상 ID. 대기 상태이면 null.
   String? get currentVideoId => _currentVideoId;
 

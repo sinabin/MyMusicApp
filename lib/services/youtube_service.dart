@@ -1,4 +1,8 @@
+import 'dart:async';
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
+import 'package:http/http.dart' as http;
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 import '../models/app_exception.dart';
 import '../models/video_info.dart' as app;
@@ -103,16 +107,26 @@ class YouTubeService {
     }
   }
 
+  /// 스트림 매니페스트 조회에 사용할 YouTube API 클라이언트 목록.
+  ///
+  /// 앱에는 JS 서명 해독기(deno)가 없으므로 서명 해독이 필요한 WEB 계열
+  /// 클라이언트(`safari`, `tv`)는 제외. PO Token이 필요 없는 `androidSdkless`를
+  /// 우선 사용하고, 실패 시 `androidVr`로 폴백.
+  static const List<YoutubeApiClient> _streamClients = [
+    YoutubeApiClient.androidSdkless,
+    YoutubeApiClient.androidVr,
+  ];
+
   /// [videoId]의 가용 오디오 스트림 중 최고 비트레이트 스트림 반환.
+  ///
+  /// 실제 연결 오류만 [NetworkException]으로, 그 외 추출 실패는
+  /// [StreamNotFoundException]으로 분류하여 사용자 안내 문구의 정확도 확보.
   Future<StreamInfo> getBestAudioStream(String videoId) async {
     try {
       final client = await _client;
       final manifest = await client.videos.streams.getManifest(
         videoId,
-        ytClients: [
-          YoutubeApiClient.safari,
-          YoutubeApiClient.androidVr,
-        ],
+        ytClients: List.of(_streamClients),
       );
 
       final audioStreams = manifest.audioOnly.sortByBitrate();
@@ -126,13 +140,24 @@ class YouTubeService {
       }
       return audioStreams.first; // Highest bitrate (sortByBitrate는 내림차순)
     } catch (e) {
+      debugPrint('[YouTubeService] getBestAudioStream failed (videoId=$videoId): $e');
       if (e is AppException) rethrow;
-      throw NetworkException(
-        message: 'Failed to get audio stream for videoId=$videoId: $e',
-        cause: e,
-      );
+      if (_isConnectivityError(e)) {
+        throw NetworkException(
+          message: 'Failed to get audio stream for videoId=$videoId: $e',
+          cause: e,
+        );
+      }
+      throw StreamNotFoundException(videoId: videoId, cause: e);
     }
   }
+
+  /// [error]가 기기 네트워크 연결 문제(소켓·타임아웃·HTTP 클라이언트 오류)인지 여부 반환.
+  static bool _isConnectivityError(Object error) =>
+      error is SocketException ||
+      error is TimeoutException ||
+      error is HandshakeException ||
+      error is http.ClientException;
 
   /// [videoId]의 최고 비트레이트 오디오 스트림 URL 반환.
   Future<Uri> getAudioStreamUrl(String videoId) async {

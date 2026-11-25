@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
+import '../models/app_exception.dart';
 import '../models/download_item.dart';
 import '../models/recommendation.dart';
 import '../models/video_info.dart';
@@ -19,6 +20,7 @@ import '../theme/app_sizes.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
 import '../theme/app_theme.dart';
+import '../widgets/download_failure_snack_bar.dart';
 import '../widgets/gradient_text.dart';
 import '../widgets/premium_gate.dart';
 import '../widgets/recommendation_card.dart';
@@ -51,7 +53,18 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
   /// 스트리밍 재생 시작.
   Future<void> _onStream(Recommendation rec) async {
     final yt = context.read<YouTubeService>();
-    final streamUrl = await yt.getAudioStreamUrl(rec.videoId);
+    final Uri streamUrl;
+    try {
+      streamUrl = await yt.getAudioStreamUrl(rec.videoId);
+    } catch (e) {
+      if (mounted) {
+        final msg = e is AppException ? e.userMessage : 'Streaming failed';
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(msg)),
+        );
+      }
+      return;
+    }
 
     if (!mounted) return;
 
@@ -98,30 +111,38 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
       savePath: settings.savePath,
     );
 
-    if (item != null) {
-      historyProvider.addItem(item);
-      recProvider.removeFromCurrent(rec.videoId);
-      recProvider.markCacheStale();
-      if (mounted) {
-        final cs = AppColorScheme.of(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                Icon(Icons.check_circle, color: cs.success, size: AppSizes.iconMd),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    '${rec.title} 다운로드 완료',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
+    if (item == null) {
+      // startDownload는 실패 시에도 예외 없이 null 반환 → 상태로 실패 여부 판별.
+      final errorMsg = downloadProvider.lastErrorMessage;
+      if (errorMsg != null && mounted) {
+        DownloadFailureSnackBar.show(context,
+            title: rec.title, message: errorMsg);
       }
+      return;
+    }
+
+    historyProvider.addItem(item);
+    recProvider.removeFromCurrent(rec.videoId);
+    recProvider.markCacheStale();
+    if (mounted) {
+      final cs = AppColorScheme.of(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              Icon(Icons.check_circle, color: cs.success, size: AppSizes.iconMd),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  '${rec.title} 다운로드 완료',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
     }
   }
 
